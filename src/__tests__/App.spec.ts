@@ -12,11 +12,13 @@ function mountApp() {
     history: createMemoryHistory(),
     routes,
   });
+
   const wrapper = mount(App, {
     global: {
       plugins: [createPinia(), router, createVuetify()],
     },
   });
+
   return { wrapper, router };
 }
 
