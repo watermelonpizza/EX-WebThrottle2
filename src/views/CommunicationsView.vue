@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue';
 
+import ConnectionPanel from '@/components/connection/ConnectionPanel.vue';
 import { useConnectionStore } from '@/stores/connection';
 
 const store = useConnectionStore();
@@ -33,40 +34,8 @@ function sendCommand(): void {
 
     <v-card title="Connection" class="mb-4">
       <v-card-text>
-        <v-chip
-          :color="store.status === 'connected' ? 'success' : 'warning'"
-          data-test="status"
-        >
-          {{ store.status }}
-        </v-chip>
-        <span v-if="store.transportName" class="ml-2 text-medium-emphasis">
-          via {{ store.transportName }}
-        </span>
+        <ConnectionPanel />
       </v-card-text>
-
-      <v-card-actions>
-        <v-btn
-          :disabled="!store.serialAvailable || store.status === 'connected'"
-          data-test="connect-serial"
-          @click="store.connectToSerial()"
-        >
-          Connect Web Serial
-        </v-btn>
-        <v-btn
-          :disabled="store.status === 'connected'"
-          data-test="connect-emulator"
-          @click="store.connectToEmulator()"
-        >
-          Emulator
-        </v-btn>
-        <v-btn
-          :disabled="store.status !== 'connected'"
-          data-test="disconnect"
-          @click="store.disconnect()"
-        >
-          Disconnect
-        </v-btn>
-      </v-card-actions>
     </v-card>
 
     <v-card title="Raw traffic" class="mb-4">
