@@ -37,14 +37,16 @@ ESLint 10 (flat config) + Prettier, Vitest 5 + @vue/test-utils, Playwright.
 
 ## Architecture
 
-One-way dependency flow (the core layers land with the connection work):
+One-way dependency flow:
 
 ```text
-src/core/protocol → src/core/transport → src/core/connection → src/stores → views/components
+src/core/protocol → src/core/transport → src/stores → views/components
 ```
 
-Protocol parsing, transport, connection lifecycle, UI state, and presentational
-components each live in their own layer and never reach across.
+The connection lifecycle is owned by the connection store: it drives a
+transport (Web Serial, emulator, a future Hub adapter) and turns raw traffic
+into decoded protocol messages for the views. Protocol parsing and transport
+stay pure — no Vue, no Pinia.
 
 ## Contributing
 
