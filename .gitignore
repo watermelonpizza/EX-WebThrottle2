@@ -2,6 +2,12 @@
 node_modules
 /dist
 
+# Local AI/developer working notes (never commit)
+AGENTS.md
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
 
 # local env files
 .env.local

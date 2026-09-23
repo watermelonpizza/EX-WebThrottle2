@@ -1,34 +1,55 @@
-import {describe, test, expect} from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
+import { createPinia } from 'pinia';
+import { createMemoryHistory, createRouter } from 'vue-router';
+import { createVuetify } from 'vuetify';
+import { describe, expect, it } from 'vitest';
 
-import {mount} from '@vue/test-utils';
-import App from '../App.vue';
+import App from '@/App.vue';
+import { routes } from '@/router';
 
-import {createPinia} from 'pinia';
-import router from '../router';
-import vuetify from '../plugins/vuetify';
+function mountApp() {
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes,
+  });
+  const wrapper = mount(App, {
+    global: {
+      plugins: [createPinia(), router, createVuetify()],
+    },
+  });
+  return { wrapper, router };
+}
 
-describe('App Tests', () => {
-  const pinia = createPinia();
+describe('App shell', () => {
+  it('renders a navigation item for every route', async () => {
+    const { wrapper, router } = mountApp();
+    await router.push('/throttles');
+    await router.isReady();
+    await flushPromises();
 
-  test('renders properly', () => {
-    const wrapper = mount(App, {
-      global: {
-        plugins: [vuetify, pinia, router],
-      },
-    });
-    expect(wrapper.text()).toContain('ExWebThrottle');
+    const titles = wrapper
+      .findAll('.v-list-item-title')
+      .map((item) => item.text());
+    expect(titles).toEqual(
+      expect.arrayContaining([
+        'Throttles',
+        'Locomotives',
+        'Functions',
+        'Communications',
+        'Settings',
+      ]),
+    );
+    expect(wrapper.find('[data-test="navigation-drawer"]').exists()).toBe(true);
   });
 
-  // test("logic works", async () => {
-  //   const wrapper = mount(Throttle, {
-  //     global: {
-  //       plugins: [vuetify],
-  //     },
-  //   });
-  // await wrapper.get('button').trigger('click');
-  // expect(wrapper.text()).toContain('1');
+  it('shows the title of the active route', async () => {
+    const { wrapper, router } = mountApp();
+    await router.push('/communications');
+    await router.isReady();
+    await flushPromises();
 
-  // await wrapper.get('#reset').trigger('click');
-  // expect(wrapper.text()).toContain('0');
-  // });
+    expect(wrapper.get('[data-test="page-title"]').text()).toBe(
+      'Communications',
+    );
+  });
 });

@@ -1,0 +1,13 @@
+// App-wide styles, kept in layer order:
+// base rules first, then layout helpers, then component tweaks.
+// Vuetify's stylesheets are loaded before this file (see main.ts),
+// so no @use of vuetify is needed here.
+
+html {
+  overflow-y: auto;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+}

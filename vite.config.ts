@@ -1,43 +1,34 @@
-// Plugins
-import vue from "@vitejs/plugin-vue";
-import vuetify from "vite-plugin-vuetify";
+import { fileURLToPath, URL } from 'node:url';
 
-// Utilities
-import { defineConfig } from "vitest/config";
-import { fileURLToPath, URL } from "node:url";
+import vue from '@vitejs/plugin-vue';
+import vuetify from 'vite-plugin-vuetify';
+import { defineConfig } from 'vitest/config';
 
-import GithubActionsReporter from "vitest-github-actions-reporter";
-
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
-    //https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true,
     }),
   ],
-  define: { "process.env": {} },
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
-    extensions: [".js", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
   },
-  base: process.env.GH_BUILD ? "/EX-WebThrottle2/" : "/",
+  base: process.env.GH_BUILD ? '/EX-WebThrottle2/' : '/',
   test: {
-    reporters: process.env.GITHUB_ACTIONS
-      ? ["default", new GithubActionsReporter()]
-      : // ? ['html']
-        ["default"],
-    coverage: {
-      provider: "istanbul",
-      reporter: ["text", "json-summary", "json"],
+    include: ['src/**/*.{test,spec}.ts'],
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setupFile.ts'],
+    server: {
+      deps: {
+        inline: ['vuetify'],
+      },
     },
-    setupFiles: ["./__tests__/setupFile.ts"],
-    deps: {
-      //external: ["vuetify"],
-      inline: ["vuetify"],
+    coverage: {
+      provider: 'istanbul',
+      reporter: ['text', 'json-summary', 'json'],
     },
   },
 });

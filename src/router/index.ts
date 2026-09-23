@@ -1,47 +1,44 @@
-import * as VueRouter from 'vue-router';
-import '../assets/styles/reset.css';
-const routes = [
-  {path: '/', redirect: '/throttles'},
+import { createRouter, createWebHashHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
+
+const view = (name: string) => () => import(`@/views/${name}View.vue`);
+
+export const routes: RouteRecordRaw[] = [
+  { path: '/', redirect: '/throttles' },
   {
     path: '/throttles',
     name: 'throttles',
-    component: () => import('../views/Throttles.vue'),
+    component: view('Throttles'),
+    meta: { title: 'Throttles', icon: 'mdi-speedometer', nav: true },
   },
   {
     path: '/locos',
     name: 'locos',
-    component: () => import('../views/Locos.vue'),
+    component: view('Locos'),
+    meta: { title: 'Locomotives', icon: 'mdi-train', nav: true },
   },
   {
     path: '/functions',
     name: 'functions',
-    component: () => import('../views/Functions.vue'),
+    component: view('Functions'),
+    meta: { title: 'Functions', icon: 'mdi-keyboard', nav: true },
   },
   {
     path: '/communications',
     name: 'communications',
-    component: () => import('../views/Communications.vue'),
+    component: view('Communications'),
+    meta: { title: 'Communications', icon: 'mdi-cable-data', nav: true },
   },
   {
     path: '/settings',
     name: 'settings',
-    component: () => import('../views/Settings.vue'),
-  },
-  {
-    path: '/layout',
-    name: 'layout',
-    component: () => import('../views/Layout.vue'),
+    component: view('Settings'),
+    meta: { title: 'Settings', icon: 'mdi-cog', nav: true },
   },
 ];
 
-// 3. Create the router instance and pass the `routes` option
-// You can pass in additional options here, but let's
-// keep it simple for now.
-const router = VueRouter.createRouter({
-  // 4. Provide the history implementation to use.
-  // We are using the hash history for simplicity here.
-  history: VueRouter.createWebHashHistory(),
-  routes, // short for `routes: routes`
+// Hash history so the app runs on any static host (GitHub Pages, etc.).
+export default createRouter({
+  history: createWebHashHistory(),
+  routes,
 });
-
-export default router;
