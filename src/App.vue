@@ -15,7 +15,7 @@ const vuetifyTheme = useTheme();
 watch(
   theme,
   (name) => {
-    vuetifyTheme.global.name.value = name;
+    vuetifyTheme.change(name);
   },
   { immediate: true },
 );

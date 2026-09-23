@@ -20,13 +20,14 @@ Vue application.
 ## Commands
 
 ```bash
-npm install        # install dependencies
-npm run dev        # Vite dev server
-npm run build      # type-check (vue-tsc) + production build
-npm run preview    # preview the production build
-npm run lint       # ESLint (flat config)
-npm run test:unit  # Vitest unit/component tests
-npm run test:e2e   # Playwright e2e tests (needs `npx playwright install`, once)
+npm install            # install dependencies
+npx playwright install # for Playwright e2e tests
+npm run dev            # Vite dev server
+npm run build          # type-check (vue-tsc) + production build
+npm run preview        # preview the production build
+npm run lint           # ESLint (flat config)
+npm run test:unit      # Vitest unit/component tests
+npm run test:e2e       # Playwright e2e tests
 ```
 
 ## Stack
