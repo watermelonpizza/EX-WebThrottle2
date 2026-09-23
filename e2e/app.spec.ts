@@ -10,7 +10,15 @@ test('app shell loads and shows the throttle stub', async ({ page }) => {
 });
 
 test('navigates to another stub from the navigation rail', async ({ page }) => {
-  await page.locator('[data-test="navigation-drawer"]').getByText('Settings').click();
+  // The drawer starts hidden behind the menu button below the md breakpoint.
+  if ((page.viewportSize()?.width ?? 1280) < 960) {
+    await page.getByTestId('nav-toggle').click();
+  }
+
+  await page
+    .locator('[data-test="navigation-drawer"]')
+    .getByText('Settings')
+    .click();
   await expect(page).toHaveURL(/#\/settings/);
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 });

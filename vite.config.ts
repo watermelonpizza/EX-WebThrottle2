@@ -16,7 +16,6 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: process.env.GH_BUILD ? '/EX-WebThrottle2/' : '/',
   test: {
     include: ['src/**/*.{test,spec}.ts'],
     environment: 'jsdom',

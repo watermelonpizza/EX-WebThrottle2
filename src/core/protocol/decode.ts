@@ -8,19 +8,6 @@ import {
 } from './constants';
 import { log } from '../logging';
 
-// A DCC-EX message is a single non-nested `<opcode params>` frame, but the
-// serial stream can pack several complete frames onto one line (the `<s>`
-// response is `<iDCCEX …><H id state>…`), so lines are split before parsing.
-const FRAME_PATTERN = /<([^>]*)>/g;
-
-export function splitFrames(line: string): string[] {
-  return [...line.matchAll(FRAME_PATTERN)].map((match) => match[1]);
-}
-
-export function decodeMessage(line: string): ProtocolMessage[] {
-  return splitFrames(line).map(decodeFrame);
-}
-
 function toNumber(value: string): number | undefined {
   const parsed = Number(value);
 
