@@ -12,7 +12,9 @@ class FakeWebSocket implements WebSocketLike {
   onopen: ((event: Event) => void) | null = null;
   onerror: ((event: Event) => void) | null = null;
   onclose: ((event: CloseEvent) => void) | null = null;
-  onmessage: ((event: MessageEvent<string | ArrayBuffer>) => void) | null = null;
+  onmessage: ((event: MessageEvent<string | ArrayBuffer>) => void) | null =
+    null;
+
   readonly sent: string[] = [];
   closed = false;
 

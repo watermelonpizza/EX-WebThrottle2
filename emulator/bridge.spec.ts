@@ -22,7 +22,9 @@ const binary = fileURLToPath(new URL('./build/emulator', import.meta.url));
 const children: ChildProcess[] = [];
 
 afterAll(() => {
-  for (const child of children) child.kill('SIGINT');
+  for (const child of children) {
+child.kill('SIGINT');
+}
 });
 
 // Collects stdout until a pattern arrives (the emulator streams its boot

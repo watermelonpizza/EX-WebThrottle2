@@ -40,7 +40,9 @@ function openEdit(map: LocoMap): void {
 }
 
 function save(): void {
-  if (!editing.name.trim()) return;
+  if (!editing.name.trim()) {
+    return;
+  }
 
   if (editing.id) {
     maps.updateMap(editing.id, editing.name.trim(), editing.functions);

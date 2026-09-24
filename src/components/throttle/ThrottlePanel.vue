@@ -24,8 +24,11 @@ const mapChoices = computed(() => [
 const held = new Set<number>();
 
 function holdFunction(fn: number, state: boolean): void {
-  if (state) held.add(fn);
-  else held.delete(fn);
+  if (state) {
+    held.add(fn);
+  } else {
+    held.delete(fn);
+  }
 
   locos.setFunction(props.throttle.address, fn, state);
 }

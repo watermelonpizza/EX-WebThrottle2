@@ -23,7 +23,9 @@ const sinks = new Set<LogSink>();
 // The default sink prints readable lines to the browser devtools console, if
 // one exists. It is added here so the rest of the app never touches console.
 const consoleSink: LogSink = (entry) => {
-  if (typeof console === 'undefined') return;
+  if (typeof console === 'undefined') {
+    return;
+  }
 
   const prefix = `[${entry.level}] ${entry.event}`;
 

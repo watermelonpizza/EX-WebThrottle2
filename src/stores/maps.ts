@@ -53,7 +53,9 @@ export const useMapsStore = defineStore('maps', () => {
   function updateMap(id: string, name: string, functions: FunctionDef[]): void {
     const map = maps.value.find((candidate) => candidate.id === id);
 
-    if (!map) return;
+    if (!map) {
+      return;
+    }
 
     map.name = name;
     map.functions = functions;

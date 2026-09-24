@@ -21,7 +21,9 @@ const mapChoices = computed(() => [
 function addLoco(): void {
   const address = newAddress.value;
 
-  if (address === null || !Number.isInteger(address) || address < 1) return;
+  if (address === null || !Number.isInteger(address) || address < 1) {
+    return;
+  }
 
   locos.saveLoco(address, newName.value.trim() || `Loco ${address}`);
   newAddress.value = null;

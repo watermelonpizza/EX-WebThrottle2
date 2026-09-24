@@ -71,19 +71,21 @@ export class WebSocketTransport implements Transport {
         resolve();
       };
       socket.onerror = () => {
-        if (opened) return;
+        if (opened) {
+          return;
+        }
 
         this.socket = undefined;
-        reject(
-          new WebSocketTransportError(this.url, 'could not connect to'),
-        );
+        reject(new WebSocketTransportError(this.url, 'could not connect to'));
       };
       socket.onclose = () => {
         this.connected = false;
         this.socket = undefined;
 
         if (opened) {
-          for (const callback of this.disconnectCallbacks) callback();
+          for (const callback of this.disconnectCallbacks) {
+            callback();
+          }
         } else {
           reject(
             new WebSocketTransportError(this.url, 'connection closed before'),
@@ -96,7 +98,9 @@ export class WebSocketTransport implements Transport {
             ? event.data
             : this.decoder.decode(event.data);
 
-        for (const callback of this.dataCallbacks) callback(text);
+        for (const callback of this.dataCallbacks) {
+          callback(text);
+        }
       };
     });
   }

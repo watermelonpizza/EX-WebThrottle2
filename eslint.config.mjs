@@ -16,6 +16,7 @@ export default defineConfigWithVueTs(
     name: 'app/files-to-lint',
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
+  stylistic.configs.recommended,
   {
     name: 'app/rules',
     plugins: {
@@ -28,9 +29,30 @@ export default defineConfigWithVueTs(
         { blankLine: 'always', prev: '*', next: 'throw' },
         { blankLine: 'always', prev: ['const', 'let', 'var'], next: ['block-like'] },
       ],
+      "@stylistic/curly-newline": [
+        'error',
+        {
+          'multiline': true,
+          'minElements': 1,
+          'TryStatementBlock': { 'multiline': true, 'minElements': 0 },
+          'TryStatementHandler': { 'multiline': true, 'minElements': 0 },
+          'TryStatementFinalizer': { 'multiline': true, 'minElements': 0 }
+        }
+      ]
     },
   },
   ...pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
   skipFormatting,
+  {
+    name: 'app/braces',
+    rules: {
+      // Braces on every control statement, one-liners included. This sits
+      // after skipFormatting because eslint-config-prettier switches `curly`
+      // off wholesale; the "all" option never disagrees with Prettier, only
+      // the multi-line ones do. `curly` is a core suggestion rule, not one of
+      // the formatting rules @stylistic took over.
+      curly: ['error', 'all'],
+    },
+  },
 );

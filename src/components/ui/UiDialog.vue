@@ -11,15 +11,23 @@ const dialog = ref<HTMLDialogElement>();
 watch(open, (value) => {
   const el = dialog.value;
 
-  if (!el) return;
+  if (!el) {
+    return;
+  }
   if (value && !el.open) {
     // jsdom does not implement showModal(); the open attribute is enough
     // there and browsers get the full native modal behaviour.
-    if (typeof el.showModal === 'function') el.showModal();
-    else el.setAttribute('open', '');
+    if (typeof el.showModal === 'function') {
+      el.showModal();
+    } else {
+      el.setAttribute('open', '');
+    }
   } else if (!value && el.open) {
-    if (typeof el.close === 'function') el.close();
-    else el.removeAttribute('open');
+    if (typeof el.close === 'function') {
+      el.close();
+    } else {
+      el.removeAttribute('open');
+    }
   }
 });
 
