@@ -96,6 +96,28 @@ describe('connection store', () => {
     );
   });
 
+  it('logs one trace entry per frame, even when a frame arrives split', async () => {
+    const store = useConnectionStore();
+    const emulator = new MockTransport();
+
+    await store.connect(emulator);
+
+    const handshake = store.trace.filter(
+      (entry) => entry.direction === 'received',
+    ).length;
+
+    emulator.receives('<l 4 0 158 9');
+    emulator.receives('>');
+
+    await flushPromises();
+
+    const received = store.trace
+      .filter((entry) => entry.direction === 'received')
+      .slice(handshake);
+
+    expect(received.map((entry) => entry.text)).toEqual(['<l 4 0 158 9>']);
+  });
+
   it('records sent and received text in the trace log', async () => {
     const store = useConnectionStore();
     const emulator = new MockTransport();

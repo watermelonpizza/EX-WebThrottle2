@@ -60,15 +60,17 @@ export const useConnectionStore = defineStore('connection', () => {
   }
 
   function handleData(text: string): void {
-    addTrace('received', text);
-
     buffer += text;
 
     const result = extractFrames(buffer);
 
     buffer = result.rest;
 
+    // A transport hands over whatever bytes arrived, so one frame can be split
+    // across chunks. The log follows frames, not chunks, so the diagnostics
+    // view never shows half a <...> message.
     for (const frame of result.frames) {
+      addTrace('received', `<${frame}>`);
       messages.value.push(decodeFrame(frame));
     }
   }

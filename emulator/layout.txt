@@ -11,3 +11,5 @@
 #   exrail-only- roster names (client owns roster), routes/signals, sensor firing
 #
 # Track is not listed here - power starts OFF and is driven by the throttle.
+
+<T 1 DCC 10 0>

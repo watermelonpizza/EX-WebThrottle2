@@ -33,8 +33,62 @@ test('saves and drives a locomotive on the emulator', async ({ page }) => {
 
   await page.getByTestId('drive').click();
 
-  await expect(page.getByTestId('throttle-panel')).toBeVisible();
-  await expect(page.getByTestId('speed-slider')).toBeVisible();
+  const throttle = page.getByTestId('throttle-panel');
+  const slider = page.getByTestId('speed-slider');
+  const direction = page.getByTestId('direction-toggle');
+  const forward = direction.getByRole('button', { name: 'Forward' });
+  const reverse = direction.getByRole('button', { name: 'Reverse' });
+  const headlight = page.locator('[data-test="fun"][data-function="0"]');
+  const trace = page.getByTestId('trace-list');
+
+  await expect(throttle).toBeVisible();
+  await expect(slider).toBeVisible();
+  await expect(trace).toContainText('<t 7>');
+  await expect(trace).toContainText('<l 7');
+
+  if ((await headlight.getAttribute('class'))?.includes('is-selected')) {
+    const receivedCount = await trace.locator('.received').count();
+
+    await headlight.click();
+    await expect(headlight).not.toHaveClass(/is-selected/);
+    await expect
+      .poll(() => trace.locator('.received').count())
+      .toBeGreaterThan(receivedCount);
+  }
+
+  await forward.click();
+  await slider.evaluate((element) => {
+    if (!(element instanceof HTMLInputElement)) {
+      throw new TypeError('speed slider is not an input');
+    }
+
+    element.value = '12';
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
+  await expect(slider).toHaveValue('12');
+  await expect(forward).toHaveAttribute('aria-pressed', 'true');
+  await expect(trace).toContainText('<t 7 12 1>');
+  await expect(trace).toContainText('<l 7 0 141 0>');
+
+  await reverse.click();
+
+  await expect(reverse).toHaveAttribute('aria-pressed', 'true');
+  await expect(trace).toContainText('<t 7 12 0>');
+  await expect(trace).toContainText('<l 7 0 13 0>');
+
+  await headlight.click();
+
+  await expect(headlight).toHaveClass(/is-selected/);
+  await expect(trace).toContainText('<F 7 0 1>');
+  await expect(trace).toContainText('<l 7 0 13 1>');
+
+  await page.getByTestId('estop').click();
+
+  await expect(slider).toHaveValue('0');
+  await expect(reverse).toHaveAttribute('aria-pressed', 'true');
+  await expect(trace).toContainText('<t 7 -1 0>');
+  await expect(trace).toContainText('<l 7 0 1 1>');
 });
 
 test('powers the commander and each track from the status bar', async ({
@@ -78,6 +132,23 @@ test('debug console is a workspace panel and sends a raw command', async ({
   await page.getByTestId('send-command').click();
 
   await expect(page.getByTestId('trace-list')).toContainText('<1>');
+});
+
+test('throws a seeded turnout and receives its broadcast', async ({ page }) => {
+  await page.getByTestId('connect-emulator').click();
+  await expect(page.getByTestId('shell-status')).toContainText('connected');
+
+  const command = page.getByTestId('command-input');
+  const send = page.getByTestId('send-command');
+  const trace = page.getByTestId('trace-list');
+
+  await command.fill('<T 1 C>');
+  await send.click();
+  await command.fill('<T 1 T>');
+  await send.click();
+
+  await expect(trace).toContainText('<T 1 T>');
+  await expect(trace).toContainText('<H 1 1>');
 });
 
 test('settings holds the arrangement and theme controls, and the logo returns home', async ({
