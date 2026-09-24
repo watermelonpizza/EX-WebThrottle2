@@ -5,6 +5,12 @@ node_modules
 # Local AI/developer working notes (never commit)
 AGENTS.md
 
+# CommandStation host emulator build artifacts
+/emulator/build/
+
+# Personal per-developer layout overlay (never commit)
+/emulator/layout.local.txt
+
 # TypeScript incremental build info
 *.tsbuildinfo
 

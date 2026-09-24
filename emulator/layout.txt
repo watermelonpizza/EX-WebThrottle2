@@ -1,0 +1,13 @@
+# CommandStation-EX emulator layout script.
+#
+# One DCC-EX command per line, replayed through the real DCCEXParser on boot
+# (the mySetup.h pattern, file-based so edits need no rebuild). Commands here
+# behave exactly as a physical CS's setup - replies are not echoed to any
+# client because the real CS never echoes its own setup commands either.
+#
+# Native-command coverage (v1) vs EX-RAIL-only (v2, see KB P-006/T-025):
+#   covered    - turnouts <T id DCC addr sub>, <a>, <Z> outputs, <S> sensors,
+#                loco control <t>/<F> is client-driven and needs no setup
+#   exrail-only- roster names (client owns roster), routes/signals, sensor firing
+#
+# Track is not listed here - power starts OFF and is driven by the throttle.

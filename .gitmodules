@@ -1,0 +1,3 @@
+[submodule "emulator/CommandStation-EX"]
+	path = emulator/CommandStation-EX
+	url = https://github.com/DCC-EX/CommandStation-EX.git
