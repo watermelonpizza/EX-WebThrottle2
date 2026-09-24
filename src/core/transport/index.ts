@@ -5,10 +5,6 @@ export {
   WebSerialTransport,
   isWebSerialSupported,
 } from './adapters/web-serial';
-export type { WebSerialOptions } from './adapters/web-serial';
 export { WebSocketTransport } from './adapters/web-socket';
-export type {
-  WebSocketFactory,
-  WebSocketLike,
-} from './adapters/web-socket';
+export type { WebSocketFactory, WebSocketLike } from './adapters/web-socket';
 export { MockTransport } from './adapters/mock';

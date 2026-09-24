@@ -1,10 +1,10 @@
-import { computed } from 'vue';
+import { ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 
 import { PowerState, powerOff, powerOn, powerTrack } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
 
-export interface TrackState {
+export interface TrackPower {
   // Command-station letter (A–H), used to address this track.
   letter: string;
   // Human label from what the station says the track is wired as.
@@ -33,48 +33,64 @@ function trackName(mode: string): string {
 export const usePowerStore = defineStore('power', () => {
   const connection = useConnectionStore();
 
-  const master = computed(() => {
-    const last = [...connection.messages]
-      .reverse()
-      .find(
-        (message) => message.kind === 'power' && message.track === undefined,
-      );
+  const master = ref(PowerState.OFF);
+  const tracks = ref<TrackPower[]>([]);
 
-    return last?.kind === 'power' ? last.state : PowerState.OFF;
-  });
+  function track(letter: string): TrackPower {
+    const existing = tracks.value.find((entry) => entry.letter === letter);
 
-  const tracks = computed<TrackState[]>(() => {
-    const known = new Map<string, TrackState>();
-
-    for (const message of connection.messages) {
-      if (message.kind === 'track') {
-        const letter = message.track.letter;
-
-        known.set(letter, {
-          letter,
-          name: trackName(message.track.mode),
-          on: known.get(letter)?.on ?? false,
-        });
-      } else if (message.kind === 'power' && message.track !== undefined) {
-        if (/^[A-H]$/.test(message.track)) {
-          const letter = message.track;
-
-          known.set(letter, {
-            letter,
-            name: known.get(letter)?.name ?? 'Track',
-            on: message.state === PowerState.ON,
-          });
-        }
-      } else if (message.kind === 'power') {
-        // A bare <p1>/<p0> switches every track the station reports.
-        for (const track of known.values()) {
-          track.on = message.state === PowerState.ON;
-        }
-      }
+    if (existing) {
+      return existing;
     }
 
-    return [...known.values()];
+    const added: TrackPower = { letter, name: 'Track', on: false };
+
+    tracks.value.push(added);
+
+    return added;
+  }
+
+  connection.onMessage((message) => {
+    if (message.kind === 'track') {
+      track(message.track.letter).name = trackName(message.track.mode);
+
+      return;
+    }
+
+    if (message.kind !== 'power') {
+      return;
+    }
+
+    const on = message.state === PowerState.ON;
+    const letter = message.track;
+
+    if (letter === undefined) {
+      master.value = message.state;
+
+      // A bare <p1>/<p0> switches every track the station reports.
+      for (const entry of tracks.value) {
+        entry.on = on;
+      }
+
+      return;
+    }
+
+    if (/^[A-H]$/.test(letter)) {
+      track(letter).on = on;
+    }
   });
+
+  watch(
+    () => connection.status,
+    (status) => {
+      if (status !== 'disconnected') {
+        return;
+      }
+
+      master.value = PowerState.OFF;
+      tracks.value = [];
+    },
+  );
 
   function setMaster(state: PowerState): void {
     connection.send(state === PowerState.ON ? powerOn() : powerOff());

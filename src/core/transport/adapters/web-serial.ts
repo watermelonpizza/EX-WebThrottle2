@@ -1,12 +1,8 @@
 import type { DataListener, Transport } from '../types';
 import { log } from '../../logging';
 
-export interface WebSerialOptions {
-  baudRate?: number;
-}
-
-// The default USB rate used by EX-CommandStation (SerialManager.cpp).
-const DEFAULT_BAUD_RATE = 115200;
+// The USB rate used by EX-CommandStation (SerialManager.cpp).
+const BAUD_RATE = 115200;
 
 // A Transport that talks to an EX-CommandStation over the browser Web Serial
 // API. The Serial object is injected rather than read from navigator, so tests
@@ -15,8 +11,6 @@ export class WebSerialTransport implements Transport {
   readonly name = 'Web Serial';
   connected = false;
 
-  private readonly serial: Serial;
-  private readonly baudRate: number;
   private readonly encoder = new TextEncoder();
   private readonly decoder = new TextDecoder();
   private readonly dataCallbacks = new Set<DataListener>();
@@ -24,10 +18,7 @@ export class WebSerialTransport implements Transport {
   private reader?: ReadableStreamDefaultReader<Uint8Array>;
   private writeQueue: Promise<void> = Promise.resolve();
 
-  constructor(serial: Serial, options: WebSerialOptions = {}) {
-    this.serial = serial;
-    this.baudRate = options.baudRate ?? DEFAULT_BAUD_RATE;
-  }
+  constructor(private readonly serial: Serial) {}
 
   onData(callback: DataListener): () => void {
     this.dataCallbacks.add(callback);
@@ -38,13 +29,15 @@ export class WebSerialTransport implements Transport {
   }
 
   async connect(): Promise<void> {
-    if (this.connected || this.port) throw new Error('already connected');
+    if (this.connected || this.port) {
+      throw new Error('already connected');
+    }
 
     // requestPort opens the browser chooser, so it must run from a user
     // gesture (a button click) and rejects when the user cancels.
     const port = await this.serial.requestPort();
 
-    await port.open({ baudRate: this.baudRate });
+    await port.open({ baudRate: BAUD_RATE });
 
     this.port = port;
     this.connected = true;
@@ -54,7 +47,9 @@ export class WebSerialTransport implements Transport {
   private async readLoop(): Promise<void> {
     const port = this.port;
 
-    if (!port?.readable) return;
+    if (!port?.readable) {
+      return;
+    }
 
     const reader = port.readable.getReader();
 
@@ -66,13 +61,19 @@ export class WebSerialTransport implements Transport {
       while (this.connected) {
         const { value, done } = await reader.read();
 
-        if (done) break;
+        if (done) {
+          break;
+        }
 
-        if (!value || value.length === 0) continue;
+        if (!value || value.length === 0) {
+          continue;
+        }
 
         const text = this.decoder.decode(value, { stream: true });
 
-        for (const callback of this.dataCallbacks) callback(text);
+        for (const callback of this.dataCallbacks) {
+          callback(text);
+        }
       }
     } catch (error) {
       log.warn('transport.web-serial.read_failed', { error: String(error) });
@@ -87,7 +88,9 @@ export class WebSerialTransport implements Transport {
 
     const writable = port?.writable;
 
-    if (!writable) throw new Error('not connected');
+    if (!writable) {
+      throw new Error('not connected');
+    }
 
     // Writes go through one queue because a serial port only grants a single
     // writer at a time; back-to-back sends must not ask for two at once.
@@ -118,7 +121,9 @@ export class WebSerialTransport implements Transport {
       this.reader = undefined;
     }
 
-    if (!port) return;
+    if (!port) {
+      return;
+    }
 
     try {
       await port.close();

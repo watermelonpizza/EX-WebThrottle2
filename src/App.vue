@@ -1,18 +1,6 @@
 <script setup lang="ts">
-import { watch } from 'vue';
-import { storeToRefs } from 'pinia';
-
 import HeaderBar from '@/components/layout/HeaderBar.vue';
 import StatusBar from '@/components/layout/StatusBar.vue';
-import { applyTheme } from '@/styles/theme';
-import { useSettingsStore } from '@/stores/settings';
-
-const settings = useSettingsStore();
-const { theme } = storeToRefs(settings);
-
-// Keep the selector flipped the moment the setting changes; initial paint is
-// handled in main.ts.
-watch(theme, (name) => applyTheme(name), { immediate: true });
 </script>
 
 <template>

@@ -1,26 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { decodeSpeedByte, encodeSpeedByte } from '../index';
+import { decodeSpeedByte } from '../index';
 import { Direction } from '../index';
 
-describe('speed byte encoding', () => {
-  it('stops in either direction', () => {
-    expect(encodeSpeedByte(0, Direction.FORWARD)).toBe(128);
-    expect(encodeSpeedByte(0, Direction.REVERSE)).toBe(0);
-  });
-
-  it('encodes speed with direction in the high bit', () => {
-    expect(encodeSpeedByte(1, Direction.FORWARD)).toBe(130);
-    expect(encodeSpeedByte(50, Direction.FORWARD)).toBe(179);
-    expect(encodeSpeedByte(126, Direction.FORWARD)).toBe(255);
-    expect(encodeSpeedByte(1, Direction.REVERSE)).toBe(2);
-    expect(encodeSpeedByte(50, Direction.REVERSE)).toBe(51);
-    expect(encodeSpeedByte(126, Direction.REVERSE)).toBe(127);
-  });
-
-  it('encodes emergency stop with direction', () => {
-    expect(encodeSpeedByte(0, Direction.FORWARD, true)).toBe(129);
-    expect(encodeSpeedByte(0, Direction.REVERSE, true)).toBe(1);
+describe('speed byte decoding', () => {
+  it('decodes a stop in either direction', () => {
+    expect(decodeSpeedByte(128)).toEqual({
+      direction: Direction.FORWARD,
+      speed: 0,
+      estop: false,
+    });
+    expect(decodeSpeedByte(0)).toEqual({
+      direction: Direction.REVERSE,
+      speed: 0,
+      estop: false,
+    });
   });
 
   it('decodes speeds with the reverse range', () => {
@@ -67,12 +61,8 @@ describe('speed byte encoding', () => {
     });
   });
 
-  it('round-trips', () => {
-    for (let speed = 0; speed <= 126; speed++) {
-      const decoded = decodeSpeedByte(
-        encodeSpeedByte(speed, Direction.FORWARD),
-      );
-      expect(decoded.speed).toBe(speed);
-    }
+  it('rejects bytes outside a single octet', () => {
+    expect(() => decodeSpeedByte(-1)).toThrow();
+    expect(() => decodeSpeedByte(256)).toThrow();
   });
 });

@@ -82,9 +82,9 @@ describe('Console view', () => {
 
     await nextTick();
 
-    expect(
-      wrapper.get('[data-test="status"] .ui-badge__lamp').classes(),
-    ).toContain('ui-badge__lamp--danger');
+    expect(wrapper.get('[data-test="status"] .lamp').classes()).toContain(
+      'lamp--danger',
+    );
 
     opened.resolve();
     await connecting;
@@ -151,12 +151,12 @@ describe('Console view', () => {
     expect(wrapper.find('[data-test="panel-driving"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="panel-debug"]').exists()).toBe(true);
 
-    panels.closePanel('locos');
+    panels.togglePanel('locos');
     await nextTick();
 
     expect(wrapper.find('[data-test="panel-locos"]').exists()).toBe(false);
 
-    panels.openPanel('locos');
+    panels.togglePanel('locos');
     await nextTick();
 
     expect(wrapper.find('[data-test="panel-locos"]').exists()).toBe(true);

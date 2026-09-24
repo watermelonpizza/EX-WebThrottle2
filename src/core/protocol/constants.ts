@@ -5,7 +5,6 @@
 
 export const OPCODE_POWER_ON = '1';
 export const OPCODE_POWER_OFF = '0';
-export const OPCODE_EMERGENCY_STOP = '!';
 export const OPCODE_SYSTEM_INFO_REQUEST = 's';
 export const OPCODE_LOCO = 't';
 export const OPCODE_FUNCTION = 'F';
@@ -24,6 +23,3 @@ export const OPCODE_POWER = 'p';
 export const OPCODE_LOCO_UPDATE = 'l';
 
 export const OPCODE_TURNOUT = 'H';
-
-// <X> is the command station's generic "invalid command" response.
-export const OPCODE_ERROR = 'X';

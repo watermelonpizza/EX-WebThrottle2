@@ -16,6 +16,11 @@ function initialTheme(): ThemeName {
     : 'light';
 }
 
+// The token blocks in styles/main.scss key off data-theme on <html>.
+export function applyTheme(theme: ThemeName): void {
+  document.documentElement.dataset.theme = theme;
+}
+
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     theme: initialTheme(),
@@ -24,6 +29,7 @@ export const useSettingsStore = defineStore('settings', {
     setTheme(theme: ThemeName) {
       this.theme = theme;
       localStorage.setItem(THEME_KEY, theme);
+      applyTheme(theme);
     },
   },
 });

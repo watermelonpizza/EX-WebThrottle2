@@ -1,6 +1,5 @@
 import { Direction } from './types';
 import {
-  OPCODE_EMERGENCY_STOP,
   OPCODE_FORGET,
   OPCODE_FUNCTION,
   OPCODE_LOCO,
@@ -56,10 +55,6 @@ export function requestTrackState(): string {
   return `<${OPCODE_TRACK_LIST}>`;
 }
 
-export function emergencyStop(): string {
-  return `<${OPCODE_EMERGENCY_STOP}>`;
-}
-
 export function requestSystemInfo(): string {
   return `<${OPCODE_SYSTEM_INFO_REQUEST}>`;
 }
@@ -70,11 +65,7 @@ export function requestLocoUpdate(cab: number): string {
   return `<${OPCODE_LOCO} ${cab}>`;
 }
 
-export function forgetLoco(cab?: number): string {
-  if (cab === undefined) {
-    return `<${OPCODE_FORGET}>`;
-  }
-
+export function forgetLoco(cab: number): string {
   assertCab(cab);
 
   return `<${OPCODE_FORGET} ${cab}>`;

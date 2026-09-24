@@ -39,17 +39,13 @@ export interface TrackState {
   mode: string;
 }
 
+// Only the broadcasts the app acts on get a shape; everything else decodes to
+// "ignored" (DCC-EX clients are required to discard frames they do not model).
+// The raw text of every frame is kept by the connection store's traffic log.
 export type ProtocolMessage =
-  | { kind: 'empty' }
   | { kind: 'system-info'; info: SystemInfo }
   | { kind: 'power'; state: PowerState; track?: string }
   | { kind: 'track'; track: TrackState }
   | { kind: 'loco'; loco: LocoState }
   | { kind: 'turnout'; id: number; state: TurnoutState }
-  | { kind: 'error' }
-  | {
-      kind: 'unknown';
-      opcode: string;
-      params: string[];
-      raw: string;
-    };
+  | { kind: 'ignored' };

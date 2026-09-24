@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   Direction,
-  emergencyStop,
   forgetLoco,
   powerOff,
   powerOn,
@@ -31,10 +30,6 @@ describe('encode', () => {
     expect(requestTrackState()).toBe('<=>');
   });
 
-  it('encodes emergency stop', () => {
-    expect(emergencyStop()).toBe('<!>');
-  });
-
   it('encodes system info request', () => {
     expect(requestSystemInfo()).toBe('<s>');
   });
@@ -44,7 +39,6 @@ describe('encode', () => {
   });
 
   it('encodes forget loco', () => {
-    expect(forgetLoco()).toBe('<->');
     expect(forgetLoco(3)).toBe('<- 3>');
   });
 

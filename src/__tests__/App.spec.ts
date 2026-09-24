@@ -1,10 +1,13 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import { createMemoryHistory, createRouter } from 'vue-router';
+import { nextTick } from 'vue';
 import { describe, expect, it } from 'vitest';
 
 import App from '@/App.vue';
+import { MockTransport } from '@/core/transport';
 import { routes } from '@/router';
+import { useConnectionStore } from '@/stores/connection';
 import { usePanelsStore } from '@/stores/panels';
 import { useSettingsStore } from '@/stores/settings';
 
@@ -41,6 +44,17 @@ describe('App shell', () => {
     );
   });
 
+  it('lights the status-bar lamp once connected', async () => {
+    const { wrapper, pinia } = mountApp();
+    const connection = useConnectionStore(pinia);
+
+    await connection.connect(new MockTransport());
+    await nextTick();
+
+    expect(wrapper.get('.status-bar .lamp').classes()).toContain('lamp--on');
+    expect(wrapper.get('[data-test="shell-status"]').text()).toBe('connected');
+  });
+
   it('navigates to settings and shows its content', async () => {
     const { wrapper, router } = mountApp();
     await router.push('/settings');
@@ -70,7 +84,7 @@ describe('App shell', () => {
     const { wrapper, router, pinia } = mountApp();
     const panels = usePanelsStore(pinia);
 
-    panels.closePanel('debug');
+    panels.togglePanel('debug');
     await router.push('/settings');
     await router.isReady();
     await flushPromises();

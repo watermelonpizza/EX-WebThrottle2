@@ -6,7 +6,6 @@ import {
   TurnoutState,
 } from './types';
 import {
-  OPCODE_ERROR,
   OPCODE_LOCO_UPDATE,
   OPCODE_POWER,
   OPCODE_SYSTEM_INFO,
@@ -49,22 +48,25 @@ function decodeSystemInfo(params: string): SystemInfo | undefined {
   };
 }
 
+// Takes a whole bracketed frame as it arrived, for example "<p1>".
 export function decodeFrame(frame: string): ProtocolMessage {
-  if (frame.length === 0) {
-    // An empty frame is a pair of brackets with nothing inside (< >), so it is
-    // reported separately from an opcode we simply do not recognise.
-    return { kind: 'empty' };
+  const body = frame.slice(1, -1);
+
+  if (body.length === 0) {
+    return { kind: 'ignored' };
   }
 
-  const opcode = frame[0];
+  const opcode = body[0];
 
   if (opcode === OPCODE_SYSTEM_INFO) {
-    const info = decodeSystemInfo(frame.slice(1));
+    const info = decodeSystemInfo(body.slice(1));
 
-    if (info) return { kind: 'system-info', info };
+    if (info) {
+      return { kind: 'system-info', info };
+    }
   }
 
-  const params = frame.slice(1).trim().split(/\s+/).filter(Boolean);
+  const params = body.slice(1).trim().split(/\s+/).filter(Boolean);
 
   if (opcode === OPCODE_POWER) {
     // Power state changes are broadcast as <p0> / <p1> (with optional track)
@@ -148,13 +150,5 @@ export function decodeFrame(frame: string): ProtocolMessage {
     }
   }
 
-  if (opcode === OPCODE_ERROR) {
-    // <X> — the command station's generic "invalid command" response.
-    return { kind: 'error' };
-  }
-
-  // Anything else passes through untyped so broadcasts we have not modelled
-  // are ignored rather than treated as a problem (DCC-EX clients are required
-  // to accept and discard broadcasts they do not understand).
-  return { kind: 'unknown', opcode, params, raw: `<${frame}>` };
+  return { kind: 'ignored' };
 }

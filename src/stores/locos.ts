@@ -63,36 +63,28 @@ export const useLocosStore = defineStore('locos', () => {
   watch(
     () => connection.status,
     (status) => {
-      if (status === 'disconnected') throttles.value = [];
+      if (status === 'disconnected') {
+        throttles.value = [];
+      }
     },
   );
 
   // Broadcasts are authoritative: apply every <l> update for a loco we are
-  // driving. Other cabs stay invisible until acquired. Watch the message count
-  // (a primitive) rather than the array: the store reassigns messages.value on
-  // connect, and a deep watch on the array does not survive that detach. A
-  // length counter tracks progress so in-place pushes are only handled once.
-  let appliedMessages = 0;
-
-  watch(
-    () => connection.messages.length,
-    () => {
-      const messages = connection.messages;
-
-      for (const message of messages.slice(appliedMessages)) {
-        if (message.kind === 'loco') reconcile(message.loco);
-      }
-
-      appliedMessages = messages.length;
-    },
-  );
+  // driving. Other cabs stay invisible until acquired.
+  connection.onMessage((message) => {
+    if (message.kind === 'loco') {
+      reconcile(message.loco);
+    }
+  });
 
   function reconcile(loco: LocoState): void {
     const throttle = throttles.value.find(
       (candidate) => candidate.address === loco.address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     const { speed, direction, estop } = decodeSpeedByte(loco.speedByte);
 
@@ -143,7 +135,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     throttle.mapId = mapId;
 
@@ -161,7 +155,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     connection.send(setLocoSpeed(address, speed, throttle.direction));
     throttle.speed = speed;
@@ -173,7 +169,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     connection.send(setLocoSpeed(address, throttle.speed, direction));
     throttle.direction = direction;
@@ -184,7 +182,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     connection.send(setLocoSpeed(address, -1, throttle.direction));
     throttle.speed = 0;
@@ -196,7 +196,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     connection.send(setLocoFunction(address, fn, state));
     throttle.functions[fn] = state;
@@ -207,7 +209,9 @@ export const useLocosStore = defineStore('locos', () => {
       (candidate) => candidate.address === address,
     );
 
-    if (!throttle) return;
+    if (!throttle) {
+      return;
+    }
 
     setFunction(address, fn, !throttle.functions[fn]);
   }

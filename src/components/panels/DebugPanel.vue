@@ -18,10 +18,18 @@ watch(
   },
 );
 
+// 24-hour HH:MM:SS: a protocol log wants a fixed, sortable clock, not a
+// locale format that appends am/pm.
+function clockTime(at: number): string {
+  return new Date(at).toTimeString().slice(0, 8);
+}
+
 function sendCommand(): void {
   const trimmed = command.value.trim();
 
-  if (!trimmed) return;
+  if (!trimmed) {
+    return;
+  }
 
   store.send(trimmed);
   command.value = '';
@@ -37,11 +45,12 @@ function sendCommand(): void {
       <p
         v-for="(entry, index) in store.trace"
         :key="index"
+        class="trace-list__line"
         :class="entry.direction"
       >
-        <span>{{ new Date(entry.at).toLocaleTimeString() }}</span>
-        <b>{{ entry.direction }}</b>
-        {{ entry.text }}
+        <span class="trace-list__at">{{ clockTime(entry.at) }}</span>
+        <span class="trace-list__direction">{{ entry.direction }}</span>
+        <span>{{ entry.text }}</span>
       </p>
     </div>
 
@@ -84,6 +93,22 @@ function sendCommand(): void {
 
 .trace-list p {
   margin: 0;
+}
+
+.trace-list__line {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.trace-list__at {
+  color: var(--color-ink-dim);
+}
+
+.trace-list__direction {
+  min-width: 4.5rem;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  align-self: center;
 }
 
 .debug-panel__muted {

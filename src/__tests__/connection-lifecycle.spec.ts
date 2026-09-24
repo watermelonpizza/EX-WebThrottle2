@@ -28,7 +28,6 @@ describe('connection lifecycle', () => {
     expect(store.status).toBe('disconnected');
     expect(store.transportName).toBe('');
     expect(store.trace).toEqual([]);
-    expect(store.messages).toEqual([]);
     expect(store.connectionError).toBe(
       'Could not connect to Failing. Check it is running and try again.',
     );

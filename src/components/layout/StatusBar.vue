@@ -11,12 +11,13 @@ const power = usePowerStore();
 
 const connected = computed(() => connection.status === 'connected');
 
-const connectionLamp =
+const connectionLamp = computed(() =>
   connection.status === 'connected'
     ? 'on'
     : connection.status === 'connecting'
       ? 'warn'
-      : 'off';
+      : 'off',
+);
 
 function toggleMaster(): void {
   power.setMaster(
@@ -34,11 +35,7 @@ const { master } = storeToRefs(power);
 <template>
   <footer class="status-bar">
     <span class="status-bar__item">
-      <i
-        class="status-bar__lamp"
-        :class="`status-bar__lamp--${connectionLamp}`"
-        aria-hidden="true"
-      />
+      <i class="lamp" :class="`lamp--${connectionLamp}`" aria-hidden="true" />
       <span data-test="shell-status">{{ connection.status }}</span>
     </span>
 
@@ -55,12 +52,8 @@ const { master } = storeToRefs(power);
         @click="toggleMaster"
       >
         <i
-          class="status-bar__lamp"
-          :class="
-            master === PowerState.ON
-              ? 'status-bar__lamp--on'
-              : 'status-bar__lamp--off'
-          "
+          class="lamp"
+          :class="master === PowerState.ON ? 'lamp--on' : 'lamp--off'"
           aria-hidden="true"
         />
         Commander
@@ -80,8 +73,8 @@ const { master } = storeToRefs(power);
         @click="toggleTrack(track.letter, track.on)"
       >
         <i
-          class="status-bar__lamp"
-          :class="track.on ? 'status-bar__lamp--on' : 'status-bar__lamp--off'"
+          class="lamp"
+          :class="track.on ? 'lamp--on' : 'lamp--off'"
           aria-hidden="true"
         />
         {{ track.name }}
@@ -105,6 +98,10 @@ const { master } = storeToRefs(power);
 
 <style lang="scss" scoped>
 .status-bar {
+  // Lamps in the thin bar are smaller and read as unlit cream, not a dark hole.
+  --lamp-size: 0.5rem;
+  --lamp-idle: var(--color-cream);
+
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -163,30 +160,6 @@ const { master } = storeToRefs(power);
 
 .power-toggle[aria-pressed='true'] {
   color: var(--color-ink);
-}
-
-.status-bar__lamp {
-  width: 0.5rem;
-  height: 0.5rem;
-
-  border-radius: 50%;
-  background: var(--color-cream);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
-}
-
-.status-bar__lamp--on {
-  background: var(--color-ok);
-  box-shadow:
-    inset 0 0 0 1px rgb(0 0 0 / 0.3),
-    0 0 4px var(--color-ok);
-}
-
-.status-bar__lamp--warn {
-  background: var(--color-warn);
-}
-
-.status-bar__lamp--off {
-  background: var(--color-cream);
 }
 
 @media (max-width: 40rem) {

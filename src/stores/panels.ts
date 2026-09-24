@@ -106,22 +106,11 @@ export const usePanelsStore = defineStore('panels', {
     isOpen(id: PanelId): boolean {
       return !this.hidden.includes(id);
     },
-    openPanel(id: PanelId) {
-      this.hidden = this.hidden.filter((closed) => closed !== id);
-      this.persist();
-    },
-    closePanel(id: PanelId) {
-      if (!this.hidden.includes(id)) {
-        this.hidden = [...this.hidden, id];
-        this.persist();
-      }
-    },
     togglePanel(id: PanelId) {
-      if (this.isOpen(id)) {
-        this.closePanel(id);
-      } else {
-        this.openPanel(id);
-      }
+      this.hidden = this.isOpen(id)
+        ? [...this.hidden, id]
+        : this.hidden.filter((closed) => closed !== id);
+      this.persist();
     },
   },
 });

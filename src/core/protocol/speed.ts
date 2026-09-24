@@ -39,26 +39,3 @@ export function decodeSpeedByte(speedByte: number): DecodedSpeed {
     estop,
   };
 }
-
-// Inverse of decodeSpeedByte: same byte layout, built in the other direction.
-export function encodeSpeedByte(
-  speed: number,
-  direction: Direction,
-  estop = false,
-): number {
-  if (!Number.isInteger(speed) || speed < 0 || speed > 126) {
-    throw new Error('speed must be an integer from 0 to 126');
-  }
-
-  if (estop) {
-    return direction === Direction.FORWARD ? 129 : 1;
-  }
-
-  if (speed === 0) {
-    return direction === Direction.FORWARD ? 128 : 0;
-  }
-
-  // Move speed 1..126 past the two reserved bytes: reverse lands on 2..127,
-  // forward on 130..255.
-  return direction === Direction.FORWARD ? 129 + speed : speed + 1;
-}

@@ -3,8 +3,19 @@ import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockTransport } from '@/core/transport';
+import type { ProtocolMessage } from '@/core/protocol';
 import { PowerState, TurnoutState } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
+
+// Subscribes before connecting, the way a store's setup does, so the handshake
+// replies are seen too.
+function collectMessages(store: ReturnType<typeof useConnectionStore>) {
+  const seen: ProtocolMessage[] = [];
+
+  store.onMessage((message) => seen.push(message));
+
+  return seen;
+}
 
 describe('connection store', () => {
   beforeEach(() => {
@@ -17,7 +28,6 @@ describe('connection store', () => {
     expect(store.status).toBe('disconnected');
     expect(store.transportName).toBe('');
     expect(store.trace).toEqual([]);
-    expect(store.messages).toEqual([]);
     expect(store.connectionError).toBe('');
   });
 
@@ -43,6 +53,7 @@ describe('connection store', () => {
   it('joins a frame that arrives split across data chunks', async () => {
     const store = useConnectionStore();
     const emulator = new MockTransport();
+    const seen = collectMessages(store);
 
     await store.connect(emulator);
 
@@ -52,16 +63,17 @@ describe('connection store', () => {
     await flushPromises();
 
     expect(
-      store.messages.some(
+      seen.some(
         (message) =>
           message.kind === 'system-info' && message.info.version === '4.2.20',
       ),
     ).toBe(true);
   });
 
-  it('routes decoded broadcasts into messages', async () => {
+  it('delivers decoded broadcasts to listeners', async () => {
     const store = useConnectionStore();
     const emulator = new MockTransport();
+    const seen = collectMessages(store);
 
     await store.connect(emulator);
 
@@ -71,27 +83,27 @@ describe('connection store', () => {
 
     await flushPromises();
 
-    expect(store.messages.map((message) => message.kind)).toEqual([
+    expect(seen.map((message) => message.kind)).toEqual([
       'track',
       'track',
       'power',
       'power',
-      'unknown',
+      'ignored',
       'loco',
       'turnout',
-      'empty',
+      'ignored',
     ]);
 
-    expect(store.messages).toContainEqual(
+    expect(seen).toContainEqual(
       expect.objectContaining({
         kind: 'track',
         track: { letter: 'A', mode: 'MAIN' },
       }),
     );
-    expect(store.messages).toContainEqual(
+    expect(seen).toContainEqual(
       expect.objectContaining({ kind: 'power', state: PowerState.ON }),
     );
-    expect(store.messages).toContainEqual(
+    expect(seen).toContainEqual(
       expect.objectContaining({ kind: 'turnout', state: TurnoutState.THROWN }),
     );
   });
@@ -165,21 +177,23 @@ describe('connection store', () => {
     expect(store.status).toBe('disconnected');
     expect(store.transportName).toBe('');
     expect(store.trace).toEqual([]);
-    expect(store.messages).toEqual([]);
   });
 
   it('stops listening after disconnect', async () => {
     const store = useConnectionStore();
     const emulator = new MockTransport();
+    const seen = collectMessages(store);
 
     await store.connect(emulator);
     await store.disconnect();
+
+    const delivered = seen.length;
 
     emulator.receives('<p1>');
 
     await flushPromises();
 
-    expect(store.messages).toEqual([]);
+    expect(seen).toHaveLength(delivered);
   });
 
   it('caps the trace log', async () => {

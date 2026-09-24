@@ -33,15 +33,20 @@ const serialAvailable = isWebSerialSupported();
 const EMULATOR_URL = 'ws://127.0.0.1:4444';
 
 // Owns the whole connection: how far the browser got in the connect lifecycle,
-// the raw sent/received traffic log, and the decoded protocol messages for
-// whatever the throttles view needs. There is no separate connection layer —
-// the store is the single connection boundary, and the transport (Web Serial,
-// emulator, future Hub) is injected through connect().
+// the raw sent/received traffic log, and the delivery of decoded broadcasts to
+// whoever is listening. There is no separate connection layer — the store is
+// the single connection boundary, and the transport (Web Serial, emulator,
+// future Hub) is injected through connect().
+//
+// Decoded messages are handed to subscribers as they arrive and not kept: the
+// stores that care (locos, power) fold each one into their own state, so there
+// is no second, ever-growing copy of the traffic to replay.
 export const useConnectionStore = defineStore('connection', () => {
   const status = ref<ConnectionStatus>('disconnected');
   const connectionError = ref('');
   const trace = ref<TraceEntry[]>([]);
-  const messages = ref<ProtocolMessage[]>([]);
+
+  const messageListeners = new Set<(message: ProtocolMessage) => void>();
 
   // The transport lives in a shallowRef so Vue observes it being swapped but
   // never proxies the object itself (a proxy breaks the class internals).
@@ -56,7 +61,9 @@ export const useConnectionStore = defineStore('connection', () => {
   function addTrace(direction: TraceDirection, text: string): void {
     trace.value.push({ direction, text, at: Date.now() });
 
-    if (trace.value.length > MAX_TRACE) trace.value.shift();
+    if (trace.value.length > MAX_TRACE) {
+      trace.value.shift();
+    }
   }
 
   function handleData(text: string): void {
@@ -70,9 +77,20 @@ export const useConnectionStore = defineStore('connection', () => {
     // across chunks. The log follows frames, not chunks, so the diagnostics
     // view never shows half a <...> message.
     for (const frame of result.frames) {
-      addTrace('received', `<${frame}>`);
-      messages.value.push(decodeFrame(frame));
+      addTrace('received', frame);
+
+      const message = decodeFrame(frame);
+
+      for (const listener of messageListeners) {
+        listener(message);
+      }
     }
+  }
+
+  // Listeners are registered once by a store's setup and live as long as it
+  // does, so there is nothing to unsubscribe.
+  function onMessage(listener: (message: ProtocolMessage) => void): void {
+    messageListeners.add(listener);
   }
 
   function clearConnectionState(): void {
@@ -85,7 +103,6 @@ export const useConnectionStore = defineStore('connection', () => {
     buffer = '';
     status.value = 'disconnected';
     trace.value = [];
-    messages.value = [];
   }
 
   async function disconnect(): Promise<void> {
@@ -102,13 +119,17 @@ export const useConnectionStore = defineStore('connection', () => {
   }
 
   async function connect(nextTransport: Transport): Promise<void> {
-    if (status.value !== 'disconnected') return;
+    if (status.value !== 'disconnected') {
+      return;
+    }
 
     connectionError.value = '';
     transport.value = nextTransport;
     unsubscribeData = nextTransport.onData(handleData);
     unsubscribeDisconnect = nextTransport.onDisconnect?.(() => {
-      if (transport.value === nextTransport) clearConnectionState();
+      if (transport.value === nextTransport) {
+        clearConnectionState();
+      }
     });
     status.value = 'connecting';
 
@@ -142,7 +163,9 @@ export const useConnectionStore = defineStore('connection', () => {
   }
 
   function send(command: string): void {
-    if (!transport.value?.connected) return;
+    if (!transport.value?.connected) {
+      return;
+    }
 
     addTrace('sent', command);
 
@@ -158,8 +181,8 @@ export const useConnectionStore = defineStore('connection', () => {
     connectionError,
     transportName,
     trace,
-    messages,
     serialAvailable,
+    onMessage,
     connect,
     connectToEmulator,
     connectToSerial,

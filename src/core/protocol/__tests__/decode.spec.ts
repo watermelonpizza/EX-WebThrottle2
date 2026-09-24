@@ -6,12 +6,12 @@ import { extractFrames } from '../../transport';
 import { addLogSink, LogEntry } from '../../logging';
 
 describe('decodeFrame', () => {
-  it('reports an empty frame separately from unknown', () => {
-    expect(decodeFrame('')).toEqual({ kind: 'empty' });
+  it('ignores empty brackets', () => {
+    expect(decodeFrame('<>')).toEqual({ kind: 'ignored' });
   });
 
   it('parses system info', () => {
-    const message = decodeFrame('iDCCEX V-4.2.20 / MEGA / Pololu / 5');
+    const message = decodeFrame('<iDCCEX V-4.2.20 / MEGA / Pololu / 5>');
     expect(message).toMatchObject({
       kind: 'system-info',
       info: {
@@ -24,25 +24,25 @@ describe('decodeFrame', () => {
   });
 
   it('parses a power broadcast', () => {
-    expect(decodeFrame('p1')).toMatchObject({
+    expect(decodeFrame('<p1>')).toMatchObject({
       kind: 'power',
       state: PowerState.ON,
     });
-    expect(decodeFrame('p0')).toMatchObject({
+    expect(decodeFrame('<p0>')).toMatchObject({
       kind: 'power',
       state: PowerState.OFF,
     });
-    expect(decodeFrame('p1 MAIN')).toMatchObject({
+    expect(decodeFrame('<p1 MAIN>')).toMatchObject({
       kind: 'power',
       state: PowerState.ON,
       track: 'MAIN',
     });
-    expect(decodeFrame('pA')).toMatchObject({
+    expect(decodeFrame('<pA>')).toMatchObject({
       kind: 'power',
       state: PowerState.ON,
       track: 'A',
     });
-    expect(decodeFrame('pa')).toMatchObject({
+    expect(decodeFrame('<pa>')).toMatchObject({
       kind: 'power',
       state: PowerState.OFF,
       track: 'A',
@@ -50,30 +50,30 @@ describe('decodeFrame', () => {
   });
 
   it('parses a track assignment', () => {
-    expect(decodeFrame('= A MAIN')).toMatchObject({
+    expect(decodeFrame('<= A MAIN>')).toMatchObject({
       kind: 'track',
       track: { letter: 'A', mode: 'MAIN' },
     });
-    expect(decodeFrame('= B PROG')).toMatchObject({
+    expect(decodeFrame('<= B PROG>')).toMatchObject({
       kind: 'track',
       track: { letter: 'B', mode: 'PROG' },
     });
   });
 
   it('parses a loco update broadcast', () => {
-    expect(decodeFrame('l 3 0 143 1')).toMatchObject({
+    expect(decodeFrame('<l 3 0 143 1>')).toMatchObject({
       kind: 'loco',
       loco: { address: 3, speedByte: 143, functionMap: 1 },
     });
   });
 
   it('parses a turnout state broadcast', () => {
-    expect(decodeFrame('H 1 0')).toMatchObject({
+    expect(decodeFrame('<H 1 0>')).toMatchObject({
       kind: 'turnout',
       id: 1,
       state: TurnoutState.CLOSED,
     });
-    expect(decodeFrame('H 2 1')).toMatchObject({
+    expect(decodeFrame('<H 2 1>')).toMatchObject({
       kind: 'turnout',
       id: 2,
       state: TurnoutState.THROWN,
@@ -84,7 +84,7 @@ describe('decodeFrame', () => {
     const captured: LogEntry[] = [];
     const unsubscribe = addLogSink((entry) => captured.push(entry));
 
-    decodeFrame('iSOMETHING');
+    decodeFrame('<iSOMETHING>');
 
     unsubscribe();
 
@@ -97,14 +97,11 @@ describe('decodeFrame', () => {
     );
   });
 
-  it('parses an error response', () => {
-    expect(decodeFrame('X')).toEqual({ kind: 'error' });
-  });
-
-  it('returns unknown for unrecognised opcodes', () => {
-    expect(decodeFrame('z 1 2')).toMatchObject({
-      kind: 'unknown',
-      opcode: 'z',
+  it('ignores frames the app does not act on', () => {
+    expect(decodeFrame('<X>')).toEqual({ kind: 'ignored' });
+    expect(decodeFrame('<z 1 2>')).toEqual({ kind: 'ignored' });
+    expect(decodeFrame('<* New DCC queue slot *>')).toEqual({
+      kind: 'ignored',
     });
   });
 });
@@ -124,7 +121,7 @@ describe('warn logging for malformed frames', () => {
   });
 
   it('logs when a power broadcast lacks a state', () => {
-    decodeFrame('p');
+    decodeFrame('<p>');
 
     expect(captured).toContainEqual(
       expect.objectContaining({
@@ -135,7 +132,7 @@ describe('warn logging for malformed frames', () => {
   });
 
   it('logs when a loco update is incomplete', () => {
-    decodeFrame('l 3 0');
+    decodeFrame('<l 3 0>');
 
     expect(captured).toContainEqual(
       expect.objectContaining({
@@ -146,7 +143,7 @@ describe('warn logging for malformed frames', () => {
   });
 
   it('logs when a turnout broadcast is incomplete', () => {
-    decodeFrame('H 1');
+    decodeFrame('<H 1>');
 
     expect(captured).toContainEqual(
       expect.objectContaining({
@@ -157,7 +154,7 @@ describe('warn logging for malformed frames', () => {
   });
 
   it('logs when a track assignment lacks a letter or mode', () => {
-    decodeFrame('= 9');
+    decodeFrame('<= 9>');
 
     expect(captured).toContainEqual(
       expect.objectContaining({
@@ -181,9 +178,9 @@ describe('decodeMessage', () => {
     ]);
   });
 
-  it('decodes an empty frame from empty brackets', () => {
+  it('decodes empty brackets as ignored', () => {
     expect(extractFrames('<>').frames.map(decodeFrame)).toEqual([
-      { kind: 'empty' },
+      { kind: 'ignored' },
     ]);
   });
 });

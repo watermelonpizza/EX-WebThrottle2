@@ -15,6 +15,7 @@ export class MockTransport implements Transport {
     ['A', 'MAIN'],
     ['B', 'PROG'],
   ]);
+
   private readonly power = new Map<string, boolean>();
 
   private readonly dataCallbacks = new Set<DataListener>();
@@ -33,7 +34,9 @@ export class MockTransport implements Transport {
   }
 
   receives(text: string): void {
-    for (const callback of this.dataCallbacks) callback(text);
+    for (const callback of this.dataCallbacks) {
+      callback(text);
+    }
   }
 
   onData(callback: DataListener): () => void {
@@ -44,14 +47,10 @@ export class MockTransport implements Transport {
     };
   }
 
-  private emit(text: string): void {
-    for (const callback of this.dataCallbacks) callback(text);
-  }
-
   private respond(command: string): void {
     if (command === '<=>') {
       for (const [letter, mode] of this.mode) {
-        this.emit(`<= ${letter} ${mode}>\n`);
+        this.receives(`<= ${letter} ${mode}>\n`);
       }
 
       this.broadcastPower();
@@ -61,18 +60,22 @@ export class MockTransport implements Transport {
 
     const match = /^<([10]) ?([A-H])?>$/.exec(command);
 
-    if (!match) return;
+    if (!match) {
+      return;
+    }
 
     const on = match[1] === '1';
     const letter = match[2];
     const targets = letter ? [letter] : [...this.mode.keys()];
 
-    for (const id of targets) this.power.set(id, on);
+    for (const id of targets) {
+      this.power.set(id, on);
+    }
 
     if (letter) {
-      this.emit(`<p${on ? letter : letter.toLowerCase()}>\n`);
+      this.receives(`<p${on ? letter : letter.toLowerCase()}>\n`);
     } else {
-      this.emit(`<p${on ? 1 : 0}>\n`);
+      this.receives(`<p${on ? 1 : 0}>\n`);
     }
 
     this.broadcastPower();
@@ -83,9 +86,9 @@ export class MockTransport implements Transport {
     const any = [...this.mode.keys()].some((letter) => this.power.get(letter));
 
     if (all) {
-      this.emit('<p1>\n');
+      this.receives('<p1>\n');
     } else if (!any) {
-      this.emit('<p0>\n');
+      this.receives('<p0>\n');
     }
   }
 }

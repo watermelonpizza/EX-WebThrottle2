@@ -14,8 +14,9 @@ describe('power store', () => {
 
   it('assumes everything off until broadcasts arrive', async () => {
     const connection = useConnectionStore();
-    await connection.connect(new MockTransport());
     const power = usePowerStore();
+
+    await connection.connect(new MockTransport());
 
     expect(power.master).toBe(PowerState.OFF);
     expect(power.tracks).toEqual([
@@ -26,8 +27,9 @@ describe('power store', () => {
 
   it('tracks master and per-track power from broadcasts', async () => {
     const connection = useConnectionStore();
-    await connection.connect(new MockTransport());
     const power = usePowerStore();
+
+    await connection.connect(new MockTransport());
 
     connection.send('<1>');
     await flushPromises();
@@ -47,9 +49,10 @@ describe('power store', () => {
 
   it('sends the right commands for master and track switches', async () => {
     const connection = useConnectionStore();
-    const emulator = new MockTransport();
-    await connection.connect(emulator);
     const power = usePowerStore();
+    const emulator = new MockTransport();
+
+    await connection.connect(emulator);
 
     power.setMaster(PowerState.ON);
     power.setTrack('A', PowerState.OFF);
