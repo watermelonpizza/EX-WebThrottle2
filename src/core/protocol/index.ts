@@ -24,6 +24,6 @@ export {
   setLocoSpeed,
   setLocoFunction,
 } from './encode';
-export { decodeMessage, decodeFrame, splitFrames } from './decode';
+export { decodeFrame } from './decode';
 export { decodeSpeedByte, encodeSpeedByte } from './speed';
 export type { DecodedSpeed } from './speed';

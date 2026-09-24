@@ -1,21 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { decodeMessage, decodeFrame, splitFrames } from '../index';
+import { decodeFrame } from '../index';
 import { PowerState, TurnoutState } from '../index';
+import { extractFrames } from '../../transport';
 import { addLogSink, LogEntry } from '../../logging';
-
-describe('splitFrames', () => {
-  it('splits multiple frames on one line', () => {
-    expect(splitFrames('<s>')).toEqual(['s']);
-    expect(splitFrames('<iDCCEX V-4.2.20 / MEGA / Pololu / 5><H 1 1>')).toEqual(
-      ['iDCCEX V-4.2.20 / MEGA / Pololu / 5', 'H 1 1'],
-    );
-  });
-
-  it('returns no frames for garbage', () => {
-    expect(splitFrames('Some serial monitor noise')).toEqual([]);
-  });
-});
 
 describe('decodeFrame', () => {
   it('reports an empty frame separately from unknown', () => {
@@ -150,10 +138,11 @@ describe('warn logging for malformed frames', () => {
 
 describe('decodeMessage', () => {
   it('parses every frame in a line', () => {
-    const messages = decodeMessage(
+    const frames = extractFrames(
       '<iDCCEX V-4.2.20 / MEGA / Pololu / 5><H 1 1><p1>',
-    );
-    expect(messages.map((message) => message.kind)).toEqual([
+    ).frames;
+
+    expect(frames.map(decodeFrame).map((message) => message.kind)).toEqual([
       'system-info',
       'turnout',
       'power',
@@ -161,6 +150,8 @@ describe('decodeMessage', () => {
   });
 
   it('decodes an empty frame from empty brackets', () => {
-    expect(decodeMessage('<>')).toEqual([{ kind: 'empty' }]);
+    expect(extractFrames('<>').frames.map(decodeFrame)).toEqual([
+      { kind: 'empty' },
+    ]);
   });
 });
