@@ -18,7 +18,9 @@
         "format:check": "prettier --check src/",
         "test": "npm run test:unit",
         "test:unit": "vitest run --coverage",
-        "test:e2e": "playwright test"
+        "test:emulator": "make -C emulator && vitest run --config emulator/vitest.config.ts",
+        "test:e2e": "playwright test",
+        "emulator": "make -C emulator && node emulator/bridge.mjs"
     },
     "dependencies": {
         "@mdi/font": "^7.4.47",
@@ -44,6 +46,7 @@
         "typescript": "^5.9.3",
         "vite": "^8.3.0",
         "vitest": "^5.0.1",
-        "vue-tsc": "^3.3.11"
+        "vue-tsc": "^3.3.11",
+        "ws": "^8.21.3"
     }
 }

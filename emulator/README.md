@@ -18,6 +18,7 @@ emulator/Arduino.h          host shim: Print/Stream/HardwareSerial, time, pins
 emulator/config.h           host board config (emulated motor shield, no EEPROM/wifi)
 emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin no-ops
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
+emulator/bridge.mjs         Node WebSocket bridge (npm run emulator)
 emulator/Makefile           cross-platform host build
 emulator/layout.txt         boot command script (edit without rebuilding)
 emulator/CommandStation-EX/ git submodule: the real firmware (do not edit)
@@ -89,6 +90,26 @@ Ctrl-D ends the session. There is no timeout on EOF — the emulator keeps
 looping, so quit it explicitly (Ctrl-D / Ctrl-C). To drive it programmatically,
 pipe commands in (adding a delay and a trailing newline so input isn't
 swallowed).
+
+## Browser connection (WebSocket bridge)
+
+```bash
+npm run emulator        # builds, then serves ws://localhost:4444
+```
+
+The bridge spawns the emulator, forwards everything on its stdout to every
+connected WebSocket client, and pipes client bytes back to its stdin — so a
+browser talks to the real CS-EX parser exactly like a serial terminal would.
+Protocol replies and `<* ...>` diagnostics both flow (the real CS mixes them on
+USB too); anything on the emulator's stderr goes to the bridge's console, not
+the wire. Override the port with `WSPORT`:
+
+```bash
+WSPORT=4445 npm run emulator
+```
+
+Try it from any WebSocket client; connect, then send a command and read the
+reply, e.g. `<s>` answers with the `<iDCC-EX ...>` banner plus power state.
 
 ## Layout (layout.txt)
 
