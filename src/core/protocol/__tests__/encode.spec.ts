@@ -6,8 +6,10 @@ import {
   forgetLoco,
   powerOff,
   powerOn,
+  powerTrack,
   requestLocoUpdate,
   requestSystemInfo,
+  requestTrackState,
   setLocoFunction,
   setLocoSpeed,
 } from '../index';
@@ -16,6 +18,17 @@ describe('encode', () => {
   it('encodes power commands', () => {
     expect(powerOn()).toBe('<1>');
     expect(powerOff()).toBe('<0>');
+    expect(powerTrack('A', true)).toBe('<1 A>');
+    expect(powerTrack('H', false)).toBe('<0 H>');
+  });
+
+  it('rejects invalid track letters for power', () => {
+    expect(() => powerTrack('I', true)).toThrow();
+    expect(() => powerTrack('a', true)).toThrow();
+  });
+
+  it('encodes a track state request', () => {
+    expect(requestTrackState()).toBe('<=>');
   });
 
   it('encodes emergency stop', () => {

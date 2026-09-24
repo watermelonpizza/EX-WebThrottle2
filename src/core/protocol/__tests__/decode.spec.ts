@@ -37,6 +37,27 @@ describe('decodeFrame', () => {
       state: PowerState.ON,
       track: 'MAIN',
     });
+    expect(decodeFrame('pA')).toMatchObject({
+      kind: 'power',
+      state: PowerState.ON,
+      track: 'A',
+    });
+    expect(decodeFrame('pa')).toMatchObject({
+      kind: 'power',
+      state: PowerState.OFF,
+      track: 'A',
+    });
+  });
+
+  it('parses a track assignment', () => {
+    expect(decodeFrame('= A MAIN')).toMatchObject({
+      kind: 'track',
+      track: { letter: 'A', mode: 'MAIN' },
+    });
+    expect(decodeFrame('= B PROG')).toMatchObject({
+      kind: 'track',
+      track: { letter: 'B', mode: 'PROG' },
+    });
   });
 
   it('parses a loco update broadcast', () => {
@@ -131,6 +152,17 @@ describe('warn logging for malformed frames', () => {
       expect.objectContaining({
         level: 'warn',
         event: 'protocol.decode.decodeFrame.invalid_turnout',
+      }),
+    );
+  });
+
+  it('logs when a track assignment lacks a letter or mode', () => {
+    decodeFrame('= 9');
+
+    expect(captured).toContainEqual(
+      expect.objectContaining({
+        level: 'warn',
+        event: 'protocol.decode.decodeFrame.invalid_track',
       }),
     );
   });

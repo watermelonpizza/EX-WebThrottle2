@@ -25,8 +25,5 @@ export const useSettingsStore = defineStore('settings', {
       this.theme = theme;
       localStorage.setItem(THEME_KEY, theme);
     },
-    toggleTheme() {
-      this.setTheme(this.theme === 'light' ? 'dark' : 'light');
-    },
   },
 });

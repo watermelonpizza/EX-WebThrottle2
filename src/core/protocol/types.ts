@@ -32,10 +32,18 @@ export interface LocoState {
   functionMap: number;
 }
 
+export interface TrackState {
+  // The command station's letter for this track output (A–H).
+  letter: string;
+  // What the track is wired as, reported by the station: MAIN, PROG, …
+  mode: string;
+}
+
 export type ProtocolMessage =
   | { kind: 'empty' }
   | { kind: 'system-info'; info: SystemInfo }
   | { kind: 'power'; state: PowerState; track?: string }
+  | { kind: 'track'; track: TrackState }
   | { kind: 'loco'; loco: LocoState }
   | { kind: 'turnout'; id: number; state: TurnoutState }
   | { kind: 'error' }

@@ -2,7 +2,11 @@ import { defineStore } from 'pinia';
 import { computed, ref, shallowRef } from 'vue';
 
 import type { ProtocolMessage } from '@/core/protocol';
-import { decodeFrame, requestSystemInfo } from '@/core/protocol';
+import {
+  decodeFrame,
+  requestSystemInfo,
+  requestTrackState,
+} from '@/core/protocol';
 import type { Transport } from '@/core/transport';
 import { extractFrames } from '@/core/transport';
 import {
@@ -89,9 +93,10 @@ export const useConnectionStore = defineStore('connection', () => {
     try {
       await nextTransport.connect();
       status.value = 'connected';
-      // The handshake: ask the command station to introduce itself. Power
-      // comes from broadcasts later.
+      // The handshake: ask the command station to introduce itself and list
+      // its track outputs. Power broadcasts arrive on their own afterwards.
       send(requestSystemInfo());
+      send(requestTrackState());
     } catch (error) {
       unsubscribeData?.();
       unsubscribeData = undefined;

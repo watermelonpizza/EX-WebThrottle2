@@ -35,6 +35,7 @@ describe('connection store', () => {
     expect(events).toContain('connecting');
     expect(events).toContain('connected');
     expect(emulator.sent).toContain('<s>');
+    expect(emulator.sent).toContain('<=>');
     expect(store.status).toBe('connected');
     expect(store.transportName).toBe('Emulator');
   });
@@ -63,11 +64,17 @@ describe('connection store', () => {
     const emulator = new MockTransport();
 
     await store.connect(emulator);
+
+    // The emulator answers the <=> track request during connect, so its two
+    // tracks and current (off) power arrive before the broadcast below.
     emulator.receives('<p1><z 1><l 3 0 143 1><H 2 1><>');
 
     await flushPromises();
 
     expect(store.messages.map((message) => message.kind)).toEqual([
+      'track',
+      'track',
+      'power',
       'power',
       'unknown',
       'loco',
@@ -75,6 +82,12 @@ describe('connection store', () => {
       'empty',
     ]);
 
+    expect(store.messages).toContainEqual(
+      expect.objectContaining({
+        kind: 'track',
+        track: { letter: 'A', mode: 'MAIN' },
+      }),
+    );
     expect(store.messages).toContainEqual(
       expect.objectContaining({ kind: 'power', state: PowerState.ON }),
     );

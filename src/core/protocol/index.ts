@@ -1,5 +1,10 @@
 export { Direction, PowerState, TurnoutState } from './types';
-export type { ProtocolMessage, SystemInfo, LocoState } from './types';
+export type {
+  ProtocolMessage,
+  SystemInfo,
+  LocoState,
+  TrackState,
+} from './types';
 export {
   OPCODE_EMERGENCY_STOP,
   OPCODE_ERROR,
@@ -12,11 +17,14 @@ export {
   OPCODE_POWER_ON,
   OPCODE_SYSTEM_INFO,
   OPCODE_SYSTEM_INFO_REQUEST,
+  OPCODE_TRACK_LIST,
   OPCODE_TURNOUT,
 } from './constants';
 export {
   powerOn,
   powerOff,
+  powerTrack,
+  requestTrackState,
   emergencyStop,
   requestSystemInfo,
   requestLocoUpdate,

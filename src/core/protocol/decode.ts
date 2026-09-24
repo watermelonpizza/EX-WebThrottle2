@@ -1,9 +1,16 @@
-import { PowerState, ProtocolMessage, SystemInfo, TurnoutState } from './types';
+import {
+  PowerState,
+  ProtocolMessage,
+  SystemInfo,
+  TrackState,
+  TurnoutState,
+} from './types';
 import {
   OPCODE_ERROR,
   OPCODE_LOCO_UPDATE,
   OPCODE_POWER,
   OPCODE_SYSTEM_INFO,
+  OPCODE_TRACK_LIST,
   OPCODE_TURNOUT,
 } from './constants';
 import { log } from '../logging';
@@ -60,8 +67,20 @@ export function decodeFrame(frame: string): ProtocolMessage {
   const params = frame.slice(1).trim().split(/\s+/).filter(Boolean);
 
   if (opcode === OPCODE_POWER) {
-    // Power state changes are broadcast as <p0> / <p1> (with optional track).
+    // Power state changes are broadcast as <p0> / <p1> (with optional track)
+    // plus a running power report per track in <pA>/<pa> style — the letter's
+    // case carries the state (DCC-EX sends uppercase when on, lowercase off).
     const state = toNumber(params[0]);
+
+    if (params.length === 1 && /^[A-Ha-h]$/.test(params[0])) {
+      const letter = params[0].toUpperCase();
+
+      return {
+        kind: 'power',
+        state: params[0] === letter ? PowerState.ON : PowerState.OFF,
+        track: letter,
+      };
+    }
 
     if (state !== undefined) {
       return {
@@ -71,6 +90,21 @@ export function decodeFrame(frame: string): ProtocolMessage {
       };
     } else {
       log.warn('protocol.decode.decodeFrame.invalid_power', {
+        frame,
+      });
+    }
+  }
+
+  if (opcode === OPCODE_TRACK_LIST) {
+    // Track assignments reported as <= A MAIN> (letter + what it is wired as).
+    const [letter, mode] = params;
+
+    if (letter && /^[A-H]$/.test(letter) && mode) {
+      const track: TrackState = { letter, mode };
+
+      return { kind: 'track', track };
+    } else {
+      log.warn('protocol.decode.decodeFrame.invalid_track', {
         frame,
       });
     }

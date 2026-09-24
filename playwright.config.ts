@@ -14,7 +14,8 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:5173',
     testIdAttribute: 'data-test',
     trace: 'on-first-retry',
-    headless: !!process.env.CI,
+    // Headless by default; pass --headed to watch the run.
+    headless: true,
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

@@ -1,31 +1,10 @@
-import type { ThemeDefinition } from 'vuetify';
+import type { ThemeName } from '@/stores/settings';
 
-// Signal-style palette: red for attention, green for status.
-const signalRed = '#a6302b';
-const signalGreen = '#2e6b3c';
+// Applies the named theme by flipping the data-theme attribute on <html>;
+// the token blocks in styles/main.scss key off it. The settings store keeps
+// the value + persistence; this file owns the DOM side so the store stays
+// testable without a document.
 
-export const lightTheme: ThemeDefinition = {
-  dark: false,
-  colors: {
-    background: '#f4f1ea',
-    surface: '#fffdf8',
-    primary: signalRed,
-    secondary: signalGreen,
-    accent: '#7a5c12',
-    error: signalRed,
-    success: signalGreen,
-  },
-};
-
-export const darkTheme: ThemeDefinition = {
-  dark: true,
-  colors: {
-    background: '#1c1a17',
-    surface: '#262320',
-    primary: signalRed,
-    secondary: signalGreen,
-    accent: '#c9a33e',
-    error: signalRed,
-    success: signalGreen,
-  },
-};
+export function applyTheme(theme: ThemeName): void {
+  document.documentElement.dataset.theme = theme;
+}

@@ -7,6 +7,7 @@ import {
   OPCODE_POWER_OFF,
   OPCODE_POWER_ON,
   OPCODE_SYSTEM_INFO_REQUEST,
+  OPCODE_TRACK_LIST,
 } from './constants';
 
 // Range limits are set by the DCC-EX Native Commands Summary Reference:
@@ -39,6 +40,20 @@ export function powerOn(): string {
 
 export function powerOff(): string {
   return `<${OPCODE_POWER_OFF}>`;
+}
+
+// Power a single track output by its command-station letter (A–H). The bare
+// <1>/<0> commands above switch every track at once.
+export function powerTrack(letter: string, on: boolean): string {
+  if (!/^[A-H]$/.test(letter)) {
+    throw new Error(`track letter must be A to H`);
+  }
+
+  return `<${on ? OPCODE_POWER_ON : OPCODE_POWER_OFF} ${letter}>`;
+}
+
+export function requestTrackState(): string {
+  return `<${OPCODE_TRACK_LIST}>`;
 }
 
 export function emergencyStop(): string {

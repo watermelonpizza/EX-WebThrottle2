@@ -14,13 +14,12 @@ describe('settings store', () => {
     expect(['light', 'dark']).toContain(store.theme);
   });
 
-  it('toggles the theme and persists it', () => {
+  it('sets the theme and persists it', () => {
     const store = useSettingsStore();
-    const before = store.theme;
 
-    store.toggleTheme();
+    store.setTheme('dark');
 
-    expect(store.theme).not.toBe(before);
-    expect(localStorage.getItem(THEME_KEY)).toBe(store.theme);
+    expect(store.theme).toBe('dark');
+    expect(localStorage.getItem(THEME_KEY)).toBe('dark');
   });
 });

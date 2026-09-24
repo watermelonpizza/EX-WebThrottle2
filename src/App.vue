@@ -1,35 +1,40 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { useTheme } from 'vuetify';
+import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
 
-import AppBar from '@/components/layout/AppBar.vue';
-import NavigationDrawer from '@/components/layout/NavigationDrawer.vue';
+import HeaderBar from '@/components/layout/HeaderBar.vue';
+import StatusBar from '@/components/layout/StatusBar.vue';
+import { applyTheme } from '@/styles/theme';
 import { useSettingsStore } from '@/stores/settings';
 
-const drawer = ref(true);
 const settings = useSettingsStore();
 const { theme } = storeToRefs(settings);
 
-const vuetifyTheme = useTheme();
-watch(
-  theme,
-  (name) => {
-    vuetifyTheme.change(name);
-  },
-  { immediate: true },
-);
+// Keep the selector flipped the moment the setting changes; initial paint is
+// handled in main.ts.
+watch(theme, (name) => applyTheme(name), { immediate: true });
 </script>
 
 <template>
-  <v-app>
-    <AppBar @toggle-drawer="drawer = !drawer" />
-    <NavigationDrawer v-model="drawer" />
-    <v-main class="app-main">
+  <div class="shell">
+    <HeaderBar />
+    <main class="shell__main">
       <router-view />
-    </v-main>
-    <v-footer class="d-flex justify-center text-body-2 text-medium-emphasis">
-      {{ new Date().getFullYear() }} &mdash; DCC-EX team
-    </v-footer>
-  </v-app>
+    </main>
+    <StatusBar />
+  </div>
 </template>
+
+<style lang="scss" scoped>
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.shell__main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+</style>

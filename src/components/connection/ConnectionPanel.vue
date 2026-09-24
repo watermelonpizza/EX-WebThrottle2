@@ -1,47 +1,67 @@
 <script setup lang="ts">
+import UiBadge from '@/components/ui/UiBadge.vue';
+import UiButton from '@/components/ui/UiButton.vue';
 import { useConnectionStore } from '@/stores/connection';
 
 const store = useConnectionStore();
+
+const lamp =
+  store.status === 'connected'
+    ? 'on'
+    : store.status === 'connecting'
+      ? 'danger'
+      : 'off';
 </script>
 
 <template>
   <div>
-    <div class="d-flex align-center">
-      <v-chip
-        :color="store.status === 'connected' ? 'success' : 'warning'"
+    <div class="connection-panel__status">
+      <UiBadge
+        :state="lamp"
+        :label="`${store.status}${store.transportName ? ` via ${store.transportName}` : ''}`"
         data-test="status"
-      >
-        {{ store.status }}
-      </v-chip>
-      <span v-if="store.transportName" class="ml-2 text-medium-emphasis">
-        via {{ store.transportName }}
-      </span>
+      />
     </div>
 
-    <div class="d-flex flex-wrap mt-3">
-      <v-btn
+    <div class="connection-panel__actions">
+      <UiButton
         :disabled="!store.serialAvailable || store.status === 'connected'"
-        class="me-2"
         data-test="connect-serial"
         @click="store.connectToSerial()"
       >
+        <i class="mdi mdi-usb-port" aria-hidden="true" />
         Connect Web Serial
-      </v-btn>
-      <v-btn
+      </UiButton>
+      <UiButton
+        variant="ghost"
         :disabled="store.status === 'connected'"
-        class="me-2"
         data-test="connect-emulator"
         @click="store.connectToEmulator()"
       >
+        <i class="mdi mdi-chip" aria-hidden="true" />
         Emulator
-      </v-btn>
-      <v-btn
-        :disabled="store.status !== 'connected'"
+      </UiButton>
+      <UiButton
+        v-if="store.status !== 'disconnected'"
+        tone="danger"
         data-test="disconnect"
         @click="store.disconnect()"
       >
         Disconnect
-      </v-btn>
+      </UiButton>
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.connection-panel__status {
+  display: flex;
+}
+
+.connection-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  margin-top: 0.75rem;
+}
+</style>

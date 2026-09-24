@@ -11,6 +11,9 @@ export const OPCODE_LOCO = 't';
 export const OPCODE_FUNCTION = 'F';
 export const OPCODE_FORGET = '-';
 
+// Track assignments are listed as <= A MAIN> in answer to <=>.
+export const OPCODE_TRACK_LIST = '=';
+
 // <s> is answered with <iDCCEX version / μC / motorController / build>.
 export const OPCODE_SYSTEM_INFO = 'i';
 
