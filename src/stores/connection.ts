@@ -10,8 +10,8 @@ import {
 import type { Transport } from '@/core/transport';
 import { extractFrames } from '@/core/transport';
 import {
-  MockTransport,
   WebSerialTransport,
+  WebSocketTransport,
   isWebSerialSupported,
 } from '@/core/transport';
 import { log } from '@/core/logging';
@@ -30,6 +30,7 @@ export interface TraceEntry {
 const MAX_TRACE = 500;
 
 const serialAvailable = isWebSerialSupported();
+const EMULATOR_URL = 'ws://127.0.0.1:4444';
 
 // Owns the whole connection: how far the browser got in the connect lifecycle,
 // the raw sent/received traffic log, and the decoded protocol messages for
@@ -38,6 +39,7 @@ const serialAvailable = isWebSerialSupported();
 // emulator, future Hub) is injected through connect().
 export const useConnectionStore = defineStore('connection', () => {
   const status = ref<ConnectionStatus>('disconnected');
+  const connectionError = ref('');
   const trace = ref<TraceEntry[]>([]);
   const messages = ref<ProtocolMessage[]>([]);
 
@@ -49,6 +51,7 @@ export const useConnectionStore = defineStore('connection', () => {
 
   let buffer = '';
   let unsubscribeData: (() => void) | undefined;
+  let unsubscribeDisconnect: (() => void) | undefined;
 
   function addTrace(direction: TraceDirection, text: string): void {
     trace.value.push({ direction, text, at: Date.now() });
@@ -70,11 +73,11 @@ export const useConnectionStore = defineStore('connection', () => {
     }
   }
 
-  async function disconnect(): Promise<void> {
+  function clearConnectionState(): void {
     unsubscribeData?.();
     unsubscribeData = undefined;
-
-    await transport.value?.disconnect();
+    unsubscribeDisconnect?.();
+    unsubscribeDisconnect = undefined;
 
     transport.value = undefined;
     buffer = '';
@@ -83,11 +86,28 @@ export const useConnectionStore = defineStore('connection', () => {
     messages.value = [];
   }
 
-  async function connect(nextTransport: Transport): Promise<void> {
-    await disconnect();
+  async function disconnect(): Promise<void> {
+    const currentTransport = transport.value;
 
+    unsubscribeData?.();
+    unsubscribeData = undefined;
+    unsubscribeDisconnect?.();
+    unsubscribeDisconnect = undefined;
+
+    await currentTransport?.disconnect();
+    clearConnectionState();
+    connectionError.value = '';
+  }
+
+  async function connect(nextTransport: Transport): Promise<void> {
+    if (status.value !== 'disconnected') return;
+
+    connectionError.value = '';
     transport.value = nextTransport;
     unsubscribeData = nextTransport.onData(handleData);
+    unsubscribeDisconnect = nextTransport.onDisconnect?.(() => {
+      if (transport.value === nextTransport) clearConnectionState();
+    });
     status.value = 'connecting';
 
     try {
@@ -98,19 +118,17 @@ export const useConnectionStore = defineStore('connection', () => {
       send(requestSystemInfo());
       send(requestTrackState());
     } catch (error) {
-      unsubscribeData?.();
-      unsubscribeData = undefined;
-      transport.value = undefined;
-      buffer = '';
-      status.value = 'disconnected';
-      trace.value = [];
-      messages.value = [];
+      if (transport.value === nextTransport) {
+        clearConnectionState();
+        connectionError.value = `Could not connect to ${nextTransport.name}. Check it is running and try again.`;
+      }
+
       log.error('connection.connect.failed', { error: String(error) });
     }
   }
 
   function connectToEmulator(): Promise<void> {
-    return connect(new MockTransport());
+    return connect(new WebSocketTransport(EMULATOR_URL));
   }
 
   function connectToSerial(): Promise<void> {
@@ -135,6 +153,7 @@ export const useConnectionStore = defineStore('connection', () => {
 
   return {
     status,
+    connectionError,
     transportName,
     trace,
     messages,

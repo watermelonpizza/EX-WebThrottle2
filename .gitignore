@@ -4,6 +4,7 @@ node_modules
 
 # Local AI/developer working notes (never commit)
 AGENTS.md
+.omo/
 
 # CommandStation host emulator build artifacts
 /emulator/build/

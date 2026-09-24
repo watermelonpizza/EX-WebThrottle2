@@ -25,10 +25,11 @@ const emulator = spawn(binary, [], {
   stdio: ['pipe', 'pipe', 'pipe'],
 });
 
-const wss = new WebSocketServer({ port: PORT });
+const HOST = '127.0.0.1';
+const wss = new WebSocketServer({ host: HOST, port: PORT });
 
 wss.on('listening', () => {
-  console.log(`emulator bridge on ws://localhost:${PORT} (pid ${emulator.pid})`);
+  console.log(`emulator bridge on ws://${HOST}:${PORT} (pid ${emulator.pid})`);
 });
 
 wss.on('connection', (socket) => {

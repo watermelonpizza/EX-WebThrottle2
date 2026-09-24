@@ -1,16 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import UiBadge from '@/components/ui/UiBadge.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import { useConnectionStore } from '@/stores/connection';
 
 const store = useConnectionStore();
 
-const lamp =
+const lamp = computed(() =>
   store.status === 'connected'
     ? 'on'
     : store.status === 'connecting'
       ? 'danger'
-      : 'off';
+      : 'off',
+);
 </script>
 
 <template>
@@ -25,7 +28,7 @@ const lamp =
 
     <div class="connection-panel__actions">
       <UiButton
-        :disabled="!store.serialAvailable || store.status === 'connected'"
+        :disabled="!store.serialAvailable || store.status !== 'disconnected'"
         data-test="connect-serial"
         @click="store.connectToSerial()"
       >
@@ -34,12 +37,12 @@ const lamp =
       </UiButton>
       <UiButton
         variant="ghost"
-        :disabled="store.status === 'connected'"
+        :disabled="store.status !== 'disconnected'"
         data-test="connect-emulator"
         @click="store.connectToEmulator()"
       >
         <i class="mdi mdi-chip" aria-hidden="true" />
-        Emulator
+        Connect Emulator
       </UiButton>
       <UiButton
         v-if="store.status !== 'disconnected'"
@@ -50,6 +53,15 @@ const lamp =
         Disconnect
       </UiButton>
     </div>
+
+    <p
+      v-if="store.connectionError"
+      class="connection-panel__error"
+      role="alert"
+      data-test="connection-error"
+    >
+      {{ store.connectionError }}
+    </p>
   </div>
 </template>
 
@@ -63,5 +75,12 @@ const lamp =
   flex-wrap: wrap;
   gap: var(--gap);
   margin-top: 0.75rem;
+}
+
+.connection-panel__error {
+  margin: 0.75rem 0 0;
+  color: var(--color-danger-text);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 </style>

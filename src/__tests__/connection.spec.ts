@@ -2,7 +2,6 @@ import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { Transport } from '@/core/transport';
 import { MockTransport } from '@/core/transport';
 import { PowerState, TurnoutState } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
@@ -19,6 +18,7 @@ describe('connection store', () => {
     expect(store.transportName).toBe('');
     expect(store.trace).toEqual([]);
     expect(store.messages).toEqual([]);
+    expect(store.connectionError).toBe('');
   });
 
   it('connects, reports status and sends the bootstrap command', async () => {
@@ -157,27 +157,6 @@ describe('connection store', () => {
 
     await flushPromises();
 
-    expect(store.messages).toEqual([]);
-  });
-
-  it('returns to a clean disconnected state on a failed connect', async () => {
-    const store = useConnectionStore();
-    const failing: Transport = {
-      name: 'Failing',
-      connected: false,
-      connect: async () => {
-        throw new Error('port refused');
-      },
-      disconnect: async () => {},
-      send: () => {},
-      onData: () => () => {},
-    };
-
-    await store.connect(failing);
-
-    expect(store.status).toBe('disconnected');
-    expect(store.transportName).toBe('');
-    expect(store.trace).toEqual([]);
     expect(store.messages).toEqual([]);
   });
 

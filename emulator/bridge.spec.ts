@@ -6,6 +6,10 @@
 // @vitest-environment node
 
 import { execFileSync, spawn } from 'node:child_process';
+import type {
+  ChildProcess,
+  ChildProcessWithoutNullStreams,
+} from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { createServer, type AddressInfo } from 'node:net';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +19,7 @@ import { WebSocket } from 'ws';
 const emulatorDir = fileURLToPath(new URL('.', import.meta.url));
 const binary = fileURLToPath(new URL('./build/emulator', import.meta.url));
 
-const children: ReturnType<typeof spawn>[] = [];
+const children: ChildProcess[] = [];
 
 afterAll(() => {
   for (const child of children) child.kill('SIGINT');
@@ -23,7 +27,10 @@ afterAll(() => {
 
 // Collects stdout until a pattern arrives (the emulator streams its boot
 // banner immediately and answers each stdin command asynchronously).
-function waitForOutput(child: ReturnType<typeof spawn>, want: RegExp): Promise<string> {
+function waitForOutput(
+  child: ChildProcessWithoutNullStreams,
+  want: RegExp,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       child.stdout.off('data', onData);
@@ -46,7 +53,7 @@ function waitForOutput(child: ReturnType<typeof spawn>, want: RegExp): Promise<s
   });
 }
 
-function ask(child: ReturnType<typeof spawn>, command: string): void {
+function ask(child: ChildProcessWithoutNullStreams, command: string): void {
   child.stdin.write(`${command}\n`);
 }
 
@@ -74,7 +81,7 @@ function ensureBuilt(): void {
 }
 
 describe('emulator binary', () => {
-  let emulator: ReturnType<typeof spawn>;
+  let emulator: ChildProcessWithoutNullStreams;
 
   beforeAll(() => {
     ensureBuilt();
@@ -83,7 +90,7 @@ describe('emulator binary', () => {
   });
 
   test('boots and prints the DCC-EX host banner', async () => {
-    const out = await waitForOutput(emulator, /<iDCC-EX V-[\d.]+ /);
+    const out = await waitForOutput(emulator, /<iDCC-EX V-[\d.]+ \/ HOST /);
 
     expect(out).toContain('HOST');
   });
@@ -91,14 +98,14 @@ describe('emulator binary', () => {
   test('answers <s> with the banner again over stdin/stdout', async () => {
     ask(emulator, '<s>');
 
-    const out = await waitForOutput(emulator, /<iDCC-EX V-[\d.]+ /);
+    const out = await waitForOutput(emulator, /<iDCC-EX V-[\d.]+ \/ HOST /);
 
     expect(out).toContain('HOST');
   });
 });
 
 describe('WebSocket bridge', () => {
-  let bridge: ReturnType<typeof spawn>;
+  let bridge: ChildProcess;
 
   let port = 4444;
 

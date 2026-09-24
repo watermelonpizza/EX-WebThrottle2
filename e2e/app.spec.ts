@@ -17,10 +17,8 @@ test('app loads to the connect page, then connects via the emulator', async ({
   await expect(page.getByTestId('shell-status')).toContainText('connected');
   await expect(page.getByTestId('layout-panel')).toBeVisible();
 
-  // The status bar shows the commander master switch plus each track.
   await expect(page.getByTestId('commander-power')).toBeVisible();
   await expect(page.getByTestId('track-power-A')).toContainText('Main');
-  await expect(page.getByTestId('track-power-B')).toContainText('Programming');
 });
 
 test('saves and drives a locomotive on the emulator', async ({ page }) => {
@@ -48,16 +46,24 @@ test('powers the commander and each track from the status bar', async ({
   const commander = page.getByTestId('commander-power');
   const mainTrack = page.getByTestId('track-power-A');
 
-  await expect(commander).toHaveAttribute('aria-pressed', 'false');
-  await expect(mainTrack).toHaveAttribute('aria-pressed', 'false');
+  await expect(mainTrack).toBeVisible();
+  await expect(commander).toBeEnabled();
+  await expect(mainTrack).toBeEnabled();
+
+  const commanderWasOn =
+    (await commander.getAttribute('aria-pressed')) === 'true';
+  const switchedState = String(!commanderWasOn);
 
   await commander.click();
-  await expect(commander).toHaveAttribute('aria-pressed', 'true');
-  await expect(mainTrack).toHaveAttribute('aria-pressed', 'true');
+  await expect(commander).toHaveAttribute('aria-pressed', switchedState);
+  await expect(mainTrack).toHaveAttribute('aria-pressed', switchedState);
 
   await mainTrack.click();
-  await expect(mainTrack).toHaveAttribute('aria-pressed', 'false');
-  await expect(commander).toHaveAttribute('aria-pressed', 'true');
+  await expect(mainTrack).toHaveAttribute(
+    'aria-pressed',
+    String(commanderWasOn),
+  );
+  await expect(commander).toHaveAttribute('aria-pressed', switchedState);
 });
 
 test('debug console is a workspace panel and sends a raw command', async ({
@@ -114,7 +120,7 @@ test('switches the console arrangement from settings and disconnects', async ({
   await page.getByTestId('brand').click();
 
   await expect(page.getByTestId('panel-debug')).toBeVisible();
-  await expect(page.getByTestId('track-power-B')).toBeVisible();
+  await expect(page.getByTestId('track-power-A')).toBeVisible();
 
   await page.getByTestId('disconnect').click();
 

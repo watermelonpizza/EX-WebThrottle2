@@ -43,9 +43,9 @@ function gridStyle(): Record<string, string> {
         <ConnectionPanel />
 
         <p class="connect-card__note">
-          Web Serial talks to a command station over USB. Emulator runs a
-          virtual command station in the browser so you can explore without
-          hardware. A Hub connection is planned.
+          Web Serial talks to a command station over USB. Emulator connects to
+          the local host emulator; start it with npm run emulator first. A Hub
+          connection is planned.
         </p>
       </div>
     </section>

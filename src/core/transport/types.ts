@@ -4,6 +4,7 @@
 // shares the same parser and the same raw sent/received log.
 
 export type DataListener = (text: string) => void;
+export type DisconnectListener = () => void;
 
 export interface Transport {
   // A short, user-visible name, shown in the diagnostics view.
@@ -17,4 +18,5 @@ export interface Transport {
   // Called with whatever text arrived since the last call. Returns an
   // unsubscribe function, like the logging sinks.
   onData(callback: DataListener): () => void;
+  onDisconnect?(callback: DisconnectListener): () => void;
 }

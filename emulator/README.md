@@ -94,7 +94,7 @@ swallowed).
 ## Browser connection (WebSocket bridge)
 
 ```bash
-npm run emulator        # builds, then serves ws://localhost:4444
+npm run emulator        # builds, then serves ws://127.0.0.1:4444
 ```
 
 The bridge spawns the emulator, forwards everything on its stdout to every

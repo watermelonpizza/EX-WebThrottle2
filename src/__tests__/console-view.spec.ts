@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { describe, expect, it } from 'vitest';
 
+import type { Transport } from '@/core/transport';
 import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useLocosStore } from '@/stores/locos';
@@ -36,6 +37,57 @@ describe('Console view', () => {
     expect(wrapper.find('[data-test="connect-serial"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="connect-emulator"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Connect to your DCC-EX command station');
+  });
+
+  it('shows a connection error after the emulator cannot connect', async () => {
+    const { wrapper, connection } = mountView();
+    const failing: Transport = {
+      name: 'Emulator',
+      connected: false,
+      connect: async () => {
+        throw new Error('server unavailable');
+      },
+      disconnect: async () => {},
+      send: () => {},
+      onData: () => () => {},
+    };
+
+    await connection.connect(failing);
+    await nextTick();
+
+    const alert = wrapper.get('[data-test="connection-error"]');
+
+    expect(alert.attributes('role')).toBe('alert');
+    expect(alert.text()).toBe(
+      'Could not connect to Emulator. Check it is running and try again.',
+    );
+  });
+
+  it('updates the status lamp while connecting', async () => {
+    const { wrapper, connection } = mountView();
+    const opened = Promise.withResolvers<void>();
+    const transport: Transport = {
+      name: 'Waiting',
+      connected: false,
+      connect: async () => {
+        await opened.promise;
+        transport.connected = true;
+      },
+      disconnect: async () => {},
+      send: () => {},
+      onData: () => () => {},
+    };
+
+    const connecting = connection.connect(transport);
+
+    await nextTick();
+
+    expect(
+      wrapper.get('[data-test="status"] .ui-badge__lamp').classes(),
+    ).toContain('ui-badge__lamp--danger');
+
+    opened.resolve();
+    await connecting;
   });
 
   it('saves a locomotive to the roster', async () => {

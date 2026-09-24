@@ -8,7 +8,9 @@ const config: PlaywrightTestConfig = {
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Every browser project drives the same command-station process, so tests
+  // must not race each other through its shared layout and power state.
+  workers: 1,
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:5173',
@@ -25,11 +27,19 @@ const config: PlaywrightTestConfig = {
     { name: 'Mobile Safari', use: { ...devices['iPhone 12'] } },
   ],
   outputDir: 'test-results/',
-  webServer: {
-    command: process.env.CI ? 'vite preview --port 5173' : 'vite dev',
-    port: 5173,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'npm run emulator',
+      wait: { stdout: /emulator bridge on ws:\/\/127\.0\.0\.1:4444/ },
+      stdout: 'pipe',
+      timeout: 120_000,
+    },
+    {
+      command: process.env.CI ? 'vite preview --port 5173' : 'vite dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 };
 
 export default config;
