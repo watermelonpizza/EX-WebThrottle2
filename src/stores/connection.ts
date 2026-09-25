@@ -150,8 +150,8 @@ export const useConnectionStore = defineStore('connection', () => {
     }
   }
 
-  function connectToEmulator(): Promise<void> {
-    return connect(new WebSocketTransport(EMULATOR_URL));
+  function connectToEmulator(url = EMULATOR_URL): Promise<void> {
+    return connect(new WebSocketTransport(url));
   }
 
   function connectToSerial(): Promise<void> {

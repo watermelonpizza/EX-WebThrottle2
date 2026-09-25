@@ -9,6 +9,7 @@ defineProps<{ title: string; icon: string }>();
         <i :class="`mdi ${icon}`" aria-hidden="true" />
         {{ title }}
       </h3>
+      <slot name="actions" />
     </header>
 
     <div class="panel__body">
@@ -50,5 +51,6 @@ defineProps<{ title: string; icon: string }>();
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 </style>

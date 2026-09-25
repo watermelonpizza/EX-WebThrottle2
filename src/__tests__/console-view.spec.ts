@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { Transport } from '@/core/transport';
 import { MockTransport } from '@/core/transport';
@@ -36,7 +36,38 @@ describe('Console view', () => {
     expect(wrapper.get('[data-test="status"]').text()).toBe('disconnected');
     expect(wrapper.find('[data-test="connect-serial"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="connect-emulator"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('Connect to your DCC-EX command station');
+    expect(wrapper.text()).toContain('Choose how to reach your DCC-EX command station');
+  });
+
+  it('validates and uses a custom emulator WebSocket URL', async () => {
+    const { wrapper, connection } = mountView();
+    const connect = vi
+      .spyOn(connection, 'connectToEmulator')
+      .mockResolvedValue();
+    const url = wrapper.get('[data-test="emulator-url"]');
+    const button = wrapper.get('[data-test="connect-emulator"]');
+
+    await url.setValue('http://192.168.1.25:4555');
+
+    expect(wrapper.get('[data-test="emulator-url-error"]').text()).toContain(
+      'ws:// or wss://',
+    );
+    expect(button.attributes('disabled')).toBeDefined();
+
+    await url.setValue('ws://192.168.1.25:4555/command-station');
+
+    expect(wrapper.find('[data-test="emulator-url-error"]').exists()).toBe(
+      false,
+    );
+    expect(button.attributes('disabled')).toBeUndefined();
+
+    await wrapper
+      .get('[data-test="emulator-connect-form"]')
+      .trigger('submit');
+
+    expect(connect).toHaveBeenCalledWith(
+      'ws://192.168.1.25:4555/command-station',
+    );
   });
 
   it('shows a connection error after the emulator cannot connect', async () => {
@@ -125,6 +156,31 @@ describe('Console view', () => {
     expect(locos.throttles[0].functions).toHaveLength(32);
   });
 
+  it('only sends momentary function commands while the button is held', async () => {
+    const { wrapper, connection, locos } = mountView();
+    const emulator = new MockTransport();
+
+    locos.saveLoco(7, 'Shunter');
+    await connection.connect(emulator);
+    await wrapper.get('[data-test="drive"]').trigger('click');
+
+    const horn = wrapper.find('[data-function="2"]');
+
+    await horn.trigger('pointerenter');
+    await horn.trigger('pointerleave');
+
+    expect(emulator.sent).not.toContain('<F 7 2 0>');
+
+    await horn.trigger('pointerdown');
+    await horn.trigger('pointerleave');
+    await horn.trigger('pointerup');
+
+    expect(emulator.sent.filter((command) => command.startsWith('<F 7 2 '))).toEqual([
+      '<F 7 2 1>',
+      '<F 7 2 0>',
+    ]);
+  });
+
   it('shows control state reconciled from broadcasts', async () => {
     const { wrapper, connection, locos } = mountView();
     const emulator = new MockTransport();
@@ -140,6 +196,33 @@ describe('Console view', () => {
     expect(wrapper.text()).toContain('Headlight');
   });
 
+  it('toggles the debug panel between raw and described log modes', async () => {
+    const { wrapper, connection } = mountView();
+
+    await connection.connect(new MockTransport());
+
+    const toggle = wrapper.get('[data-test="debug-mode-toggle"]');
+
+    expect(toggle.text()).toBe('Raw');
+    expect(wrapper.find('[data-test="trace-row"]').exists()).toBe(true);
+
+    await toggle.trigger('click');
+
+    const rawLog = wrapper.get('[data-test="trace-list"]');
+
+    expect(toggle.text()).toBe('Nice');
+    expect(toggle.attributes('aria-pressed')).toBe('true');
+    expect(rawLog.element).toBeInstanceOf(HTMLTextAreaElement);
+    expect((rawLog.element as HTMLTextAreaElement).readOnly).toBe(true);
+    expect((rawLog.element as HTMLTextAreaElement).value).toContain('<s>');
+    expect(wrapper.find('[data-test="trace-row"]').exists()).toBe(false);
+
+    await toggle.trigger('click');
+
+    expect(toggle.attributes('aria-pressed')).toBe('false');
+    expect(wrapper.find('[data-test="trace-row"]').exists()).toBe(true);
+  });
+
   it('shows every panel once connected, and honours panel toggles', async () => {
     const { wrapper, connection, pinia } = mountView();
     const panels = usePanelsStore(pinia);
@@ -150,6 +233,8 @@ describe('Console view', () => {
     expect(wrapper.find('[data-test="panel-locos"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="panel-driving"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="panel-debug"]').exists()).toBe(true);
+    // The command lookup belongs to the debugging arrangement only.
+    expect(wrapper.find('[data-test="panel-commands"]').exists()).toBe(false);
 
     panels.togglePanel('locos');
     await nextTick();
@@ -160,5 +245,25 @@ describe('Console view', () => {
     await nextTick();
 
     expect(wrapper.find('[data-test="panel-locos"]').exists()).toBe(true);
+  });
+
+  it('shows only the debug console and commands when debugging', async () => {
+    const { wrapper, connection, pinia } = mountView();
+    const panels = usePanelsStore(pinia);
+
+    await connection.connect(new MockTransport());
+    panels.setArrangement('debugging');
+    await nextTick();
+
+    const shown = wrapper
+      .findAll('.workspace__panel')
+      .map((panel) => panel.attributes('data-test'));
+
+    expect(shown).toEqual(['panel-debug', 'panel-commands']);
+
+    panels.togglePanel('commands');
+    await nextTick();
+
+    expect(wrapper.find('[data-test="panel-commands"]').exists()).toBe(false);
   });
 });

@@ -21,6 +21,15 @@ test('app loads to the connect page, then connects via the emulator', async ({
   await expect(page.getByTestId('track-power-A')).toContainText('Main');
 });
 
+test('connects from the URL field with Enter', async ({ page }) => {
+  const url = page.getByTestId('emulator-url');
+
+  await url.fill('ws://127.0.0.1:4444/custom-path');
+  await url.press('Enter');
+
+  await expect(page.getByTestId('shell-status')).toContainText('connected');
+});
+
 test('saves and drives a locomotive on the emulator', async ({ page }) => {
   await page.getByTestId('connect-emulator').click();
   await expect(page.getByTestId('shell-status')).toContainText('connected');
@@ -132,6 +141,57 @@ test('debug console is a workspace panel and sends a raw command', async ({
   await page.getByTestId('send-command').click();
 
   await expect(page.getByTestId('trace-list')).toContainText('<1>');
+});
+
+test('debug descriptions cover firmware info and virtual display replies', async ({ page }) => {
+  await page.getByTestId('connect-emulator').click();
+  await expect(page.getByTestId('shell-status')).toContainText('connected');
+
+  const trace = page.getByTestId('trace-list');
+  const stationInfo = page
+    .getByTestId('trace-entry')
+    .filter({ hasText: '<iDCC-EX V-' });
+
+  await stationInfo.first().getByTestId('trace-row').click();
+  await expect(stationInfo.first().getByTestId('trace-details')).toContainText(
+    'Command-station identification',
+  );
+  await expect(stationInfo.first().getByTestId('trace-details')).toContainText(
+    'HOST_SHIELD',
+  );
+
+  await page.getByTestId('command-input').fill('<@>');
+  await page.getByTestId('send-command').click();
+  await expect(trace).toContainText('<@ 0 0');
+
+  const displayUpdate = page
+    .getByTestId('trace-entry')
+    .filter({ hasText: '<@ 0 0' })
+    .last();
+
+  await displayUpdate.getByTestId('trace-row').click();
+  await expect(displayUpdate.getByTestId('trace-details')).toContainText(
+    'Virtual display update',
+  );
+});
+
+test('raw debug mode keeps the traffic log selectable', async ({ page }) => {
+  await page.getByTestId('connect-emulator').click();
+  await expect(page.getByTestId('shell-status')).toContainText('connected');
+  await page.getByTestId('debug-mode-toggle').click();
+
+  const rawLog = page.getByTestId('trace-list');
+
+  await expect(rawLog).toHaveAttribute('readonly', '');
+  await rawLog.selectText();
+
+  const selectedText = await rawLog.evaluate((element) => {
+    const textarea = element as HTMLTextAreaElement;
+
+    return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  });
+
+  expect(selectedText).toContain('<s>');
 });
 
 test('throws a seeded turnout and receives its broadcast', async ({ page }) => {

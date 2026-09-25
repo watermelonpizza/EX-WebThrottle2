@@ -24,6 +24,10 @@ const mapChoices = computed(() => [
 const held = new Set<number>();
 
 function holdFunction(fn: number, state: boolean): void {
+  if (held.has(fn) === state) {
+    return;
+  }
+
   if (state) {
     held.add(fn);
   } else {

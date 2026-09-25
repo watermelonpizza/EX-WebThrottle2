@@ -26,7 +26,6 @@ const locos = useLocosStore();
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow-y: auto;
 }
 
 .driving-panel__muted {

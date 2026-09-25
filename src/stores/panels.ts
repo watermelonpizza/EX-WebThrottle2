@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export const PANELS_KEY = 'exwt-panels';
 
-export type PanelId = 'layout' | 'locos' | 'driving' | 'debug';
+export type PanelId = 'layout' | 'locos' | 'driving' | 'debug' | 'commands';
 
 export interface PanelDef {
   id: PanelId;
@@ -15,15 +15,16 @@ export const PANELS: PanelDef[] = [
   { id: 'locos', title: 'Locomotives', icon: 'mdi-train-car' },
   { id: 'driving', title: 'Driving', icon: 'mdi-speedometer' },
   { id: 'debug', title: 'Debug console', icon: 'mdi-console-line' },
+  { id: 'commands', title: 'Commands', icon: 'mdi-text-search' },
 ];
 
-export type ArrangementId = 'driving' | 'ops' | 'system';
+export type ArrangementId = 'driving' | 'ops' | 'system' | 'debugging';
 
 export interface ArrangementDef {
   label: string;
   columns: string;
-  // Grid areas per row; every shared panel has a home in every arrangement so
-  // a closed panel simply leaves an empty cell.
+  // Grid areas per row. An arrangement shows only the panels it places, and a
+  // closed one of those simply leaves an empty cell.
   areas: PanelId[][];
 }
 
@@ -53,6 +54,11 @@ export const ARRANGEMENTS: Record<ArrangementId, ArrangementDef> = {
       ['layout', 'debug'],
       ['locos', 'driving'],
     ],
+  },
+  debugging: {
+    label: 'Debugging',
+    columns: 'minmax(20rem, 1fr) minmax(24rem, 1fr)',
+    areas: [['debug', 'commands']],
   },
 };
 

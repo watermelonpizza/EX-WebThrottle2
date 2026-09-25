@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import UiButton from '@/components/ui/UiButton.vue';
 
+const route = useRoute();
 const router = useRouter();
+const isSettings = computed(() => route.name === 'settings');
+
+function toggleSettings(): void {
+  void router.push(isSettings.value ? { name: 'console' } : { name: 'settings' });
+}
 </script>
 
 <template>
@@ -21,10 +28,14 @@ const router = useRouter();
       <UiButton
         variant="ghost"
         data-test="settings-link"
-        @click="router.push('/settings')"
+        @click="toggleSettings"
       >
-        <i class="mdi mdi-cog-outline" aria-hidden="true" />
-        Settings
+        <i
+          class="mdi"
+          :class="isSettings ? 'mdi-arrow-left' : 'mdi-cog-outline'"
+          aria-hidden="true"
+        />
+        {{ isSettings ? 'Console' : 'Settings' }}
       </UiButton>
     </div>
   </header>

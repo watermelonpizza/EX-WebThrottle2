@@ -64,6 +64,26 @@ describe('App shell', () => {
     expect(wrapper.get('[data-test="page-title"]').text()).toBe('Settings');
   });
 
+  it('toggles between the console and settings from the header', async () => {
+    const { wrapper, router } = mountApp();
+    await router.push('/');
+    await flushPromises();
+
+    const settingsButton = wrapper.get('[data-test="settings-link"]');
+
+    await settingsButton.trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('settings');
+    expect(settingsButton.text()).toContain('Console');
+
+    await wrapper.get('[data-test="settings-link"]').trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('console');
+    expect(settingsButton.text()).toContain('Settings');
+  });
+
   it('changes theme from the settings picker', async () => {
     const { wrapper, router, pinia } = mountApp();
     const settings = useSettingsStore(pinia);
