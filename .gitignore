@@ -3,8 +3,13 @@ node_modules
 /dist
 
 # Local AI/developer working notes (never commit)
-AGENTS.md
 .omo/
+AGENTS.local.md
+
+# Impeccable design skill: platform binary (the launcher downloads a pinned
+# copy when missing) and per-developer overrides
+/.pi/skills/impeccable/scripts/bin/
+/.impeccable/config.local.json
 
 # CommandStation host emulator build artifacts
 /emulator/build/

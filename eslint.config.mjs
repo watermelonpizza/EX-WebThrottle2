@@ -11,6 +11,8 @@ export default defineConfigWithVueTs(
     '**/playwright-report/**',
     '**/test-results/**',
     '**/node_modules/**',
+    // Vendored agent skills (third-party code, not ours to lint)
+    '.pi/**',
   ]),
   {
     name: 'app/files-to-lint',
