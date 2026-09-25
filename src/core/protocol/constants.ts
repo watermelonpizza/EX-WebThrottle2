@@ -22,4 +22,21 @@ export const OPCODE_POWER = 'p';
 // <t cab> commands drive loco updates, which arrive as <l cab …> broadcasts.
 export const OPCODE_LOCO_UPDATE = 'l';
 
+// Turnout states are broadcast as <H id state>; <T id T|C> throws or closes one.
 export const OPCODE_TURNOUT = 'H';
+export const OPCODE_TURNOUT_SET = 'T';
+
+// Inventory questions are asked as <J?> and answered as <j?>, where the second
+// letter picks the subject: <JT> for turnouts.
+export const OPCODE_INFO_REQUEST = 'J';
+export const OPCODE_INFO = 'j';
+export const INFO_TURNOUTS = 'T';
+
+// Outputs: <Z> lists them, <Z id 1|0> switches one, and both answer with <Y …>.
+export const OPCODE_OUTPUT_SET = 'Z';
+export const OPCODE_OUTPUT = 'Y';
+
+// Sensors: <Q> asks for every sensor state, and each one reports back as
+// <Q id> when active or <q id> when not — the case carries the state.
+export const OPCODE_SENSOR = 'Q';
+export const OPCODE_SENSOR_INACTIVE = 'q';

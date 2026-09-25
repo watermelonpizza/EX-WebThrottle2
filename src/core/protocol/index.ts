@@ -15,6 +15,12 @@ export {
   forgetLoco,
   setLocoSpeed,
   setLocoFunction,
+  requestTurnoutList,
+  requestTurnout,
+  setTurnout,
+  requestOutputList,
+  setOutput,
+  requestSensorStates,
 } from './encode';
 export { decodeFrame } from './decode';
 export { decodeSpeedByte } from './speed';

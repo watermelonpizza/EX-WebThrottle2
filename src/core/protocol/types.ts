@@ -48,4 +48,8 @@ export type ProtocolMessage =
   | { kind: 'track'; track: TrackState }
   | { kind: 'loco'; loco: LocoState }
   | { kind: 'turnout'; id: number; state: TurnoutState }
+  | { kind: 'turnout-list'; ids: number[] }
+  | { kind: 'turnout-detail'; id: number; state: TurnoutState; label: string }
+  | { kind: 'output'; id: number; active: boolean }
+  | { kind: 'sensor'; id: number; active: boolean }
   | { kind: 'ignored' };

@@ -2,15 +2,22 @@ import { describe, expect, it } from 'vitest';
 
 import {
   Direction,
+  TurnoutState,
   forgetLoco,
   powerOff,
   powerOn,
   powerTrack,
   requestLocoUpdate,
+  requestOutputList,
+  requestSensorStates,
   requestSystemInfo,
   requestTrackState,
+  requestTurnout,
+  requestTurnoutList,
   setLocoFunction,
   setLocoSpeed,
+  setOutput,
+  setTurnout,
 } from '../index';
 
 describe('encode', () => {
@@ -67,5 +74,28 @@ describe('encode', () => {
   it('rejects invalid functions', () => {
     expect(() => setLocoFunction(3, 69, true)).toThrow();
     expect(() => setLocoFunction(3, -1, true)).toThrow();
+  });
+
+  it('encodes turnout requests and commands', () => {
+    expect(requestTurnoutList()).toBe('<JT>');
+    expect(requestTurnout(4)).toBe('<JT 4>');
+    expect(setTurnout(4, TurnoutState.THROWN)).toBe('<T 4 T>');
+    expect(setTurnout(4, TurnoutState.CLOSED)).toBe('<T 4 C>');
+  });
+
+  it('encodes output requests and commands', () => {
+    expect(requestOutputList()).toBe('<Z>');
+    expect(setOutput(10, true)).toBe('<Z 10 1>');
+    expect(setOutput(10, false)).toBe('<Z 10 0>');
+  });
+
+  it('encodes a sensor state request', () => {
+    expect(requestSensorStates()).toBe('<Q>');
+  });
+
+  it('rejects invalid object ids', () => {
+    expect(() => requestTurnout(-1)).toThrow();
+    expect(() => setTurnout(32768, TurnoutState.THROWN)).toThrow();
+    expect(() => setOutput(1.5, true)).toThrow();
   });
 });

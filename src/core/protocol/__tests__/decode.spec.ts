@@ -80,6 +80,67 @@ describe('decodeFrame', () => {
     });
   });
 
+  it('parses a turnout list', () => {
+    expect(decodeFrame('<jT 1 2 17>')).toMatchObject({
+      kind: 'turnout-list',
+      ids: [1, 2, 17],
+    });
+    expect(decodeFrame('<jT>')).toMatchObject({
+      kind: 'turnout-list',
+      ids: [],
+    });
+  });
+
+  it('parses one turnout with its description', () => {
+    expect(decodeFrame('<jT 1 T "">')).toMatchObject({
+      kind: 'turnout-detail',
+      id: 1,
+      state: TurnoutState.THROWN,
+      label: '',
+    });
+    expect(decodeFrame('<jT 3 C "Yard entry">')).toMatchObject({
+      kind: 'turnout-detail',
+      id: 3,
+      state: TurnoutState.CLOSED,
+      label: 'Yard entry',
+    });
+  });
+
+  it('ignores turnout frames it cannot act on', () => {
+    // <jT id X> is the station refusing to report an id, and <H id DCC …> is a
+    // turnout definition rather than a state.
+    expect(decodeFrame('<jT 9 X>')).toEqual({ kind: 'ignored' });
+    expect(decodeFrame('<H 1 DCC 10 0>')).toEqual({ kind: 'ignored' });
+  });
+
+  it('parses output states from a change and from a listing', () => {
+    expect(decodeFrame('<Y 10 1>')).toMatchObject({
+      kind: 'output',
+      id: 10,
+      active: true,
+    });
+    expect(decodeFrame('<Y 11 101 0 0>')).toMatchObject({
+      kind: 'output',
+      id: 11,
+      active: false,
+    });
+  });
+
+  it('parses sensor states from the letter case', () => {
+    expect(decodeFrame('<Q 20>')).toMatchObject({
+      kind: 'sensor',
+      id: 20,
+      active: true,
+    });
+    expect(decodeFrame('<q 20>')).toMatchObject({
+      kind: 'sensor',
+      id: 20,
+      active: false,
+    });
+    // A sensor definition, which the app does not model.
+    expect(decodeFrame('<Q 20 200 1>')).toEqual({ kind: 'ignored' });
+  });
+
   it('logs a warning when system info is announced but cannot be decoded', () => {
     const captured: LogEntry[] = [];
     const unsubscribe = addLogSink((entry) => captured.push(entry));

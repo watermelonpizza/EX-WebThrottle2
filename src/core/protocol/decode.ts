@@ -6,8 +6,13 @@ import {
   TurnoutState,
 } from './types';
 import {
+  INFO_TURNOUTS,
+  OPCODE_INFO,
   OPCODE_LOCO_UPDATE,
+  OPCODE_OUTPUT,
   OPCODE_POWER,
+  OPCODE_SENSOR,
+  OPCODE_SENSOR_INACTIVE,
   OPCODE_SYSTEM_INFO,
   OPCODE_TRACK_LIST,
   OPCODE_TURNOUT,
@@ -48,6 +53,32 @@ function decodeSystemInfo(params: string): SystemInfo | undefined {
   };
 }
 
+function decodeTurnoutInfo(params: string): ProtocolMessage {
+  // <jT id T|C "description"> describes one turnout. The description is only
+  // filled in by EX-RAIL layouts, so it is optional.
+  const detail = /^(\d+) ([TC])(?: "(.*)")?$/.exec(params.trim());
+
+  if (detail) {
+    return {
+      kind: 'turnout-detail',
+      id: Number(detail[1]),
+      state: detail[2] === 'T' ? TurnoutState.THROWN : TurnoutState.CLOSED,
+      label: detail[3] ?? '',
+    };
+  }
+
+  const ids = params.trim().split(/\s+/).filter(Boolean).map(Number);
+
+  // <jT id id id> lists the turnouts the station is willing to show, and a bare
+  // <jT> means it has none. Anything else — <jT id X> for an id it will not
+  // report — is left in the traffic log only.
+  if (ids.every((id) => Number.isInteger(id))) {
+    return { kind: 'turnout-list', ids };
+  }
+
+  return { kind: 'ignored' };
+}
+
 // Takes a whole bracketed frame as it arrived, for example "<p1>".
 export function decodeFrame(frame: string): ProtocolMessage {
   const body = frame.slice(1, -1);
@@ -64,6 +95,10 @@ export function decodeFrame(frame: string): ProtocolMessage {
     if (info) {
       return { kind: 'system-info', info };
     }
+  }
+
+  if (opcode === OPCODE_INFO && body[1] === INFO_TURNOUTS) {
+    return decodeTurnoutInfo(body.slice(2));
   }
 
   const params = body.slice(1).trim().split(/\s+/).filter(Boolean);
@@ -132,8 +167,10 @@ export function decodeFrame(frame: string): ProtocolMessage {
     }
   }
 
-  if (opcode === OPCODE_TURNOUT) {
-    // <H id state> — turnout state broadcast; state 1 = thrown.
+  // <H id state> — turnout state broadcast; state 1 = thrown. Frames with more
+  // fields are turnout definitions (<H id DCC addr sub>), which the app does
+  // not model, so they are passed over rather than reported as malformed.
+  if (opcode === OPCODE_TURNOUT && params.length <= 2) {
     const id = toNumber(params[0]);
     const rawState = toNumber(params[1]);
 
@@ -145,6 +182,38 @@ export function decodeFrame(frame: string): ProtocolMessage {
       };
     } else {
       log.warn('protocol.decode.decodeFrame.invalid_turnout', {
+        frame,
+      });
+    }
+  }
+
+  // <Y id active> answers a change and <Y id pin flags active> lists a
+  // configured output; the state is the last field either way.
+  if (opcode === OPCODE_OUTPUT && (params.length === 2 || params.length === 4)) {
+    const id = toNumber(params[0]);
+    const active = toNumber(params[params.length - 1]);
+
+    if (id !== undefined && active !== undefined) {
+      return { kind: 'output', id, active: active === 1 };
+    } else {
+      log.warn('protocol.decode.decodeFrame.invalid_output', {
+        frame,
+      });
+    }
+  }
+
+  // <Q id> for an active sensor and <q id> for an inactive one. Three-field
+  // <Q id pin pullup> frames are sensor definitions, which are not modelled.
+  if (
+    (opcode === OPCODE_SENSOR || opcode === OPCODE_SENSOR_INACTIVE) &&
+    params.length === 1
+  ) {
+    const id = toNumber(params[0]);
+
+    if (id !== undefined) {
+      return { kind: 'sensor', id, active: opcode === OPCODE_SENSOR };
+    } else {
+      log.warn('protocol.decode.decodeFrame.invalid_sensor', {
         frame,
       });
     }

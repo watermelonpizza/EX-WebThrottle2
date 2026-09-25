@@ -151,6 +151,42 @@ test('throws a seeded turnout and receives its broadcast', async ({ page }) => {
   await expect(trace).toContainText('<H 1 1>');
 });
 
+test('operates the turnouts, outputs and sensors the station reports', async ({
+  page,
+}) => {
+  await page.getByTestId('connect-emulator').click();
+  await expect(page.getByTestId('shell-status')).toContainText('connected');
+
+  const turnout = page.getByTestId('turnout-1');
+  const toggle = page.getByTestId('turnout-toggle-1');
+  const outputSwitch = page.getByTestId('output-10');
+  const output = outputSwitch.locator('input');
+  const trace = page.getByTestId('trace-list');
+
+  await expect(turnout).toContainText('Turnout 1');
+  await expect(page.getByTestId('sensor-20')).toContainText('Clear');
+
+  // The emulator keeps its state between tests, so switch whichever way the
+  // station currently reports and expect the opposite back.
+  const closing = (await toggle.innerText()).trim() === 'Close';
+
+  await toggle.click();
+
+  await expect(trace).toContainText(closing ? '<T 1 C>' : '<T 1 T>');
+  await expect(trace).toContainText(closing ? '<H 1 0>' : '<H 1 1>');
+  await expect(turnout).toContainText(closing ? 'Closed' : 'Thrown');
+
+  const switchingOn = !(await output.isChecked());
+
+  // The switch is a styled label around a hidden checkbox, so the label is what
+  // a person clicks.
+  await outputSwitch.click();
+
+  await expect(trace).toContainText(`<Z 10 ${switchingOn ? 1 : 0}>`);
+  await expect(trace).toContainText(`<Y 10 ${switchingOn ? 1 : 0}>`);
+  await expect(output).toBeChecked({ checked: switchingOn });
+});
+
 test('settings holds the arrangement and theme controls, and the logo returns home', async ({
   page,
 }) => {

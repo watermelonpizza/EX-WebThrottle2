@@ -5,11 +5,37 @@
 # behave exactly as a physical CS's setup - replies are not echoed to any
 # client because the real CS never echoes its own setup commands either.
 #
-# Native-command coverage (v1) vs EX-RAIL-only (v2, see KB P-006/T-025):
-#   covered    - turnouts <T id DCC addr sub>, <a>, <Z> outputs, <S> sensors,
-#                loco control <t>/<F> is client-driven and needs no setup
-#   exrail-only- roster names (client owns roster), routes/signals, sensor firing
+# What native commands can set up here:
+#   covered     - turnouts <T id DCC addr sub>, <a>, outputs <Z>, sensors <S>;
+#                 loco control <t>/<F> is client-driven and needs no setup
+#   exrail-only - roster names (the client owns the roster), routes, signals,
+#                 and making a sensor actually fire
 #
 # Track is not listed here - power starts OFF and is driven by the throttle.
 
+# Turnout 1 on DCC accessory decoder address 10, output 0 (<T id DCC addr sub>).
+# Throwing it sends a real accessory packet and broadcasts <H 1 1> thrown or
+# <H 1 0> closed, which is what the throttle lists and switches.
 <T 1 DCC 10 0>
+
+# Turnout 2, same decoder, next output. A second one so the throttle is
+# exercised against a list rather than a single row.
+<T 2 DCC 10 1>
+
+# Output 10 driving pin 100, active high (<Z id pin flags>, flag bit 0 low means
+# active high). Outputs are the on/off accessories of a layout - uncouplers,
+# lights, relays. <Z 10 1> switches it and answers <Y 10 1>.
+<Z 10 100 0>
+
+# Output 11 on pin 101, same kind, again so there is more than one to show.
+<Z 11 101 0>
+
+# Sensor 20 reading pin 200 with the pull-up enabled (<S id pin pullup>).
+# Sensors are layout feedback - occupancy detectors, reed switches, buttons.
+# They report <Q 20> when active and <q 20> when clear, and start clear. Note
+# nothing in the firmware can make one fire without EX-RAIL, so these stay clear
+# until the emulator gains a way to set sensor state.
+<S 20 200 1>
+
+# Sensor 21 on pin 201, same again.
+<S 21 201 1>

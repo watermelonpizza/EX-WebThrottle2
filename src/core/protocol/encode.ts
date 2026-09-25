@@ -1,12 +1,17 @@
-import { Direction } from './types';
+import { Direction, TurnoutState } from './types';
 import {
+  INFO_TURNOUTS,
   OPCODE_FORGET,
   OPCODE_FUNCTION,
+  OPCODE_INFO_REQUEST,
   OPCODE_LOCO,
+  OPCODE_OUTPUT_SET,
   OPCODE_POWER_OFF,
   OPCODE_POWER_ON,
+  OPCODE_SENSOR,
   OPCODE_SYSTEM_INFO_REQUEST,
   OPCODE_TRACK_LIST,
+  OPCODE_TURNOUT_SET,
 } from './constants';
 
 // Range limits are set by the DCC-EX Native Commands Summary Reference:
@@ -18,6 +23,16 @@ const MAX_CAB = 10293;
 const MIN_SPEED = -1;
 const MAX_SPEED = 127;
 const MAX_FUNCTION = 68;
+
+// Turnout, output, and sensor ids are held as 16-bit signed values by the
+// command station's parser, so 32767 is the highest it can take.
+const MAX_OBJECT_ID = 32767;
+
+function assertObjectId(id: number): void {
+  if (!Number.isInteger(id) || id < 0 || id > MAX_OBJECT_ID) {
+    throw new Error(`id must be an integer from 0 to ${MAX_OBJECT_ID}`);
+  }
+}
 
 function assertCab(cab: number): void {
   if (!Number.isInteger(cab) || cab < 1 || cab > MAX_CAB) {
@@ -80,6 +95,37 @@ export function setLocoSpeed(
   assertSpeed(speed);
 
   return `<${OPCODE_LOCO} ${cab} ${speed} ${direction}>`;
+}
+
+export function requestTurnoutList(): string {
+  return `<${OPCODE_INFO_REQUEST}${INFO_TURNOUTS}>`;
+}
+
+// Asking about one turnout adds its description to the state the list gives.
+export function requestTurnout(id: number): string {
+  assertObjectId(id);
+
+  return `<${OPCODE_INFO_REQUEST}${INFO_TURNOUTS} ${id}>`;
+}
+
+export function setTurnout(id: number, state: TurnoutState): string {
+  assertObjectId(id);
+
+  return `<${OPCODE_TURNOUT_SET} ${id} ${state === TurnoutState.THROWN ? 'T' : 'C'}>`;
+}
+
+export function requestOutputList(): string {
+  return `<${OPCODE_OUTPUT_SET}>`;
+}
+
+export function setOutput(id: number, active: boolean): string {
+  assertObjectId(id);
+
+  return `<${OPCODE_OUTPUT_SET} ${id} ${active ? 1 : 0}>`;
+}
+
+export function requestSensorStates(): string {
+  return `<${OPCODE_SENSOR}>`;
 }
 
 export function setLocoFunction(
