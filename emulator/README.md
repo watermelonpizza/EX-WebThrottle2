@@ -16,7 +16,7 @@ DCC-EX commands a physical command station runs on boot.
 ```
 emulator/Arduino.h          host shim: Print/Stream/HardwareSerial, time, pins
 emulator/config.h           host board config (emulated motor shield, no EEPROM/wifi)
-emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin no-ops
+emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin levels
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
 emulator/bridge.mjs         Node WebSocket bridge (pnpm run emulator)
 emulator/Makefile           cross-platform host build
@@ -35,6 +35,9 @@ serial terminal.
 - Throttle: speed, direction, e-stop (`<t ...>`, `<e>`), function keys `<F>`
   with `<l>` state broadcasts
 - Native-command turnout/output/sensor setup (see `layout.txt`)
+- Sensors that fire: a pin idles high, as a sensor input's pull-up holds it,
+  and `<z -22>` pulls pin 22 low the way a detector would (`<z 22>` lets it
+  go). The firmware's own sensor polling then reports `<Q 20>` / `<q 20>`
 - Commands from `layout.txt` replayed through the real parser at boot
 
 Deliberately not implemented yet:
@@ -80,6 +83,8 @@ Then type DCC-EX commands, e.g.:
 <t 3 52 1>          loco 3, speed 52, forward  (broadcasts <l 3 0 181 0>)
 <F 3 0 1>           loco 3 function 0 (headlight) ON
 <s>                 status / system info
+<z -22>             pull pin 22 low: sensor 20 reports <Q 20> (occupied)
+<z 22>              release pin 22: sensor 20 reports <q 20> (clear)
 <0>                 track power OFF
 ```
 

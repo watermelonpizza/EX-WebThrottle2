@@ -26,9 +26,30 @@ void delayMicroseconds(unsigned int us) { usleep(us); }
 void noInterrupts() {}
 void interrupts() {}
 
-void pinMode(byte, byte) {}
-byte digitalRead(byte) { return LOW; }
-void digitalWrite(byte, byte) {}
+// Which pins are held low, as a meter on the real board would read them. A
+// pin idles high, the way a sensor input's pull-up holds it, until something
+// drives it low: the firmware itself (<z -pin> writes the pin, just as it does
+// on real hardware) standing in for a detector pulling the input to 0V. The
+// firmware reads it back through its own IODevice::read, so a sensor on that
+// pin goes active and broadcasts <Q id> exactly as it would on the layout.
+static bool heldLow[NUM_DIGITAL_PINS];
+
+void pinMode(byte pin, byte mode) {
+  // Turning a pin back into an input releases it to its idle high.
+  if (pin < NUM_DIGITAL_PINS && mode != OUTPUT)
+    heldLow[pin] = false;
+}
+byte digitalRead(byte pin) {
+  // A pin the board does not have reads LOW, as Arduino's own digitalRead does.
+  if (pin >= NUM_DIGITAL_PINS)
+    return LOW;
+
+  return heldLow[pin] ? LOW : HIGH;
+}
+void digitalWrite(byte pin, byte value) {
+  if (pin < NUM_DIGITAL_PINS)
+    heldLow[pin] = value == LOW;
+}
 int analogRead(byte) { return 0; }
 void analogWrite(byte, int) {}
 

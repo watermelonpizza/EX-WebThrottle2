@@ -115,6 +115,32 @@ test('throws a turnout and shows it only once the station confirms', async ({
   );
 });
 
+test('shows a sensor going occupied and clear', async ({ page }) => {
+  await connect(page, '/diagnostics');
+
+  // The emulator's layout puts sensor 20 (Platform 1) on pin 22. Pulling the
+  // pin low is what its detector does; <z> drives the pin the same way the
+  // firmware would on a real board.
+  await page.getByTestId('command-input').fill('<z -22>');
+  await page.getByTestId('send-command').click();
+
+  await page.getByTestId('role-points').click();
+  await expect(page.getByTestId('sensor-20')).toContainText('Occupied');
+
+  await page.getByTestId('events-button').click();
+  await expect(
+    page.getByTestId('event-log').locator('li').first(),
+  ).toContainText('Platform 1 occupied');
+  await page.keyboard.press('Escape');
+
+  await page.getByTestId('role-diagnostics').click();
+  await page.getByTestId('command-input').fill('<z 22>');
+  await page.getByTestId('send-command').click();
+
+  await page.getByTestId('role-points').click();
+  await expect(page.getByTestId('sensor-20')).toContainText('Clear');
+});
+
 test('opens Settings from the menu, and the wordmark goes back home', async ({ page }) => {
   await connect(page);
 

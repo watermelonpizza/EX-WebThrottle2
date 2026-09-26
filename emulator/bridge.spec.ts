@@ -104,6 +104,20 @@ describe('emulator binary', () => {
 
     expect(out).toContain('HOST');
   });
+
+  // layout.txt puts sensor 20 on pin 22; pulling that pin low is what a
+  // detector does, and the firmware's own sensor polling reports it.
+  test('reports a sensor when its pin is pulled low, and clear when released', async () => {
+    const active = waitForOutput(emulator, /<Q 20>/);
+
+    ask(emulator, '<z -22>');
+    await expect(active).resolves.toMatch(/<Q 20>/);
+
+    const clear = waitForOutput(emulator, /<q 20>/);
+
+    ask(emulator, '<z 22>');
+    await expect(clear).resolves.toMatch(/<q 20>/);
+  });
 });
 
 describe('WebSocket bridge', () => {

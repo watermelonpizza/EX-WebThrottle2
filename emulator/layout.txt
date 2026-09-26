@@ -8,8 +8,7 @@
 # What native commands can set up here:
 #   covered     - turnouts <T id DCC addr sub>, <a>, outputs <Z>, sensors <S>;
 #                 loco control <t>/<F> is client-driven and needs no setup
-#   exrail-only - roster names (the client owns the roster), routes, signals,
-#                 and making a sensor actually fire
+#   exrail-only - roster names (the client owns the roster), routes, signals
 #
 # Track is not listed here - power starts OFF and is driven by the throttle.
 
@@ -37,14 +36,15 @@
 # Output 11 on pin 101, same kind, again so there is more than one to show.
 <Z 11 101 0>
 
-# Sensor 20 reading pin 200 with the pull-up enabled (<S id pin pullup>).
+# Sensor 20 reading pin 22 with the pull-up enabled (<S id pin pullup>).
 # Sensors are layout feedback - occupancy detectors, reed switches, buttons.
-# They report <Q 20> when active and <q 20> when clear, and start clear. Note
-# nothing in the firmware can make one fire without EX-RAIL, so these stay clear
-# until the emulator gains a way to set sensor state.
-<S 20 200 1>
+# They report <Q 20> when active and <q 20> when clear, and start clear: the
+# pull-up holds the pin high. A detector fires by pulling its pin to 0V; here
+# <z -22> does the same (the firmware drives the pin low, exactly as it would
+# on a real board) and <z 22> lets it go again.
+<S 20 22 1>
 
-# Sensor 21 on pin 201, same again. On the sample diagram, 20 watches
-# Platform 1, 21 the loop and 22 the yard.
-<S 21 201 1>
-<S 22 202 1>
+# Sensors 21 and 22 on pins 23 and 24, same again. On the sample diagram, 20
+# watches Platform 1, 21 the loop and 22 the yard.
+<S 21 23 1>
+<S 22 24 1>
