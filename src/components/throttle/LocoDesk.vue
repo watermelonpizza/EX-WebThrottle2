@@ -10,6 +10,7 @@ import {
 } from 'vue';
 
 import DriveForm from '@/components/throttle/DriveForm.vue';
+import { fitKeys } from '@/components/throttle/fit-keys';
 import FunctionKeys from '@/components/throttle/FunctionKeys.vue';
 import SpeedScale from '@/components/throttle/SpeedScale.vue';
 import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
@@ -52,13 +53,9 @@ const functions = computed(() => {
     : DEFAULT_FUNCTIONS;
 });
 
-// How many keys fit in whole rows. A sliced half-row must never be the only
-// sign that more functions exist, so the desk shows complete rows and offers
-// the full list when some are left out. Undefined means all of them fit.
+// How many keys the desk shows (undefined: all of them), and whether they are
+// a touch target high instead of a control high; see fitKeys.
 const limit = ref<number | undefined>();
-
-// Keys are a control high when the whole set fits that way, and a touch
-// target high (tight) whenever the full set would otherwise not fit.
 const tight = ref(false);
 
 // A size token in pixels, read through the key grid itself so a theme's
@@ -92,34 +89,24 @@ function measure(): void {
   }
 
   const styles = getComputedStyle(grid);
-  const columns = styles.gridTemplateColumns.split(' ').filter(Boolean).length;
-  const rowGap = parseFloat(styles.rowGap) || 0;
-  const available =
-    area.getBoundingClientRect().bottom -
-    parseFloat(getComputedStyle(area).paddingBottom) -
-    grid.getBoundingClientRect().top;
-  const roomy = keyRow(grid, '--control');
-  const compact = keyRow(grid, '--target');
+  const fit = fitKeys(
+    {
+      available:
+        area.getBoundingClientRect().bottom -
+        parseFloat(getComputedStyle(area).paddingBottom) -
+        grid.getBoundingClientRect().top,
+      rowGap: parseFloat(styles.rowGap) || 0,
+      columns: styles.gridTemplateColumns.split(' ').filter(Boolean).length,
+      roomy: keyRow(grid, '--control'),
+      compact: keyRow(grid, '--target'),
+    },
+    functions.value.length,
+  );
 
-  if (!columns || !roomy || !compact) {
-    return;
+  if (fit) {
+    tight.value = fit.tight;
+    limit.value = fit.limit;
   }
-
-  const rows = (height: number) =>
-    Math.max(0, Math.floor((available + rowGap) / (height + rowGap)));
-  const count = functions.value.length;
-
-  if (rows(roomy) * columns >= count) {
-    tight.value = false;
-    limit.value = undefined;
-
-    return;
-  }
-
-  const fit = rows(compact) * columns;
-
-  tight.value = true;
-  limit.value = fit >= count ? undefined : fit;
 }
 
 let observer: ResizeObserver | undefined;
