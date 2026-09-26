@@ -26,7 +26,6 @@ export {
 } from './encode';
 export { decodeFrame } from './decode';
 export { decodeSpeedByte } from './speed';
-export type { DecodedSpeed } from './speed';
 export {
   COMMANDS,
   buildCommand,

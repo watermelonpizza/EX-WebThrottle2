@@ -4,7 +4,7 @@ import {
   WebSocketTransport,
   type WebSocketFactory,
   type WebSocketLike,
-} from '../..';
+} from '../web-socket';
 
 class FakeWebSocket implements WebSocketLike {
   readyState = 0;
