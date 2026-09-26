@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import type { LayoutDiagram } from '@/core/diagram';
 import { EMULATOR_DEMO_DIAGRAM } from '@/core/diagram';
 import { useConnectionStore } from '@/stores/connection';
+import { loadSaved } from '@/stores/saved';
 
 export const BERTHS_KEY = 'exwt-berths';
 
@@ -13,14 +14,8 @@ const EMULATOR_BOARD = 'HOST';
 // Berth placements per diagram: which loco address sits in which berth.
 type Placements = Record<string, Record<string, number>>;
 
-function loadPlacements(): Placements {
-  try {
-    const saved = JSON.parse(localStorage.getItem(BERTHS_KEY) ?? '{}');
-
-    return typeof saved === 'object' && saved !== null ? saved : {};
-  } catch {
-    return {};
-  }
+function isPlacements(saved: unknown): saved is Placements {
+  return typeof saved === 'object' && saved !== null;
 }
 
 // The drawing of the layout, when there is one. The Command Station does not
@@ -29,7 +24,7 @@ function loadPlacements(): Placements {
 // and the Hub later. With no diagram, panels fall back to route tiles.
 export const useDiagramStore = defineStore('diagram', () => {
   const connection = useConnectionStore();
-  const placements = ref<Placements>(loadPlacements());
+  const placements = ref(loadSaved(BERTHS_KEY, {}, isPlacements));
 
   const diagram = computed<LayoutDiagram | null>(() => {
     // The host emulator reports its board as HOST, and runs the demo layout

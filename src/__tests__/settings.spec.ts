@@ -20,6 +20,12 @@ describe('settings store', () => {
     store.setTheme('dark');
 
     expect(store.theme).toBe('dark');
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark');
+    expect(localStorage.getItem(THEME_KEY)).toBe('"dark"');
+  });
+
+  it('starts on the saved theme', () => {
+    localStorage.setItem(THEME_KEY, '"contrast"');
+
+    expect(useSettingsStore().theme).toBe('contrast');
   });
 });

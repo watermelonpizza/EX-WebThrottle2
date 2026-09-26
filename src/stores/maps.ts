@@ -3,6 +3,7 @@ import { ref } from 'vue';
 
 import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import type { FunctionDef } from '@/core/loco/functions';
+import { loadSaved } from '@/stores/saved';
 
 export const MAPS_KEY = 'exwt-maps';
 
@@ -14,19 +15,10 @@ export interface LocoMap {
   functions: FunctionDef[];
 }
 
-function loadMaps(): LocoMap[] {
-  try {
-    const saved = JSON.parse(localStorage.getItem(MAPS_KEY) ?? '[]');
-
-    return Array.isArray(saved) ? (saved as LocoMap[]) : [];
-  } catch {
-    // A corrupted settings blob must not stop the app booting.
-    return [];
-  }
-}
-
 export const useMapsStore = defineStore('maps', () => {
-  const maps = ref<LocoMap[]>(loadMaps());
+  const maps = ref<LocoMap[]>(
+    loadSaved<LocoMap[]>(MAPS_KEY, [], Array.isArray),
+  );
 
   function persist(): void {
     localStorage.setItem(MAPS_KEY, JSON.stringify(maps.value));

@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+import { loadSaved } from '@/stores/saved';
+
 export const THEME_KEY = 'exwt-theme';
 
 // Dark suits a train room lit for the layout, light a bright room or daylight,
@@ -12,13 +14,7 @@ function isTheme(value: unknown): value is ThemeName {
   return THEMES.includes(value as ThemeName);
 }
 
-function initialTheme(): ThemeName {
-  const saved = localStorage.getItem(THEME_KEY);
-
-  if (isTheme(saved)) {
-    return saved;
-  }
-
+function systemTheme(): ThemeName {
   if (window.matchMedia('(prefers-contrast: more)').matches) {
     return 'contrast';
   }
@@ -35,12 +31,13 @@ export function applyTheme(theme: ThemeName): void {
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    theme: initialTheme(),
+    theme:
+      loadSaved<ThemeName | null>(THEME_KEY, null, isTheme) ?? systemTheme(),
   }),
   actions: {
     setTheme(theme: ThemeName) {
       this.theme = theme;
-      localStorage.setItem(THEME_KEY, theme);
+      localStorage.setItem(THEME_KEY, JSON.stringify(theme));
       applyTheme(theme);
     },
   },

@@ -14,6 +14,7 @@ import {
   setLocoSpeed,
 } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
+import { loadSaved } from '@/stores/saved';
 
 export const ROSTER_KEY = 'exwt-roster';
 
@@ -44,19 +45,11 @@ export interface LayoutLoco {
 
 // Saved-loco list, local-first. If Hub ever backs this the store keeps its
 // shape and swaps the persistence calls, so the UI is not coupled to storage.
-function loadRoster(): RosterLoco[] {
-  try {
-    const saved = JSON.parse(localStorage.getItem(ROSTER_KEY) ?? '[]');
-
-    return Array.isArray(saved) ? (saved as RosterLoco[]) : [];
-  } catch {
-    return [];
-  }
-}
-
 export const useLocosStore = defineStore('locos', () => {
   const connection = useConnectionStore();
-  const roster = ref<RosterLoco[]>(loadRoster());
+  const roster = ref<RosterLoco[]>(
+    loadSaved<RosterLoco[]>(ROSTER_KEY, [], Array.isArray),
+  );
   const throttles = ref<Throttle[]>([]);
 
   // What each loco on the layout is doing, from the last <l> broadcast for it.
