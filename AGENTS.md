@@ -108,6 +108,7 @@ npm run test:e2e       # Playwright e2e (starts the emulator + dev server itself
 ## Design and product context
 
 - `PRODUCT.md` — users, purpose, principles, voice, and accessibility goals. dcc-ex.com is the source of truth for voice, spelling, and terminology.
+- `DESIGN.md` — the visual system: tokens, rules, and component language. Read it before any UI change.
 - `.impeccable/` — config for the Impeccable design skill (`.pi/skills/impeccable`). New surfaces are built comp-first; live mode targets `index.html`.
 
 ## Git

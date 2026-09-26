@@ -5,12 +5,28 @@ node_modules
 # Local AI/developer working notes (never commit)
 .omo/
 AGENTS.local.md
-.impeccable/
 
 # Impeccable design skill: platform binary (the launcher downloads a pinned
-# copy when missing) and per-developer overrides
+# copy when missing)
 /.pi/skills/impeccable/scripts/bin/
-/.impeccable/config.local.json
+
+# Impeccable: project context is committed (config, design sidecar, surface
+# briefs, live config, critique ignores, the approved comp); working files and
+# per-developer overrides (config.local.json) stay local
+/.impeccable/*
+!/.impeccable/config.json
+!/.impeccable/design.json
+!/.impeccable/surfaces/
+!/.impeccable/live/
+/.impeccable/live/*
+!/.impeccable/live/config.json
+!/.impeccable/critique/
+/.impeccable/critique/*
+!/.impeccable/critique/ignore.md
+!/.impeccable/mocks/
+/.impeccable/mocks/*
+!/.impeccable/mocks/option-1.png
+!/.impeccable/mocks/option-1.png.json
 
 # CommandStation host emulator build artifacts
 /emulator/build/

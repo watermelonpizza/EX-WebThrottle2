@@ -36,7 +36,7 @@ This section is for Tinkerers and Engineers who want to build or change EX-WebTh
 ### Requirements
 
 - Node.js 26. `.nvmrc` and `engines` pin this; run `nvm use` if you have nvm.
-- npm. The lockfile is committed, and CI uses `npm ci`.
+- pnpm. The lockfile is committed, and CI uses `pnpm install`.
 - For the emulator: a C++17 compiler, `make`, and `sed`. See [emulator/README.md](emulator/README.md), including Windows notes.
 
 ### Get started
@@ -44,9 +44,9 @@ This section is for Tinkerers and Engineers who want to build or change EX-WebTh
 ```bash
 git clone --recurse-submodules https://github.com/DCC-EX/EX-WebThrottle2.git
 cd EX-WebThrottle2
-npm install
-npm run emulator   # terminal 1: emulated Command Station on ws://127.0.0.1:4444
-npm run dev        # terminal 2: open the address it prints
+pnpm install
+pnpm run emulator   # terminal 1: emulated Command Station on ws://127.0.0.1:4444
+pnpm run dev        # terminal 2: open the address it prints
 ```
 
 Then select **Connect to emulator**. If you cloned without `--recurse-submodules`, run `git submodule update --init` first.
@@ -54,16 +54,16 @@ Then select **Connect to emulator**. If you cloned without `--recurse-submodules
 ### Commands
 
 ```bash
-npm run dev            # Vite dev server
-npm run build          # type-check (vue-tsc) + production build
-npm run preview        # preview the production build
-npm run type-check     # type-check only
-npm run lint           # ESLint; lint:fix to fix what it can
-npm run format:check   # Prettier check; format to rewrite
-npm run test:unit      # Vitest unit and component tests, with coverage
-npm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
-npm run test:emulator  # emulator bridge tests
-npm run test:e2e       # Playwright tests (starts the emulator and dev server itself)
+pnpm run dev            # Vite dev server
+pnpm run build          # type-check (vue-tsc) + production build
+pnpm run preview        # preview the production build
+pnpm run type-check     # type-check only
+pnpm run lint           # ESLint; lint:fix to fix what it can
+pnpm run format:check   # Prettier check; format to rewrite
+pnpm run test:unit      # Vitest unit and component tests, with coverage
+pnpm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
+pnpm run test:emulator  # emulator bridge tests
+pnpm run test:e2e       # Playwright tests (starts the emulator and dev server itself)
 ```
 
 Before your first `test:e2e` run, run `npx playwright install` to download the browsers.

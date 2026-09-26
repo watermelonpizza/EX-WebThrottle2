@@ -15,7 +15,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setupFile.ts'],
     coverage: {
-      provider: 'istanbul',
+      // Every source file counts, not just the ones a test happened to import.
+      include: ['src/**/*.{ts,vue}'],
       reporter: ['text', 'json-summary', 'json'],
     },
   },

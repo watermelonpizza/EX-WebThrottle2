@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2025-09-26T00:00:00Z",
+  "title": "Design System: WebThrottle",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "DCC-EX Teal",
+        "canonical": "#00a3b9",
+        "tonalRamp": ["#02272c", "#043a42", "#054f5a", "#067181", "#0090a4", "#00a3b9", "#3dc0d2", "#8fdbe6"]
+      },
+      "stop": {
+        "role": "secondary",
+        "displayName": "Stop Red",
+        "canonical": "#c1292e",
+        "tonalRamp": ["#2e0809", "#4a0f11", "#6b1619", "#8f1e21", "#c1292e", "#d3353a", "#e46a6d", "#f2a9ab"]
+      },
+      "occupied": {
+        "role": "secondary",
+        "displayName": "Occupied Red",
+        "canonical": "#e5484d",
+        "tonalRamp": ["#360f11", "#561a1d", "#7a2529", "#a63237", "#cc3d42", "#e5484d", "#ee8083", "#f7b8ba"]
+      },
+      "describer": {
+        "role": "secondary",
+        "displayName": "Describer Amber",
+        "canonical": "#eeab35",
+        "tonalRamp": ["#2f2005", "#4d3409", "#6f4c0d", "#946612", "#c48a1f", "#eeab35", "#f4c46e", "#f9dca6"]
+      },
+      "attention": {
+        "role": "secondary",
+        "displayName": "Attention Amber",
+        "canonical": "#f7b656",
+        "tonalRamp": ["#33240b", "#523a11", "#775418", "#9e7022", "#cd9236", "#f7b656", "#f9cb83", "#fcdfb1"]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Operating-Centre Ground",
+        "canonical": "#151a1f",
+        "tonalRamp": ["#0e1418", "#151a1f", "#192025", "#1f272d", "#263038", "#3a444b", "#5f6b73", "#9ba4ab"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel Surface",
+        "canonical": "#192025",
+        "tonalRamp": ["#0e1418", "#151a1f", "#192025", "#1f272d", "#263038", "#2b343b", "#3a444b", "#5f6b73"]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Control",
+        "canonical": "#1f272d",
+        "tonalRamp": ["#151a1f", "#192025", "#1f272d", "#263038", "#2b343b", "#3a444b", "#5f6b73", "#7d8890"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#eef2f4",
+        "tonalRamp": ["#3a444b", "#5f6b73", "#7d8890", "#9ba4ab", "#c3cad0", "#d6dce0", "#eef2f4", "#ffffff"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#9ba4ab",
+        "tonalRamp": ["#2b343b", "#3a444b", "#4b5660", "#5f6b73", "#7d8890", "#9ba4ab", "#c3cad0", "#eef2f4"]
+      },
+      "track-idle": {
+        "role": "neutral",
+        "displayName": "Idle Track",
+        "canonical": "#5f6b73",
+        "tonalRamp": ["#1f272d", "#2b343b", "#3a444b", "#4a545b", "#5f6b73", "#7d8890", "#9ba4ab", "#c3cad0"]
+      },
+      "track-set": {
+        "role": "neutral",
+        "displayName": "Set Route",
+        "canonical": "#eef2f4",
+        "tonalRamp": ["#4a545b", "#5f6b73", "#7d8890", "#9ba4ab", "#c3cad0", "#d6dce0", "#eef2f4", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The per-loco speed readout only; one large teal instrument number." },
+      "headline": { "displayName": "Headline", "purpose": "The connect page title." },
+      "title": { "displayName": "Title", "purpose": "Wordmark, loco names, panel titles." },
+      "body": { "displayName": "Body", "purpose": "Base document size and all running text." },
+      "label": { "displayName": "Label", "purpose": "Power state, counts, captions; power labels are uppercase." },
+      "code": { "displayName": "Code", "purpose": "Raw protocol traffic and the command box; monospace." }
+    },
+    "shadows": [
+      { "name": "popup-float", "value": "0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.35)", "purpose": "The only ambient shadow; on true popovers (menus, add-loco, event log) while open." },
+      { "name": "chosen-ring", "value": "0 0 0 1px var(--accent)", "purpose": "Teal hairline ring on the selected theme card; a border-tint, not a lift." },
+      { "name": "pressed-inset", "value": "inset 0 var(--space-1) 0 rgb(0 0 0 / 0.2)", "purpose": "Function key on :active reads as pushed in." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for colour and box-shadow state transitions." },
+      { "name": "state-transition", "value": "150ms", "purpose": "Standard duration for hover/active colour changes on controls." },
+      { "name": "changeover", "value": "step-end flash, ends lit", "purpose": "A confirmed turnout flashes the new route dark then lit into place." },
+      { "name": "pending-turn", "value": "900ms linear infinite", "purpose": "Circling ring on a sent-but-unconfirmed turnout." },
+      { "name": "rail-run", "value": "1.4s linear infinite", "purpose": "A lit route runs along the connect-screen track while connecting." },
+      { "name": "reduced-motion", "value": "transition/animation clamped to 1ms", "purpose": "prefers-reduced-motion collapses all motion." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "30rem" },
+      { "name": "compact", "value": "40rem" },
+      { "name": "stack", "value": "48rem" },
+      { "name": "wide", "value": "64rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Accent Key (primary)",
+      "kind": "button",
+      "refersTo": "key-accent",
+      "description": "The primary call to action, e.g. Connect by USB.",
+      "html": "<button class=\"ds-key-accent\">Connect by USB</button>",
+      "css": ".ds-key-accent { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control); padding: 0 var(--space-6); color: var(--ink-on-accent); background: var(--accent); border: 0; border-radius: var(--radius); font: inherit; font-size: var(--text-lg); font-weight: 600; cursor: pointer; transition: filter 150ms cubic-bezier(0.16,1,0.3,1); } .ds-key-accent:hover { filter: brightness(1.08); } .ds-key-accent:focus-visible { outline: var(--line) solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Flat Key",
+      "kind": "button",
+      "refersTo": "key",
+      "description": "The base control: a flat thin-edged key, one height.",
+      "html": "<button class=\"ds-key\">Disconnect</button>",
+      "css": ".ds-key { display: inline-flex; align-items: center; justify-content: center; min-height: var(--target); padding: 0 var(--space-4); color: var(--ink); background: var(--raised); border: 1px solid var(--edge); border-radius: var(--radius); font: inherit; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-key:hover { background: var(--raised-hover); } .ds-key:disabled { color: var(--ink-muted); opacity: 0.6; cursor: not-allowed; } .ds-key:focus-visible { outline: var(--line) solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Stop All",
+      "kind": "button",
+      "refersTo": "key-stop",
+      "description": "The safety-strip stop; Stop Red, never used for anything but stopping.",
+      "html": "<button class=\"ds-stop\">STOP ALL</button>",
+      "css": ".ds-stop { display: inline-flex; align-items: center; justify-content: center; min-height: var(--target); padding: 0 var(--space-5); color: var(--stop-ink); background: var(--stop); border: 0; border-radius: var(--radius); font: inherit; font-size: var(--text-md); font-weight: 700; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-stop:hover { background: var(--stop-hover); } .ds-stop:active { transform: translateY(1px); } .ds-stop:focus-visible { outline: var(--line) solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Function Key",
+      "kind": "button",
+      "refersTo": "fn-key",
+      "description": "A loco function key; off (raised) and on (lit teal) states.",
+      "html": "<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);width:18rem\"><button class=\"ds-fn\">Lights</button><button class=\"ds-fn ds-fn--on\" aria-pressed=\"true\">Bell</button><button class=\"ds-fn\">Horn</button></div>",
+      "css": ".ds-fn { min-height: var(--control); padding: 0 var(--space-1); color: var(--ink); background: var(--raised); border: 1px solid var(--edge); border-radius: var(--radius); font: inherit; font-size: var(--text-sm); line-height: 1.1; cursor: pointer; user-select: none; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-fn:hover { background: var(--raised-hover); } .ds-fn:active { box-shadow: inset 0 var(--space-1) 0 rgb(0 0 0 / 0.2); } .ds-fn--on { color: var(--accent); background: color-mix(in oklab, var(--accent) 16%, var(--raised)); border-color: var(--accent); font-weight: 600; } .ds-fn--on:hover { background: color-mix(in oklab, var(--accent) 22%, var(--raised)); }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text/URL input; recessed onto Ground with a thin edge.",
+      "html": "<input class=\"ds-field\" type=\"text\" value=\"ws://127.0.0.1:4444\" />",
+      "css": ".ds-field { min-height: var(--target); padding: 0 var(--space-3); color: var(--ink); background: var(--ground); border: 1px solid var(--edge); border-radius: var(--radius); font: inherit; font-family: var(--font-code); } .ds-field::placeholder { color: var(--ink-muted); } .ds-field:focus-visible { outline: var(--line) solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Role Tab",
+      "kind": "nav",
+      "refersTo": "role-tab",
+      "description": "Top-bar role tabs; active tab is full ink with an inset teal underline.",
+      "html": "<nav class=\"ds-roles\"><a class=\"ds-role\">Drive</a><a class=\"ds-role ds-role--active\" aria-current=\"page\">Points</a><a class=\"ds-role\">Control</a></nav>",
+      "css": ".ds-roles { display: flex; } .ds-role { display: flex; align-items: center; min-height: var(--target); padding: 0 var(--space-4); color: var(--ink-muted); font-size: var(--text-md); text-decoration: none; cursor: pointer; box-shadow: inset 0 calc(-1 * var(--line)) 0 transparent; transition: color 150ms cubic-bezier(0.16,1,0.3,1), box-shadow 150ms cubic-bezier(0.16,1,0.3,1); } .ds-role:hover { color: var(--ink); } .ds-role--active { color: var(--ink); box-shadow: inset 0 calc(-1 * var(--line)) 0 var(--accent); }"
+    },
+    {
+      "name": "Track Power Switch",
+      "kind": "custom",
+      "refersTo": "key",
+      "description": "Safety-strip power switch; state shown as a word and teal when on.",
+      "html": "<div style=\"display:flex\"><button class=\"ds-power ds-power--on\" aria-pressed=\"true\"><span class=\"ds-power__name\">Main A</span><span class=\"ds-power__state\">ON</span></button><button class=\"ds-power\" aria-pressed=\"false\"><span class=\"ds-power__name\">Prog B</span><span class=\"ds-power__state\">OFF</span></button></div>",
+      "css": ".ds-power { display: flex; align-items: center; gap: var(--space-2); min-height: var(--target); padding: 0 var(--space-4); color: var(--ink-muted); background: none; border: 0; border-left: 1px solid var(--rule); font: inherit; font-size: var(--text-sm); text-transform: uppercase; white-space: nowrap; cursor: pointer; } .ds-power:last-child { border-right: 1px solid var(--rule); } .ds-power__name { transition: color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-power__state { font-weight: 600; } .ds-power:hover .ds-power__name, .ds-power--on .ds-power__name { color: var(--ink); } .ds-power--on .ds-power__state { color: var(--accent); }"
+    },
+    {
+      "name": "Turnout Row",
+      "kind": "custom",
+      "refersTo": "key",
+      "description": "A points list row that draws its own route: set leg lit, other dimmed with a break at the switch.",
+      "html": "<button class=\"ds-turnout\"><svg class=\"ds-turnout__route\" viewBox=\"0 12 120 48\" aria-hidden=\"true\"><line x1=\"6\" y1=\"48\" x2=\"42\" y2=\"48\" stroke=\"var(--track-set)\" stroke-width=\"5\"/><line x1=\"42\" y1=\"48\" x2=\"114\" y2=\"48\" stroke=\"var(--track-set)\" stroke-width=\"5\"/><polyline points=\"42,48 72,18 114,18\" fill=\"none\" stroke=\"var(--track-unset)\" stroke-width=\"5\"/><line x1=\"49\" y1=\"41\" x2=\"56\" y2=\"34\" stroke=\"var(--panel)\" stroke-width=\"10\"/><line x1=\"6\" y1=\"41\" x2=\"6\" y2=\"55\" stroke=\"var(--track-idle)\" stroke-width=\"3\"/></svg><span class=\"ds-turnout__num\">3</span><span class=\"ds-turnout__name\">Yard entry</span><span class=\"ds-turnout__state\">Closed</span></button>",
+      "css": ".ds-turnout { display: grid; align-items: center; gap: var(--space-3); grid-template-columns: auto 3ch minmax(0,1fr) auto; width: 22rem; padding: var(--space-2); color: var(--ink); background: none; border: 0; border-bottom: 1px solid var(--rule); font: inherit; text-align: left; cursor: pointer; transition: background-color 150ms cubic-bezier(0.16,1,0.3,1); } .ds-turnout:hover { background: var(--raised); } .ds-turnout__route { height: var(--text-xl); aspect-ratio: 120/48; } .ds-turnout__num { font-size: var(--text-md); font-weight: 600; font-variant-numeric: tabular-nums; } .ds-turnout__name { overflow: hidden; color: var(--ink-muted); text-overflow: ellipsis; white-space: nowrap; } .ds-turnout__state { font-weight: 600; }"
+    },
+    {
+      "name": "Speed Scale",
+      "kind": "custom",
+      "refersTo": "key",
+      "description": "The throttle: a large teal readout over a range with a slim needle, not a knob.",
+      "html": "<div class=\"ds-scale\"><output class=\"ds-scale__val\">42</output><input class=\"ds-scale__range\" type=\"range\" min=\"0\" max=\"126\" value=\"42\" aria-label=\"Speed\" style=\"--fill:33%\" /></div>",
+      "css": ".ds-scale { display: grid; gap: var(--space-3); width: 22rem; } .ds-scale__val { color: var(--accent); font-size: var(--text-2xl); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; } .ds-scale__range { width: 100%; height: var(--space-4); margin: 0; background: transparent; appearance: none; cursor: pointer; } .ds-scale__range::-webkit-slider-runnable-track { height: var(--space-2); background: linear-gradient(to right, var(--accent) 0 var(--fill), var(--track-idle) var(--fill) 100%); } .ds-scale__range::-webkit-slider-thumb { width: var(--space-1); height: calc(var(--space-2) * 3); margin-top: calc(var(--space-2) * -1); background: var(--accent); border: 0; border-radius: 1px; appearance: none; } .ds-scale__range:focus-visible { outline: var(--line) solid var(--focus); outline-offset: var(--space-1); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Rail Operating Centre",
+    "overview": "WebThrottle is drawn as the workstation in a modern rail operating centre: a calm, dark control desk where the signalling display is the centre of attention and every control is exactly where the operator's hand expects it. It is not a dashboard of equal cards, not a phone app with a rotary knob, and not a period skeuomorph of a real throttle. The screen is a single working field - a panel workspace - laid over a safety strip that never moves. The operator sees what the layout is really doing, drives or switches only what their role owns, and can always stop everything. The mood is quiet, dense, and instrument-grade. Surfaces are near-black and separate by tone rather than by outline or shadow; sections meet on a single hairline rule. Linework is thin and orthogonal - straight runs and 45 degree diagonals, in the manner of a signalling diagram. Numbers are treated as measurements and hold their width. Colour is rationed hard: one teal for anything live, one red for stop, one amber for a loco's describer tag, and nothing decorative. The system exists to beat clunky throttle controls, so precision and directness outrank expression; personality lives in the details, never in ornament.",
+    "keyCharacteristics": [
+      "Dark operating-centre workstation; light and high-contrast themes switch via [data-theme], tokens only.",
+      "Sections separated by tone and a 1px hairline rule - no cards, no drop shadows at rest.",
+      "Thin orthogonal linework (straight and 45 degree) for all schematic track.",
+      "One clean variable sans (Alan Sans) with tabular numerals for every value.",
+      "Each state colour means exactly one thing; state is never carried by colour alone.",
+      "Pointer-adaptive controls: compact for a mouse, larger targets for touch."
+    ],
+    "rules": [
+      { "name": "The One Meaning Rule", "body": "Every state colour means exactly one thing and never takes a second job: teal = live/selected/on, Stop Red = stop, Occupied Red = section occupied, Describer Amber = the loco tag. If a new state needs a colour, it does not borrow an existing one.", "section": "colors" },
+      { "name": "The State-Is-A-Word Rule", "body": "State never rides on colour alone. Power reads ON/OFF, a turnout reads Thrown/Closed, an occupied section is labelled Occupied. Colour confirms the word; it never replaces it.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "There is a single accent (teal). Do not add a second decorative colour to brighten a screen - the restraint is the identity, and the signal colours only work because the field around them is quiet.", "section": "colors" },
+      { "name": "The Measured-Number Rule", "body": "Any value that changes - speed, addresses, counts, clock, unread tally, turnout numbers - carries the .numeric class (font-variant-numeric: tabular-nums) so digits keep their width and nothing shifts as the number changes.", "section": "typography" },
+      { "name": "The Zoom-Not-Pixels Rule", "body": "Every type step is rem scaled by --text-scale, so browser zoom enlarges the whole console and the high-contrast theme raises every step at once. Never set a one-off px font size.", "section": "typography" },
+      { "name": "The Flat-Field Rule", "body": "Surfaces are flat and separated by tone plus a hairline. A drop shadow appears only on a true popover, and only while it is open. Never add shadow to a panel, card, or button to suggest elevation.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do read every colour, size, and space from tokens (var(--...) in src/styles/tokens.css); a new theme is one block there and never a component edit.",
+      "Do pair every state with a word or shape (ON/OFF, Thrown/Closed, Occupied), so colour only confirms it - never carries it alone.",
+      "Do let each panel choose its variant from its own size with container queries, not from window width.",
+      "Do keep Stop all, track power, and connection state reachable at every size and in every preset.",
+      "Do give changing values the .numeric class (tabular-nums) so digits hold their width.",
+      "Do separate sections with a 1px --rule hairline and tonal steps, not gaps or card edges.",
+      "Do size type and controls in rem scaled by --text-scale, and give touch (pointer: coarse) larger targets."
+    ],
+    "donts": [
+      "Don't add card outlines, rounded cards, or resting drop shadows; shadow belongs only to an open popover.",
+      "Don't give a state colour a second job - teal is live/on, Stop Red is stop, Occupied Red is a busy section, amber is the loco describer.",
+      "Don't introduce a second accent or a decorative colour; the quiet field is what makes the signals read.",
+      "Don't use a radius other than 4px or a border/line heavier than the --line token.",
+      "Don't size or space from one-off px values tuned to match a screenshot.",
+      "Don't reach for a rotary knob or a skeuomorphic dial; the throttle is a linear scale with a needle."
+    ]
+  }
+}

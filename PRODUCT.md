@@ -107,7 +107,7 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - **No user research, testimonials, usage data, or case studies exist.** Do not invent any.
 - **Peers:** the DCC-EX throttle software list (https://dcc-ex.com/throttles/software/index.html) and Engine Driver (https://enginedriver.mstevetodd.com/). The owner's view is that many of these throttles have clunky controls and buttons. That is the bar to beat, not a pattern to copy.
 - **Legacy behaviour:** WebThrottle-EX (a sibling checkout, `../WebThrottle-EX`) and its feature-parity audit.
-- **Realistic demos:** the host emulator (`npm run emulator`) runs genuine CommandStation-EX firmware.
+- **Realistic demos:** the host emulator (`pnpm run emulator`) runs genuine CommandStation-EX firmware.
 
 ## Product Principles
 
