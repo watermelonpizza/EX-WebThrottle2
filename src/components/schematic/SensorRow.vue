@@ -16,9 +16,9 @@ defineProps<{ sensor: SensorEntry; name: string }>();
   </div>
 </template>
 
-<style lang="scss" scoped>
-// A read-only row: the stretch of track it watches, its name and its state as
-// a word. Occupied lights the track red, as on the diagram.
+<style scoped>
+/* A read-only row: the stretch of track it watches, its name and its state as
+   a word. Occupied lights the track red, as on the diagram. */
 .sensor {
   display: grid;
   align-items: center;

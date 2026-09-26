@@ -79,12 +79,12 @@ function keyUp(def: FunctionDef, event: KeyboardEvent): void {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .fn-keys {
   display: grid;
   gap: var(--control-gap);
-  // As many keys per row as fit a label of about ten characters, whatever
-  // the panel's size: four on a desk, more on a wide cab, three on a phone.
+  /* As many keys per row as fit a label of about ten characters, whatever
+     the panel's size: four on a desk, more on a wide cab, three on a phone. */
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 10ch), 1fr));
   grid-auto-rows: var(--control);
   font-size: var(--text-sm);
@@ -100,9 +100,9 @@ function keyUp(def: FunctionDef, event: KeyboardEvent): void {
   border-radius: var(--radius);
   font-size: inherit;
   line-height: var(--leading-tight);
-  // Labels wrap between words, hyphenating a long one where the browser has a
-  // dictionary and breaking it as a last resort, but never clipping it: a
-  // function is only useful if it can be read in full.
+  /* Labels wrap between words, hyphenating a long one where the browser has a
+     dictionary and breaking it as a last resort, but never clipping it: a
+     function is only useful if it can be read in full. */
   hyphens: auto;
   overflow-wrap: break-word;
   touch-action: manipulation;
@@ -122,8 +122,8 @@ function keyUp(def: FunctionDef, event: KeyboardEvent): void {
   }
 }
 
-// On is a lit key: teal edge, teal label and a teal wash, the same teal that
-// marks every live value, readable at arm's length in every theme.
+/* On is a lit key: teal edge, teal label and a teal wash, the same teal that
+   marks every live value, readable at arm's length in every theme. */
 .fn-key--on {
   color: var(--accent);
   background: color-mix(in oklab, var(--accent) 16%, var(--raised));

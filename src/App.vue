@@ -20,7 +20,7 @@ const connected = computed(() => connection.status === 'connected');
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .app {
   display: flex;
   flex-direction: column;

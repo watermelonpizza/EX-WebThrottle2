@@ -359,10 +359,10 @@ function placeIn(berthId: string): void {
   </article>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .desk {
-  // The loco's name sets the size of the whole title line; the address
-  // follows it, never larger.
+  /* The loco's name sets the size of the whole title line; the address
+     follows it, never larger. */
   --title: var(--text-lg);
 
   container: desk / size;
@@ -370,8 +370,8 @@ function placeIn(berthId: string): void {
   background: var(--panel);
 }
 
-// The desk is the container; this grid inside it is what its size variants
-// rearrange (a container cannot restyle itself from its own size).
+/* The desk is the container; this grid inside it is what its size variants
+   rearrange (a container cannot restyle itself from its own size). */
 .desk__grid {
   display: grid;
   grid-template:
@@ -386,15 +386,15 @@ function placeIn(berthId: string): void {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  // Every head is as tall as one holding the add key, so desks side by side
-  // line up their speed, scale and controls.
+  /* Every head is as tall as one holding the add key, so desks side by side
+     line up their speed, scale and controls. */
   min-block-size: calc(var(--target) + 2 * var(--space-2));
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--rule);
 }
 
 .desk__title {
-  // Room for the separator and the space either side of it.
+  /* Room for the separator and the space either side of it. */
   --sep: 1.2em;
 
   display: flex;
@@ -464,8 +464,8 @@ function placeIn(berthId: string): void {
   font-size: var(--text-display);
   font-weight: 500;
   line-height: 1;
-  // Trim the line box to the digits themselves, so the readout's space is the
-  // number and nothing above or below it.
+  /* Trim the line box to the digits themselves, so the readout's space is the
+     number and nothing above or below it. */
   text-box: trim-both cap alphabetic;
 }
 
@@ -548,8 +548,8 @@ function placeIn(berthId: string): void {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  // Room for the "All functions" key whether it shows or not, so key rows
-  // line up across desks.
+  /* Room for the "All functions" key whether it shows or not, so key rows
+     line up across desks. */
   min-block-size: var(--target);
   margin-bottom: var(--space-2);
 }
@@ -569,7 +569,7 @@ function placeIn(berthId: string): void {
   grid-auto-rows: var(--target);
 }
 
-// The same list from the controls row, for the slimmest desk only.
+/* The same list from the controls row, for the slimmest desk only. */
 .desk__all--slim {
   display: none;
 }
@@ -578,7 +578,7 @@ function placeIn(berthId: string): void {
   width: min(24rem, calc(100vw - 2 * var(--space-3)));
 }
 
-// The loco's own menu hangs from its name, on the left of the desk.
+/* The loco's own menu hangs from its name, on the left of the desk. */
 .desk-menu--start {
   position-area: bottom span-right;
 }
@@ -590,7 +590,7 @@ function placeIn(berthId: string): void {
   }
 }
 
-// The whole set of keys, over the middle of the screen.
+/* The whole set of keys, over the middle of the screen. */
 .desk-functions {
   top: 50%;
   left: 50%;
@@ -610,9 +610,9 @@ function placeIn(berthId: string): void {
   }
 }
 
-// Size variants, chosen by the room this desk has rather than the window.
-// A wide desk (one loco on a big screen) becomes a cab: driving on the left,
-// functions on the right.
+/* Size variants, chosen by the room this desk has rather than the window.
+   A wide desk (one loco on a big screen) becomes a cab: driving on the left,
+   functions on the right. */
 @container desk (width >= 48rem) {
   .desk__grid {
     grid-template:
@@ -626,9 +626,9 @@ function placeIn(berthId: string): void {
   }
 }
 
-// Short desks (two or three locos at once) keep speed, direction and stop
-// whole at a smaller size; the key rows that fit come from the measurement
-// above.
+/* Short desks (two or three locos at once) keep speed, direction and stop
+   whole at a smaller size; the key rows that fit come from the measurement
+   above. */
 @container desk (height < 32rem) {
   .desk {
     --title: var(--text-md);
@@ -644,9 +644,9 @@ function placeIn(berthId: string): void {
     padding-block: var(--space-2);
   }
 
-  // The readout sits beside its scale rather than above it, a row saved for
-  // a row of keys. It keeps the width of three digits, so the scale does not
-  // shift as the speed changes.
+  /* The readout sits beside its scale rather than above it, a row saved for
+     a row of keys. It keeps the width of three digits, so the scale does not
+     shift as the speed changes. */
   .desk__drive {
     display: grid;
     align-items: center;
@@ -671,8 +671,8 @@ function placeIn(berthId: string): void {
   }
 }
 
-// The slimmest desk is speed, direction and stop; functions are one press
-// away from a key in the same row.
+/* The slimmest desk is speed, direction and stop; functions are one press
+   away from a key in the same row. */
 @container desk (height < 16rem) {
   .desk__functions {
     display: none;
@@ -684,7 +684,7 @@ function placeIn(berthId: string): void {
   }
 }
 
-// A phone page scrolls, so each desk simply takes the height it needs.
+/* A phone page scrolls, so each desk simply takes the height it needs. */
 @media (max-width: 48rem) {
   .desk {
     container-type: inline-size;

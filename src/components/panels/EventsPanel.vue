@@ -70,7 +70,7 @@ function waiting(at: number): boolean {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .events-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -104,7 +104,7 @@ function waiting(at: number): boolean {
   list-style: none;
 }
 
-// A timeline: fixed-width times down the left, the change beside each.
+/* A timeline: fixed-width times down the left, the change beside each. */
 .event {
   display: grid;
   align-items: baseline;
@@ -128,8 +128,8 @@ function waiting(at: number): boolean {
   }
 }
 
-// A change arriving while the log is open slides in and glows for a moment,
-// so it is seen without a sound or a jump.
+/* A change arriving while the log is open slides in and glows for a moment,
+   so it is seen without a sound or a jump. */
 .event-enter-active {
   animation:
     event-slide 250ms var(--ease-out),

@@ -323,9 +323,9 @@ function toggle(id: number, known: boolean): void {
   </svg>
 </template>
 
-<style lang="scss" scoped>
-// Sizes inside the drawing are in diagram units, so strokes and labels scale
-// with the diagram as its panel grows or shrinks.
+<style scoped>
+/* Sizes inside the drawing are in diagram units, so strokes and labels scale
+   with the diagram as its panel grows or shrinks. */
 .diagram {
   display: block;
   width: 100%;
@@ -389,9 +389,9 @@ function toggle(id: number, known: boolean): void {
 }
 
 .turnout {
-  // The ring round a number, and how far the number sits from its switch
-  // point: far enough that the ring clears the lines either side of the gap
-  // it sits in (half of at least 120°), and no further.
+  /* The ring round a number, and how far the number sits from its switch
+     point: far enough that the ring clears the lines either side of the gap
+     it sits in (half of at least 120°), and no further. */
   --ring: calc(var(--target) / 2.3 * var(--unit));
   --reach: calc(var(--ring) * 1.35);
 
@@ -429,7 +429,7 @@ function toggle(id: number, known: boolean): void {
   stroke-width: calc(3px * var(--unit));
 }
 
-// Sent, not yet confirmed: a ring that circles until the station answers.
+/* Sent, not yet confirmed: a ring that circles until the station answers. */
 .turnout--pending .turnout__ring {
   stroke: var(--accent);
   stroke-dasharray: 6 6;

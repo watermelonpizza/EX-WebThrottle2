@@ -52,9 +52,9 @@ const diagrams = useDiagramStore();
   </div>
 </template>
 
-<style lang="scss" scoped>
-// Stands in for the diagram where there is none, or no room for one: the
-// same turnouts and sensors as rows, each turnout drawing its own route.
+<style scoped>
+/* Stands in for the diagram where there is none, or no room for one: the
+   same turnouts and sensors as rows, each turnout drawing its own route. */
 .route-list {
   display: flex;
   flex-direction: column;
@@ -74,7 +74,7 @@ const diagrams = useDiagramStore();
   color: var(--ink-muted);
 }
 
-// The whole list scrolls here, so the rows are never held to a height.
+/* The whole list scrolls here, so the rows are never held to a height. */
 .route-list__rows {
   flex: none;
   max-block-size: none;

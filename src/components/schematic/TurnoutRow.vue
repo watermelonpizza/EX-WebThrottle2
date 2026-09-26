@@ -60,9 +60,9 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
   </button>
 </template>
 
-<style lang="scss" scoped>
-// One compact row: the drawn route, the number, the name and the position as
-// a word, the same grammar as the output and sensor rows beside it.
+<style scoped>
+/* One compact row: the drawn route, the number, the name and the position as
+   a word, the same grammar as the output and sensor rows beside it. */
 .turnout-row {
   display: grid;
   align-items: center;

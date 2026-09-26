@@ -44,7 +44,7 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .scale {
   --bar: var(--space-2);
 
@@ -53,8 +53,8 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
   padding-bottom: var(--space-6);
 }
 
-// A short scale keeps every mark but numbers every other one (0, 42, 84,
-// 126), so the numbers never run into each other.
+/* A short scale keeps every mark but numbers every other one (0, 42, 84,
+   126), so the numbers never run into each other. */
 @container scale (width < 16rem) {
   .scale__tick:nth-child(even) {
     color: transparent;
@@ -89,8 +89,8 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
     );
   }
 
-  // The thumb is a slim marker standing proud of the bar, like a needle on a
-  // scale; it is centred on the bar, whatever the bar's thickness.
+  /* The thumb is a slim marker standing proud of the bar, like a needle on a
+     scale; it is centred on the bar, whatever the bar's thickness. */
   &::-webkit-slider-thumb {
     width: var(--space-1);
     height: calc(var(--bar) * 3);
@@ -141,7 +141,7 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
     background: var(--edge);
   }
 
-  // The end labels sit inside the bar's ends rather than hanging past them.
+  /* The end labels sit inside the bar's ends rather than hanging past them. */
   &:first-child {
     translate: 0 0;
 

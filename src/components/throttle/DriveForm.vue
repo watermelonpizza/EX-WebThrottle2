@@ -153,7 +153,7 @@ function submit(): void {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .drive-form {
   display: flex;
   flex-direction: column;
@@ -197,7 +197,7 @@ function submit(): void {
   gap: var(--space-3);
 }
 
-// A text action beside the group's label: it acts on the whole group.
+/* A text action beside the group's label: it acts on the whole group. */
 .drive-form__all {
   padding: 0;
 

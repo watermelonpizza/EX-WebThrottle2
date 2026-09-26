@@ -30,7 +30,7 @@ const diagrams = useDiagramStore();
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .schematic-panel {
   height: 100%;
 }
@@ -40,8 +40,8 @@ const diagrams = useDiagramStore();
   height: 100%;
 }
 
-// The key and caption share the drawing's cell and sit in its lower corner,
-// so the diagram keeps the panel's full height to scale into.
+/* The key and caption share the drawing's cell and sit in its lower corner,
+   so the diagram keeps the panel's full height to scale into. */
 .schematic-panel__drawing > * {
   grid-area: 1 / 1;
   min-height: 0;
@@ -77,7 +77,7 @@ const diagrams = useDiagramStore();
   }
 }
 
-// A phone page scrolls, so the drawing takes the height its width gives it.
+/* A phone page scrolls, so the drawing takes the height its width gives it. */
 @media (max-width: 48rem) {
   .schematic-panel,
   .schematic-panel__drawing {

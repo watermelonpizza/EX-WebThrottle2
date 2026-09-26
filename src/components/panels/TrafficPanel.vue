@@ -230,7 +230,7 @@ function sendCommand(): void {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .traffic {
   display: flex;
   flex-direction: column;
@@ -276,7 +276,7 @@ function sendCommand(): void {
   color: var(--ink-muted);
 }
 
-// Protocol frames are code, so they read in a monospace face.
+/* Protocol frames are code, so they read in a monospace face. */
 .trace {
   flex: 1;
   min-height: 0;

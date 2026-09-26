@@ -102,7 +102,7 @@ function remove(loco: { address: number; name: string }): void {
   </section>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .rows {
   display: grid;
   margin: 0;

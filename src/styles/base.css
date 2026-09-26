@@ -1,4 +1,4 @@
-@use './tokens';
+@import './tokens.css';
 
 @font-face {
   font-family: 'Alan Sans';
@@ -77,7 +77,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
-// Numbers on this console are measurements: they keep their width.
+/* Numbers on this console are measurements: they keep their width. */
 .numeric {
   font-variant-numeric: tabular-nums;
 }
@@ -111,8 +111,8 @@ a {
   white-space: nowrap;
 }
 
-// An inline SVG glyph (Material Design Icons paths, from @mdi/js). It is
-// sized by the surrounding font size and drawn in the text colour.
+/* An inline SVG glyph (Material Design Icons paths, from @mdi/js). It is
+   sized by the surrounding font size and drawn in the text colour. */
 .icon {
   flex: none;
   width: 1em;
@@ -120,7 +120,7 @@ a {
   fill: currentColor;
 }
 
-// Shared control language: flat keys with a thin edge, one height.
+/* Shared control language: flat keys with a thin edge, one height. */
 .key {
   display: inline-flex;
   align-items: center;
@@ -170,10 +170,10 @@ a {
   }
 }
 
-// A floating surface opened from a button: menus, the add-loco form and the
-// event log. It sits beside the button that opened it (each popup names its
-// button with position-anchor) and flips to stay on screen; browsers without
-// anchor positioning use the fixed place each popup gives as a fallback.
+/* A floating surface opened from a button: menus, the add-loco form and the
+   event log. It sits beside the button that opened it (each popup names its
+   button with position-anchor) and flips to stay on screen; browsers without
+   anchor positioning use the fixed place each popup gives as a fallback. */
 .popup {
   position: fixed;
   inset: auto;
@@ -202,11 +202,11 @@ a {
   }
 }
 
-// Lists of compact rows: points, outputs and sensors. A list that has to
-// scroll shows only whole rows. Its height rounds down to a whole number of
-// rows and scrolling snaps from row to row, so the last row in view is never
-// sliced. The list needs a parent with a definite height (a panel) to round
-// against; anywhere else it is simply as tall as its rows.
+/* Lists of compact rows: points, outputs and sensors. A list that has to
+   scroll shows only whole rows. Its height rounds down to a whole number of
+   rows and scrolling snaps from row to row, so the last row in view is never
+   sliced. The list needs a parent with a definite height (a panel) to round
+   against; anywhere else it is simply as tall as its rows. */
 .row-list {
   --row: var(--target);
 
@@ -225,8 +225,8 @@ a {
   }
 }
 
-// A list panel (points, outputs, sensors): a title, then rows filling the
-// rest of the panel, in more than one column when the panel is wide.
+/* A list panel (points, outputs, sensors): a title, then rows filling the
+   rest of the panel, in more than one column when the panel is wide. */
 .list-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -272,8 +272,8 @@ a {
   }
 }
 
-// Points changing over (components/schematic/changeover.ts sets the timing):
-// each flash shows the new route dark, then lit, and it ends lit.
+/* Points changing over (components/schematic/changeover.ts sets the timing):
+   each flash shows the new route dark, then lit, and it ends lit. */
 .changing-over {
   animation: changeover var(--changeover-flash) step-end
     var(--changeover-flashes);

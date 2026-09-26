@@ -21,10 +21,10 @@ const type = computed(() => PANEL_TYPES[props.panel.kind]);
   </section>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .panel-frame {
-  // Every panel is a size container, so its contents choose their variant
-  // from the room this panel has, not from the whole window.
+  /* Every panel is a size container, so its contents choose their variant
+     from the room this panel has, not from the whole window. */
   container: panel / size;
   position: relative;
   flex: 1;

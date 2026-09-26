@@ -22,7 +22,7 @@ const connection = useConnectionStore();
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .settings {
   display: grid;
   gap: var(--space-6);

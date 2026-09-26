@@ -26,9 +26,9 @@ const locos = useLocosStore();
   </div>
 </template>
 
-<style lang="scss" scoped>
-// Locos stack in a narrow panel and sit side by side in a wide one; either
-// way each desk shares the room equally and picks its own size variant.
+<style scoped>
+/* Locos stack in a narrow panel and sit side by side in a wide one; either
+   way each desk shares the room equally and picks its own size variant. */
 .throttles {
   display: grid;
   grid-auto-rows: minmax(10rem, 1fr);

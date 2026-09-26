@@ -20,7 +20,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 
 3. **Clean architecture, minimal spaghetti.** Keep strict separation of concerns and one-way data flow. Protocol parsing, transport, connection lifecycle, UI state, and presentational components each have their own layer and must not reach across layers. If a change needs to read three layers at once, the design is wrong — restructure. Keep components small and focused.
 
-4. **Limit packages.** Use what Vue, Node, and the browser already give us before adding anything. Every dependency is maintenance burden and supply-chain risk. Runtime dependencies are intentionally tiny: `vue`, `vue-router`, `pinia` (`sass` is a build-time devDependency). Icons are inline SVG paths copied from Material Design Icons (`@mdi/js`), not an icon font. Do not re-add removed packages (see the list below). A browser SPA must not use Node's `serialport` — use the browser Web Serial API (`navigator.serial`).
+4. **Limit packages.** Use what Vue, Node, and the browser already give us before adding anything. Every dependency is maintenance burden and supply-chain risk. Runtime dependencies are intentionally tiny: `vue`, `vue-router`, `pinia`. Styles are plain CSS (native nesting), with no preprocessor. Icons are inline SVG paths copied from Material Design Icons (`@mdi/js`), not an icon font. Do not re-add removed packages (see the list below). A browser SPA must not use Node's `serialport` — use the browser Web Serial API (`navigator.serial`).
 
 5. **Simple language.** Write plain code with plain names. Avoid jargon, cleverness, and over-engineering. Code should be readable by developers who are not veterans — and by users reading project docs. Use comments only where they add something a good name cannot.
 
@@ -36,7 +36,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 
 11. **Readable code grouping, with reasons, not magic numbers.** Separate blocks of code with blank lines so related statements are visibly grouped; the `@stylistic/padding-line-between-statements` rule enforces this (`npm run lint:fix` tidies it up). Whenever a value or formula is not self-evidently why (protocol byte layouts, reserved values, range ceilings), add a short comment explaining the reason and the source — and attach it directly to the thing it documents with no blank line between them, so IDE/JSDoc tooling binds it correctly. Core formatting rules are deprecated in ESLint; use the `@stylistic/...` versions, never the deprecated core names.
 
-12. **No pixel-peeping in styles.** Size and space come from the shared tokens in `src/styles/tokens.scss` (type, spacing and control scales) and from layout (flex, grid, content), never from one-off values tuned to match a screenshot: no hand-picked line heights, widths, heights, offsets or letter-spacing. Panels change size at run time and the layout will become user-arrangeable, so anything that only holds at one size is a bug.
+12. **No pixel-peeping in styles.** Size and space come from the shared tokens in `src/styles/tokens.css` (type, spacing and control scales) and from layout (flex, grid, content), never from one-off values tuned to match a screenshot: no hand-picked line heights, widths, heights, offsets or letter-spacing. Panels change size at run time and the layout will become user-arrangeable, so anything that only holds at one size is a bug.
 
 ## Stack
 
@@ -46,7 +46,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 | Package manager | npm (lockfile is committed; workflows use `npm ci`)                                                                                                                                                                                                                                              |
 | Vue             | 3.5 stable, Composition API + `<script setup lang="ts">`                                                                                                                                                                                                                                         |
 | Build           | Vite 8 + `@vitejs/plugin-vue`                                                                                                                                                                                                                                                                    |
-| UI              | **Own component layer** (Vuetify was removed). Thin components over native HTML + SCSS: range inputs for throttles, `<dialog>` for modals, plain elements elsewhere. Inline SVG paths (from Material Design Icons) for glyphs. Fallback if we ever need a control we do not want to hand-wire: `@vuetify/v0` (headless, unstyled). |
+| UI              | **Own component layer** (Vuetify was removed). Thin components over native HTML + CSS: range inputs for throttles, `<dialog>` for modals, plain elements elsewhere. Inline SVG paths (from Material Design Icons) for glyphs. Fallback if we ever need a control we do not want to hand-wire: `@vuetify/v0` (headless, unstyled). |
 | State           | Pinia 4                                                                                                                                                                                                                                                                                          |
 | Routing         | vue-router 5, hash history (static hosting on GitHub Pages)                                                                                                                                                                                                                                      |
 | TypeScript      | pinned `^5.9.x` — **do NOT bump to `latest`**: TypeScript 7.x (native/Go) is not yet supported by vue-tsc/Volar and will crash the type-check. Revisit once Volar ships TS 7 support.                                                                                                            |
@@ -54,7 +54,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 | Tests           | Vitest 5 + `@vue/test-utils` + jsdom (unit/component); Playwright for e2e, run against the host emulator                                                                                                                                                                                         |
 | Type-check      | `vue-tsc` inside the production build                                                                                                                                                                                                                                                            |
 
-**Removed and not to be re-added**: `@mdi/font` (a whole icon font for a handful of glyphs), `vuetify`, `vite-plugin-vuetify`, `three` / `@types/three`, `vue-round-slider`, `serialport`, `webfontloader`, `roboto-fontface`, `@iconify/vue`, `@cloudthrottle/dcc-ex--commands`, `@cloudthrottle/dcc-ex--serial-communicator`, `@babel/types`, `npm-run-all`, `eslint-config-google`, `playwright` (use `@playwright/test` only). We own the DCC-EX connection layer ourselves instead of the stale cloudthrottle packages.
+**Removed and not to be re-added**: `@mdi/font` (a whole icon font for a handful of glyphs), `sass` (native CSS nesting covers what we used), `vuetify`, `vite-plugin-vuetify`, `three` / `@types/three`, `vue-round-slider`, `serialport`, `webfontloader`, `roboto-fontface`, `@iconify/vue`, `@cloudthrottle/dcc-ex--commands`, `@cloudthrottle/dcc-ex--serial-communicator`, `@babel/types`, `npm-run-all`, `eslint-config-google`, `playwright` (use `@playwright/test` only). We own the DCC-EX connection layer ourselves instead of the stale cloudthrottle packages.
 
 ## Architecture
 
@@ -83,7 +83,7 @@ Rules:
 - Stores must not touch the DOM.
 - Components must not know protocol details — they call store actions and read store state.
 - The Command Station is authoritative. Stores send commands and fold in replies and broadcasts; they do not assume a command's reply is the next message.
-- Components only ever read colours, spacing, and type from `var(--*)` tokens in `src/styles/main.scss`, never hard-coded values, so new themes need no component changes.
+- Components only ever read colours, spacing, and type from `var(--*)` tokens in `src/styles/tokens.css`, never hard-coded values, so new themes need no component changes.
 
 ## Commands
 

@@ -1,14 +1,14 @@
-// Design tokens for the operating-centre console. Components read only these
-// custom properties, so a theme is one block here and never a component edit.
-// Dark is the workstation default; light and contrast switch on data-theme.
+/* Design tokens for the operating-centre console. Components read only these
+   custom properties, so a theme is one block here and never a component edit.
+   Dark is the workstation default; light and contrast switch on data-theme. */
 
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
 
-  // Surfaces, from the room behind the screen to raised controls.
+  /* Surfaces, from the room behind the screen to raised controls. */
   --ground: #151a1f;
-  // The recessed bezel around the working field: top bar and safety strip.
+  /* The recessed bezel around the working field: top bar and safety strip. */
   --chrome: #0e1418;
   --panel: #192025;
   --raised: #1f272d;
@@ -16,12 +16,12 @@
   --rule: #2b343b;
   --edge: #3a444b;
 
-  // Text. Muted is still AA on every surface above.
+  /* Text. Muted is still AA on every surface above. */
   --ink: #eef2f4;
   --ink-muted: #9ba4ab;
   --ink-on-accent: #04181b;
 
-  // Schematic linework, in the manner of a signalling display.
+  /* Schematic linework, in the manner of a signalling display. */
   --track-idle: #5f6b73;
   --track-set: #eef2f4;
   --track-unset: #4a545b;
@@ -29,9 +29,9 @@
   --describer: #eeab35;
   --describer-ink: #1a1405;
 
-  // State colours: each means one thing only.
-  --accent: #00a3b9; // selected, on, the live value
-  --stop: #c1292e; // stop, and nothing else
+  /* State colours: each means one thing only. */
+  --accent: #00a3b9; /* selected, on, the live value */
+  --stop: #c1292e; /* stop, and nothing else */
   --stop-hover: #d3353a;
   --stop-ink: #ffffff;
   --attention: #f7b656;
@@ -75,8 +75,8 @@
   --selection: rgb(0 120 138 / 0.22);
 }
 
-// Strongest separation and larger type for low vision: black and white, one
-// cyan for selection, pure red for stop, and no muted text at all.
+/* Strongest separation and larger type for low vision: black and white, one
+   cyan for selection, pure red for stop, and no muted text at all. */
 [data-theme='contrast'] {
   color-scheme: dark;
 
@@ -116,10 +116,10 @@
   --font: 'Alan Sans', system-ui, sans-serif;
   --font-code: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  // One compact type scale, so a screen holds as much of the layout as it
-  // can. Everything is in rem, so browser zoom enlarges the whole console for
-  // anyone who wants bigger text and controls; the contrast theme also raises
-  // --text-scale to enlarge every step at once.
+  /* One compact type scale, so a screen holds as much of the layout as it
+     can. Everything is in rem, so browser zoom enlarges the whole console for
+     anyone who wants bigger text and controls; the contrast theme also raises
+     --text-scale to enlarge every step at once. */
   --text-xs: calc(0.75rem * var(--text-scale));
   --text-sm: calc(0.875rem * var(--text-scale));
   --text-md: calc(1rem * var(--text-scale));
@@ -131,7 +131,7 @@
   --leading-tight: 1.1;
   --leading: 1.35;
 
-  // One spacing scale; components pick steps, never their own values.
+  /* One spacing scale; components pick steps, never their own values. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -142,13 +142,13 @@
 
   --radius: 4px;
 
-  // Control sizes follow the pointer, not the screen. A mouse or trackpad
-  // points precisely, so a desk or control station gets compact controls and
-  // more of the layout on screen, as in any productive desktop tool. A finger
-  // needs bigger targets set further apart (see the coarse pointer below).
-  // --target is the smallest thing to hit, --control the size of the
-  // controls a driver reaches for without looking (stop, direction), and
-  // --control-gap the space between neighbouring controls.
+  /* Control sizes follow the pointer, not the screen. A mouse or trackpad
+     points precisely, so a desk or control station gets compact controls and
+     more of the layout on screen, as in any productive desktop tool. A finger
+     needs bigger targets set further apart (see the coarse pointer below).
+     --target is the smallest thing to hit, --control the size of the
+     controls a driver reaches for without looking (stop, direction), and
+     --control-gap the space between neighbouring controls. */
   --target: calc(2rem * var(--text-scale));
   --control: calc(2.75rem * var(--text-scale));
   --control-gap: var(--space-2);
@@ -156,9 +156,9 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-// A touch screen, whatever its width: a phone walking the layout or a tablet
-// on the fascia. 2.75rem is the 44 px touch target the Apple and WCAG
-// guidance ask for.
+/* A touch screen, whatever its width: a phone walking the layout or a tablet
+   on the fascia. 2.75rem is the 44 px touch target the Apple and WCAG
+   guidance ask for. */
 @media (pointer: coarse) {
   :root {
     --target: calc(2.75rem * var(--text-scale));

@@ -54,7 +54,7 @@ const OPTIONS: { value: ThemeName; label: string; hint: string }[] = [
   </section>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .themes {
   display: grid;
   gap: var(--space-3);

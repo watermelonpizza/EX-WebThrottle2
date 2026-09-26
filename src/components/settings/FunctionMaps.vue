@@ -137,7 +137,7 @@ function remove(map: LocoMap): void {
   </section>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .rows {
   display: grid;
   margin: 0;
@@ -202,8 +202,8 @@ function remove(map: LocoMap): void {
   }
 }
 
-// The column names and the save buttons stay in view while the page
-// scrolls through all 32 functions, spanning the editor's full width.
+/* The column names and the save buttons stay in view while the page
+   scrolls through all 32 functions, spanning the editor's full width. */
 .map-editor__row--head,
 .map-editor__actions {
   position: sticky;

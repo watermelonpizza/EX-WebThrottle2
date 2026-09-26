@@ -70,7 +70,7 @@ Before your first `test:e2e` run, run `npx playwright install` to download the b
 
 ### How it is built
 
-Vue 3.5, Vite 8, Pinia 4, vue-router 5 (hash history), and TypeScript 5.9. The interface is our own small component layer over plain HTML and SCSS, with no UI framework. ESLint 10 (flat config) and Prettier handle linting and formatting. Tests use Vitest 5 with @vue/test-utils, and Playwright.
+Vue 3.5, Vite 8, Pinia 4, vue-router 5 (hash history), and TypeScript 5.9. The interface is our own small component layer over plain HTML and CSS, with no UI framework. ESLint 10 (flat config) and Prettier handle linting and formatting. Tests use Vitest 5 with @vue/test-utils, and Playwright.
 
 Code flows one way:
 

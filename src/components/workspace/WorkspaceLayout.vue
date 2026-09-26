@@ -24,7 +24,7 @@ defineProps<{ node: LayoutNode }>();
   <PanelFrame v-else :panel="node" />
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .split {
   display: flex;
   width: 100%;
@@ -46,7 +46,7 @@ defineProps<{ node: LayoutNode }>();
   min-height: 0;
 }
 
-// Sections meet on a hairline rule rather than a gap or a card edge.
+/* Sections meet on a hairline rule rather than a gap or a card edge. */
 .split--row > .split__cell + .split__cell {
   border-left: 1px solid var(--rule);
 }
@@ -55,8 +55,8 @@ defineProps<{ node: LayoutNode }>();
   border-top: 1px solid var(--rule);
 }
 
-// Narrow screens read a layout top to bottom, in its reading order, and the
-// workspace scrolls instead of squeezing panels below their minimum.
+/* Narrow screens read a layout top to bottom, in its reading order, and the
+   workspace scrolls instead of squeezing panels below their minimum. */
 @media (max-width: 48rem) {
   .split--row {
     flex-direction: column;

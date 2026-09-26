@@ -35,7 +35,7 @@ const inventory = useInventoryStore();
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .output {
   display: grid;
   align-items: center;
@@ -58,8 +58,8 @@ const inventory = useInventoryStore();
   }
 }
 
-// Off is an empty ring and on a filled lamp, so the shape says it as well as
-// the colour and the word.
+/* Off is an empty ring and on a filled lamp, so the shape says it as well as
+   the colour and the word. */
 .output__lamp {
   width: var(--space-3);
   height: var(--space-3);

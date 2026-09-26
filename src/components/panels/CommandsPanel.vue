@@ -157,7 +157,7 @@ function send(command: CommandDef): void {
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .commands {
   display: flex;
   flex-direction: column;

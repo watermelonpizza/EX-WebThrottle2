@@ -32,7 +32,7 @@ watch(
   <ConnectScreen v-else />
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .console {
   display: flex;
   height: 100%;

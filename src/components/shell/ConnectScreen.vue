@@ -162,7 +162,7 @@ function connectUrl(): void {
   </section>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .connect {
   display: grid;
   align-content: center;
@@ -306,7 +306,7 @@ function connectUrl(): void {
   vector-effect: non-scaling-stroke;
 }
 
-// While a connection opens, a lit route runs along the track.
+/* While a connection opens, a lit route runs along the track. */
 .connect__rail--live {
   stroke: var(--accent);
   stroke-dasharray: 0.2 1;

@@ -24,7 +24,7 @@ function systemTheme(): ThemeName {
     : 'dark';
 }
 
-// The token blocks in styles/tokens.scss key off data-theme on <html>.
+// The token blocks in styles/tokens.css key off data-theme on <html>.
 export function applyTheme(theme: ThemeName): void {
   document.documentElement.dataset.theme = theme;
 }

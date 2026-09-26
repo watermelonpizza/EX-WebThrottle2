@@ -122,7 +122,7 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .key-button {
   display: inline-flex;
   align-items: center;
@@ -165,7 +165,7 @@
 }
 
 .diagram-key__list {
-  // Each sample is a short stretch of track, about three letters long.
+  /* Each sample is a short stretch of track, about three letters long. */
   --sample: 3em;
 
   display: grid;
@@ -174,8 +174,8 @@
   margin: 0;
 }
 
-// The sample and its name in one column, what it means in the other; the
-// columns line up down the whole key.
+/* The sample and its name in one column, what it means in the other; the
+   columns line up down the whole key. */
 .diagram-key__item {
   display: grid;
   align-items: baseline;

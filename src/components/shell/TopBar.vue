@@ -176,9 +176,9 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   </header>
 </template>
 
-<style lang="scss" scoped>
-// Brand on the left, roles centred, the link and clock on the right, all in
-// one slim row.
+<style scoped>
+/* Brand on the left, roles centred, the link and clock on the right, all in
+   one slim row. */
 .top-bar {
   display: grid;
   flex: none;
@@ -311,7 +311,7 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   padding: var(--space-2);
 }
 
-// Without anchor positioning, menus hang from the top bar's right corner.
+/* Without anchor positioning, menus hang from the top bar's right corner. */
 @supports not (position-area: bottom) {
   .menu {
     top: calc(var(--target) + var(--space-3));
@@ -353,8 +353,8 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   font-weight: 600;
 }
 
-// Narrow screens: the brand and status share the first row, and the roles
-// take a full-width row of their own that scrolls sideways if it must.
+/* Narrow screens: the brand and status share the first row, and the roles
+   take a full-width row of their own that scrolls sideways if it must. */
 @media (max-width: 64rem) {
   .top-bar {
     grid-template-columns: 1fr auto;
@@ -382,8 +382,8 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   }
 }
 
-// On a phone the lamp and the link's name are enough to see; "Connected"
-// is still read out.
+/* On a phone the lamp and the link's name are enough to see; "Connected"
+   is still read out. */
 @media (max-width: 30rem) {
   .top-bar__wordmark {
     font-size: var(--text-md);

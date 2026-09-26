@@ -108,16 +108,16 @@ function toggleMaster(): void {
   </footer>
 </template>
 
-<style lang="scss" scoped>
-// One slim row that never moves: Stop all first, then each track's power,
-// then the event log. Safety stays in reach without taking the screen.
+<style scoped>
+/* One slim row that never moves: Stop all first, then each track's power,
+   then the event log. Safety stays in reach without taking the screen. */
 .safety {
   display: flex;
   flex: none;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
-  // Clear of a phone's home indicator.
+  /* Clear of a phone's home indicator. */
   padding: var(--space-2) var(--space-3)
     max(var(--space-2), env(safe-area-inset-bottom));
 
@@ -147,7 +147,7 @@ function toggleMaster(): void {
   }
 }
 
-// Each track output is a switch whose state is a word as well as a colour.
+/* Each track output is a switch whose state is a word as well as a colour. */
 .safety__power {
   display: flex;
   flex-wrap: wrap;
@@ -230,8 +230,8 @@ function toggleMaster(): void {
   text-align: center;
 }
 
-// The log opens upwards from its button; the panel inside brings its own
-// padding.
+/* The log opens upwards from its button; the panel inside brings its own
+   padding. */
 .event-log {
   width: min(24rem, calc(100vw - 2 * var(--space-3)));
   max-height: min(28rem, calc(100dvh - 8rem));
@@ -247,8 +247,8 @@ function toggleMaster(): void {
   }
 }
 
-// On a phone Stop all takes the room the event label gives up, on the same
-// single row as the power switches.
+/* On a phone Stop all takes the room the event label gives up, on the same
+   single row as the power switches. */
 @media (max-width: 40rem) {
   .safety {
     flex-wrap: nowrap;
