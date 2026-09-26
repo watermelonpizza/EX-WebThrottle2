@@ -14,16 +14,6 @@ const clock = useClock();
 const appMenu = useTemplateRef<HTMLElement>('app-menu');
 const linkPopover = useTemplateRef<HTMLElement>('link-popover');
 
-// What the operator plugged in, in their words rather than the API's.
-const TRANSPORT_LABELS: Record<string, string> = {
-  'Web Serial': 'USB',
-  Emulator: 'Emulator',
-};
-
-const linkLabel = computed(
-  () => TRANSPORT_LABELS[connection.transportName] ?? connection.transportName,
-);
-
 const moving = computed(() =>
   locos.throttles.filter((throttle) => throttle.speed > 0),
 );
@@ -81,7 +71,7 @@ async function disconnect(stopFirst: boolean): Promise<void> {
       data-testid="shell-status"
     >
       <span class="lamp" aria-hidden="true" />
-      <span><span class="top-bar__link-state">Connected · </span>{{ linkLabel }}</span>
+      <span><span class="top-bar__link-state">Connected · </span>{{ connection.transportName }}</span>
     </button>
 
     <div
@@ -92,7 +82,7 @@ async function disconnect(stopFirst: boolean): Promise<void> {
       data-testid="link-popover"
     >
       <p class="menu__note">
-        Connected to your Command Station by {{ linkLabel }}.
+        Connected to your Command Station by {{ connection.transportName }}.
         <template v-if="connection.station">
           It runs DCC-EX {{ connection.station.version }} on
           {{ connection.station.microprocessor }}.

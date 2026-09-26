@@ -8,7 +8,7 @@ const BAUD_RATE = 115200;
 // API. The Serial object is injected rather than read from navigator, so tests
 // can substitute a fake and the adapter runs anywhere the shape matches.
 export class WebSerialTransport implements Transport {
-  readonly name = 'Web Serial';
+  readonly name = 'USB';
   connected = false;
 
   private readonly encoder = new TextEncoder();
