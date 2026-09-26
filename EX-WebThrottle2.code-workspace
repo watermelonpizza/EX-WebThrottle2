@@ -6,12 +6,11 @@
 	],
 	"settings": {
 		"yaml.schemas": {
-			"https://json.schemastore.org/github-workflow.json": "file:///home/matthew/Documents/code/dcc/EX-WebThrottle2/.github/workflows/deploy.yml"
+			"https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
 		},
 		"cSpell.words": [
 			"pinia",
-			"vitest",
-			"vuetify"
+			"vitest"
 		],
 		"cSpell.enableFiletypes": [
 			"!yaml",
