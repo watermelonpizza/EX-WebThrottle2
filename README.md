@@ -36,7 +36,7 @@ This section is for Tinkerers and Engineers who want to build or change EX-WebTh
 ### Requirements
 
 - Node.js 26. `.nvmrc` and `engines` pin this; run `nvm use` if you have nvm.
-- pnpm. The lockfile is committed, and CI uses `pnpm install`.
+- pnpm. The lockfile (`pnpm-lock.yaml`) is committed.
 - For the emulator: a C++17 compiler, `make`, and `sed`. See [emulator/README.md](emulator/README.md), including Windows notes.
 
 ### Get started
@@ -66,7 +66,7 @@ pnpm run test:emulator  # emulator bridge tests
 pnpm run test:e2e       # Playwright tests (starts the emulator and dev server itself)
 ```
 
-Before your first `test:e2e` run, run `npx playwright install` to download the browsers.
+Before your first `test:e2e` run, run `pnpm exec playwright install` to download the browsers.
 
 ### How it is built
 

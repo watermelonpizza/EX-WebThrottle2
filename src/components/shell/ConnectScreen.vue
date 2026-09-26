@@ -131,7 +131,7 @@ function connectUrl(): void {
           >
             {{
               urlError ||
-              'The emulator runs a real Command Station on your computer (npm run emulator).'
+              'The emulator runs a real Command Station on your computer (pnpm run emulator).'
             }}
           </p>
         </form>

@@ -25,23 +25,18 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+      # Installs pnpm (packageManager in package.json) and Node (.nvmrc), then
+      # runs pnpm install.
+      - name: Setup pnpm and Node.js
+        uses: pnpm/setup@v3
         with:
-          # Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.
-          node-version: 26.x
-          # Used to specify a package manager for caching in the default directory. Supported values: npm, yarn, pnpm.
-          cache: npm
-          # Used to specify the path to a dependency file: package-lock.json, yarn.lock, etc. Supports wildcards or a list of file names for caching multiple dependencies.
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
+          cache: true
+          require-lockfile: true
 
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
       - name: Fix permissions
         run: |

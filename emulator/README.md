@@ -18,7 +18,7 @@ emulator/Arduino.h          host shim: Print/Stream/HardwareSerial, time, pins
 emulator/config.h           host board config (emulated motor shield, no EEPROM/wifi)
 emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin no-ops
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
-emulator/bridge.mjs         Node WebSocket bridge (npm run emulator)
+emulator/bridge.mjs         Node WebSocket bridge (pnpm run emulator)
 emulator/Makefile           cross-platform host build
 emulator/layout.txt         boot command script (edit without rebuilding)
 emulator/CommandStation-EX/ git submodule: the real firmware (do not edit)
@@ -94,7 +94,7 @@ swallowed).
 ## Browser connection (WebSocket bridge)
 
 ```bash
-npm run emulator        # builds, then serves ws://127.0.0.1:4444
+pnpm run emulator       # builds, then serves ws://127.0.0.1:4444
 ```
 
 The bridge spawns the emulator, forwards everything on its stdout to every
@@ -105,7 +105,7 @@ USB too); anything on the emulator's stderr goes to the bridge's console, not
 the wire. Override the port with `WSPORT`:
 
 ```bash
-WSPORT=4445 npm run emulator
+WSPORT=4445 pnpm run emulator
 ```
 
 Try it from any WebSocket client; connect, then send a command and read the

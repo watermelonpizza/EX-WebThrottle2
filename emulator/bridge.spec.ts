@@ -1,8 +1,8 @@
 // Integration tests for the CommandStation-EX host emulator and its
 // WebSocket bridge (emulator/bridge.mjs): spawn the real binary, treat its
 // stdin/stdout as a command-station terminal, and round-trip commands. Run
-// with `npm run test:emulator` — this needs a C++17 compiler + make and the
-// git submodule, so it is intentionally NOT part of `npm test`.
+// with `pnpm run test:emulator` — this needs a C++17 compiler + make and the
+// git submodule, so it is intentionally NOT part of `pnpm test`.
 // @vitest-environment node
 
 import { execFileSync, spawn } from 'node:child_process';

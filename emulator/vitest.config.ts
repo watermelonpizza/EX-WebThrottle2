@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vitest/config';
 
-// Runs the emulator/bridge integration tests (npm run test:emulator). Kept
-// separate from vite.config.ts so running `npm test` needs no C++ toolchain:
+// Runs the emulator/bridge integration tests (pnpm run test:emulator). Kept
+// separate from vite.config.ts so running `pnpm test` needs no C++ toolchain:
 // these spawn the real emulator binary and only apply to emulator/**.
 export default defineConfig({
   test: {

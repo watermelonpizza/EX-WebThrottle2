@@ -43,7 +43,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 | Area            | Choice                                                                                                                                                                                                                                                                                           |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Node            | 26 (active current release, LTS soon). `engines >=26.0.0`, `.nvmrc` = 26, CI `26.x`                                                                                                                                                                                                              |
-| Package manager | npm (lockfile is committed; workflows use `npm ci`)                                                                                                                                                                                                                                              |
+| Package manager | pnpm (`pnpm-lock.yaml` is committed)                                                                                                                                                                                                                                                             |
 | Vue             | 3.5 stable, Composition API + `<script setup lang="ts">`                                                                                                                                                                                                                                         |
 | Build           | Vite 8 + `@vitejs/plugin-vue`                                                                                                                                                                                                                                                                    |
 | UI              | **Own component layer** (Vuetify was removed). Thin components over native HTML + CSS: range inputs for throttles, `<dialog>` for modals, plain elements elsewhere. Inline SVG paths (from Material Design Icons) for glyphs. Fallback if we ever need a control we do not want to hand-wire: `@vuetify/v0` (headless, unstyled). |
@@ -88,20 +88,20 @@ Rules:
 ## Commands
 
 ```bash
-npm install            # clean install
-npm run dev            # Vite dev server
-npm run build          # type-check (vue-tsc) + production build
-npm run preview        # preview the production build
-npm run type-check     # vue-tsc only
-npm run lint           # ESLint (flat config, eslint.config.mjs); lint:fix to auto-fix
-npm run format:check   # Prettier check on src/; format to write
-npm run test:unit      # Vitest unit/component tests with coverage (= npm test)
-npm run emulator       # build the host emulator and serve it on ws://127.0.0.1:4444
-npm run test:emulator  # emulator bridge tests
-npm run test:e2e       # Playwright e2e (starts the emulator + dev server itself)
+pnpm install            # clean install
+pnpm run dev            # Vite dev server
+pnpm run build          # type-check (vue-tsc) + production build
+pnpm run preview        # preview the production build
+pnpm run type-check     # vue-tsc only
+pnpm run lint           # ESLint (flat config, eslint.config.mjs); lint:fix to auto-fix
+pnpm run format:check   # Prettier check on src/; format to write
+pnpm run test:unit      # Vitest unit/component tests with coverage (= pnpm test)
+pnpm run emulator       # build the host emulator and serve it on ws://127.0.0.1:4444
+pnpm run test:emulator  # emulator bridge tests
+pnpm run test:e2e       # Playwright e2e (starts the emulator + dev server itself)
 ```
 
-- Before the first e2e run, run `npx playwright install`, or the tests fail with "Executable doesn't exist".
+- Before the first e2e run, run `pnpm exec playwright install`, or the tests fail with "Executable doesn't exist".
 - The emulator needs the submodule (`git submodule update --init`) and a C++ toolchain with `make`. See `emulator/README.md`.
 - Run lint, type-check, and unit tests after every change.
 

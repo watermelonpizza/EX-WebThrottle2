@@ -28,7 +28,7 @@ const config: PlaywrightTestConfig = {
   outputDir: 'test-results/',
   webServer: [
     {
-      command: 'npm run emulator',
+      command: 'pnpm run emulator',
       wait: { stdout: /emulator bridge on ws:\/\/127\.0\.0\.1:4444/ },
       stdout: 'pipe',
       timeout: 120_000,

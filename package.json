@@ -4,6 +4,7 @@
     "description": "Next-generation DCC-EX browser throttle (WebThrottle-EX successor)",
     "type": "module",
     "private": true,
+    "packageManager": "pnpm@11.9.0",
     "engines": {
         "node": ">=26.0.0"
     },
@@ -16,7 +17,7 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier --write src/",
         "format:check": "prettier --check src/",
-        "test": "npm run test:unit",
+        "test": "pnpm run test:unit",
         "test:unit": "vitest run --coverage",
         "test:emulator": "make -C emulator && vitest run --config emulator/vitest.config.ts",
         "test:e2e": "playwright test",
