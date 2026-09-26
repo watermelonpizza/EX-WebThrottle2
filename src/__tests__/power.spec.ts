@@ -15,8 +15,10 @@ describe('power store', () => {
   it('assumes everything off until broadcasts arrive', async () => {
     const connection = useConnectionStore();
     const power = usePowerStore();
+    const station = new MockTransport();
 
-    await connection.connect(new MockTransport());
+    await connection.connect(station);
+    station.receives('<= A MAIN><= B PROG>');
 
     expect(power.master).toBe(PowerState.OFF);
     expect(power.tracks).toEqual([
@@ -29,15 +31,18 @@ describe('power store', () => {
     const connection = useConnectionStore();
     const power = usePowerStore();
 
-    await connection.connect(new MockTransport());
+    const station = new MockTransport();
 
-    connection.send('<1>');
+    await connection.connect(station);
+    station.receives('<= A MAIN><= B PROG>');
+
+    station.receives('<p1>');
     await flushPromises();
 
     expect(power.master).toBe(PowerState.ON);
     expect(power.tracks.map((track) => track.on)).toEqual([true, true]);
 
-    connection.send('<0 B>');
+    station.receives('<pb>');
     await flushPromises();
 
     expect(power.master).toBe(PowerState.ON);

@@ -23,6 +23,7 @@ describe('safety strip', () => {
     const { pinia, station } = await connectedApp();
     const wrapper = mount(SafetyStrip, { global: { plugins: [pinia] } });
 
+    station.receives('<= A MAIN><= B PROG><p0>');
     await flushPromises();
 
     const main = wrapper.get('[data-testid="track-power-A"]');
@@ -35,6 +36,10 @@ describe('safety strip', () => {
     await flushPromises();
 
     expect(station.sent).toContain('<1 A>');
+
+    station.receives('<pA>');
+    await flushPromises();
+
     expect(wrapper.get('[data-testid="track-power-A"] .power__state').text()).toBe('ON');
   });
 

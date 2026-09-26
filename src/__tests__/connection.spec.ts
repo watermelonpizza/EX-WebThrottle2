@@ -77,8 +77,7 @@ describe('connection store', () => {
 
     await store.connect(emulator);
 
-    // The emulator answers the <=> track request during connect, so its two
-    // tracks and current (off) power arrive before the broadcast below.
+    emulator.receives('<= A MAIN><= B PROG><p0>');
     emulator.receives('<p1><z 1><l 3 0 143 1><H 2 1><>');
 
     await flushPromises();
