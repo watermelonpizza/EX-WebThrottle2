@@ -41,8 +41,8 @@ wss.on('connection', (socket) => {
 emulator.stdout.on('data', (data) => {
   for (const client of wss.clients) {
     if (client.readyState === WebSocket.OPEN) {
-client.send(data);
-}
+      client.send(data);
+    }
   }
 });
 

@@ -1,10 +1,10 @@
 # General To Do item GitHub issue form
-# 
+#
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
 name: To Do
 description: Create a general To Do item
-title: "[To Do]: "
+title: '[To Do]: '
 labels:
   - To Do
 body:
@@ -14,7 +14,7 @@ body:
         Use this template to create an issue for a general task that needs to be done.
 
         This is handy for capturing ad-hoc items that don't necessarily require code to be written or updated.
-  
+
   - type: textarea
     id: description
     attributes:

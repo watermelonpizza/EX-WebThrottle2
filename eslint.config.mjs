@@ -1,5 +1,8 @@
 import { globalIgnores } from 'eslint/config';
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
+import {
+  defineConfigWithVueTs,
+  vueTsConfigs,
+} from '@vue/eslint-config-typescript';
 import pluginVue from 'eslint-plugin-vue';
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 import stylistic from '@stylistic/eslint-plugin';
@@ -29,18 +32,22 @@ export default defineConfigWithVueTs(
         'error',
         { blankLine: 'always', prev: '*', next: 'return' },
         { blankLine: 'always', prev: '*', next: 'throw' },
-        { blankLine: 'always', prev: ['const', 'let', 'var'], next: ['block-like'] },
+        {
+          blankLine: 'always',
+          prev: ['const', 'let', 'var'],
+          next: ['block-like'],
+        },
       ],
-      "@stylistic/curly-newline": [
+      '@stylistic/curly-newline': [
         'error',
         {
-          'multiline': true,
-          'minElements': 1,
-          'TryStatementBlock': { 'multiline': true, 'minElements': 0 },
-          'TryStatementHandler': { 'multiline': true, 'minElements': 0 },
-          'TryStatementFinalizer': { 'multiline': true, 'minElements': 0 }
-        }
-      ]
+          multiline: true,
+          minElements: 1,
+          TryStatementBlock: { multiline: true, minElements: 0 },
+          TryStatementHandler: { multiline: true, minElements: 0 },
+          TryStatementFinalizer: { multiline: true, minElements: 0 },
+        },
+      ],
     },
   },
   ...pluginVue.configs['flat/essential'],

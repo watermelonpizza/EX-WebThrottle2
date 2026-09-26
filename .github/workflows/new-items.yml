@@ -1,6 +1,6 @@
 # This workflow is to be used for all repositories to integrate with the DCC++ EX Beta Project.
 # It will add all issues and pull requests for a repository to the project, and put in the correct status.
-# 
+#
 # Ensure "REPO_LABEL" is updated with the correct label for the repo stream of work.
 name: Add Issue or Pull Request to Project
 
@@ -27,7 +27,7 @@ jobs:
         uses: andymckay/labeler@master
         with:
           add-labels: ${{ env.REPO_LABEL }}
-      
+
       - name: Generate token
         id: generate_token
         uses: tibdex/github-app-token@36464acb844fc53b9b8b2401da68844f6b05ebb0

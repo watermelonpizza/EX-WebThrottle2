@@ -1,10 +1,10 @@
 # Documentation update GitHub issue form
-# 
+#
 # This file needs to reside in the ".github/ISSUE_TEMPLATE/" folder.
 
 name: Documentation Update
 description: Submit a request for documentation updates, or to report broken links or inaccuracies
-title: "[Documentation Update]: "
+title: '[Documentation Update]: '
 labels:
   - Needs Documentation
 body:
@@ -14,7 +14,7 @@ body:
         Use this template to submit a request for updates to our documentation.
 
         This can be used for general documentation requests if information is missing or lacking, or to correct issues with our existing documentation such as broken links, or inaccurate information.
-  
+
   - type: textarea
     id: details
     attributes:
@@ -22,7 +22,7 @@ body:
       description: Provide the details of what needs to be documented or corrected.
     validations:
       required: true
-  
+
   - type: input
     id: page
     attributes:

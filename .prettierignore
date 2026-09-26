@@ -1,0 +1,13 @@
+# Prettier also skips everything in .gitignore. These are tracked but not
+# ours to reformat:
+
+# Upstream CommandStation-EX, pinned as a submodule.
+emulator/CommandStation-EX/
+
+# Written by pnpm.
+pnpm-lock.yaml
+
+# Written and read by tools: the Impeccable design skill and vendored agent
+# skills.
+.impeccable/
+.pi/

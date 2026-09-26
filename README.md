@@ -62,7 +62,7 @@ pnpm run build          # type-check (vue-tsc) + production build
 pnpm run preview        # preview the production build
 pnpm run type-check     # type-check only
 pnpm run lint           # ESLint; lint:fix to fix what it can
-pnpm run format:check   # Prettier check; format to rewrite
+pnpm run format:check   # Prettier check on every file it formats; format to rewrite
 pnpm run test:unit      # Vitest unit and component tests; fails below 90% coverage
 pnpm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests

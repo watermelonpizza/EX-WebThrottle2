@@ -23,8 +23,8 @@ const children: ChildProcess[] = [];
 
 afterAll(() => {
   for (const child of children) {
-child.kill('SIGINT');
-}
+    child.kill('SIGINT');
+  }
 });
 
 // Collects stdout until a pattern arrives (the emulator streams its boot
@@ -87,7 +87,10 @@ describe('emulator binary', () => {
 
   beforeAll(() => {
     ensureBuilt();
-    emulator = spawn(binary, [], { cwd: emulatorDir, stdio: ['pipe', 'pipe', 'pipe'] });
+    emulator = spawn(binary, [], {
+      cwd: emulatorDir,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     children.push(emulator);
   });
 
@@ -130,11 +133,15 @@ describe('WebSocket bridge', () => {
 
     port = await freePort();
 
-    bridge = spawn('node', [fileURLToPath(new URL('./bridge.mjs', import.meta.url))], {
-      cwd: emulatorDir,
-      env: { ...process.env, WSPORT: String(port) },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    bridge = spawn(
+      'node',
+      [fileURLToPath(new URL('./bridge.mjs', import.meta.url))],
+      {
+        cwd: emulatorDir,
+        env: { ...process.env, WSPORT: String(port) },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
 
     children.push(bridge);
   }, 20_000);
@@ -148,7 +155,10 @@ describe('WebSocket bridge', () => {
     const banner = /<iDCC-EX V-[\d.]+ \/ HOST /;
 
     const reply = new Promise<string>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('no <iDCC-EX banner over websocket')), 10_000);
+      const timeout = setTimeout(
+        () => reject(new Error('no <iDCC-EX banner over websocket')),
+        10_000,
+      );
 
       socket.on('message', (data) => {
         buffer += data.toString();

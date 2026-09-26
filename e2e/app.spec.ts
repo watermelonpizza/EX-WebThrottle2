@@ -14,7 +14,9 @@ async function connect(page: Page, path = '/'): Promise<void> {
   // browsers without Web Serial.
   const other = page.getByTestId('other-connections');
 
-  if (!(await other.evaluate((element) => (element as HTMLDetailsElement).open))) {
+  if (
+    !(await other.evaluate((element) => (element as HTMLDetailsElement).open))
+  ) {
     await page.getByTestId('other-connections-toggle').click();
   }
 
@@ -98,9 +100,14 @@ test('throws a turnout and shows it only once the station confirms', async ({
 
   const first = turnout(page, 1);
 
-  await expect(first).toHaveAttribute('aria-label', /Turnout 1.*(closed|thrown)/);
+  await expect(first).toHaveAttribute(
+    'aria-label',
+    /Turnout 1.*(closed|thrown)/,
+  );
 
-  const wasThrown = /thrown/.test((await first.getAttribute('aria-label')) ?? '');
+  const wasThrown = /thrown/.test(
+    (await first.getAttribute('aria-label')) ?? '',
+  );
 
   await first.click();
   await expect(first).toHaveAttribute(
@@ -110,9 +117,9 @@ test('throws a turnout and shows it only once the station confirms', async ({
 
   // The change is in the event log, from the strip, as the newest entry.
   await page.getByTestId('events-button').click();
-  await expect(page.getByTestId('event-log').locator('li').first()).toContainText(
-    `Turnout 1 ${wasThrown ? 'closed' : 'thrown'}`,
-  );
+  await expect(
+    page.getByTestId('event-log').locator('li').first(),
+  ).toContainText(`Turnout 1 ${wasThrown ? 'closed' : 'thrown'}`);
 });
 
 test('shows a sensor going occupied and clear', async ({ page }) => {
@@ -141,7 +148,9 @@ test('shows a sensor going occupied and clear', async ({ page }) => {
   await expect(page.getByTestId('sensor-20')).toContainText('Clear');
 });
 
-test('opens Settings from the menu, and the wordmark goes back home', async ({ page }) => {
+test('opens Settings from the menu, and the wordmark goes back home', async ({
+  page,
+}) => {
   await connect(page);
 
   await page.getByTestId('app-menu-button').click();
@@ -207,7 +216,11 @@ test('sends a raw command from Diagnostics and explains the reply', async ({
     )
     .toBeLessThan(2);
 
-  await page.getByTestId('trace-row').filter({ hasText: '<iDCC-EX' }).last().click();
+  await page
+    .getByTestId('trace-row')
+    .filter({ hasText: '<iDCC-EX' })
+    .last()
+    .click();
   await expect(page.getByTestId('trace-details').first()).toBeVisible();
 });
 
