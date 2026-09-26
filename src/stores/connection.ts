@@ -120,14 +120,7 @@ export const useConnectionStore = defineStore('connection', () => {
   }
 
   async function disconnect(): Promise<void> {
-    const currentTransport = transport.value;
-
-    unsubscribeData?.();
-    unsubscribeData = undefined;
-    unsubscribeDisconnect?.();
-    unsubscribeDisconnect = undefined;
-
-    await currentTransport?.disconnect();
+    await transport.value?.disconnect();
     clearConnectionState();
     connectionError.value = '';
   }
