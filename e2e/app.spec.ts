@@ -142,6 +142,16 @@ test('switches track power and stops everything from the strip', async ({
   await main.click();
   await expect(main).toHaveAttribute('aria-pressed', String(!wasOn));
 
+  // All tracks turns everything off while any track has power, and on only
+  // when every track is off; either way the tracks then agree.
+  const all = page.getByTestId('master-power');
+  const expected =
+    (await all.getAttribute('aria-pressed')) === 'false' ? 'true' : 'false';
+
+  await all.click();
+  await expect(all).toHaveAttribute('aria-pressed', expected);
+  await expect(main).toHaveAttribute('aria-pressed', expected);
+
   await page.getByTestId('stop-all').click();
 
   await page.getByTestId('role-diagnostics').click();

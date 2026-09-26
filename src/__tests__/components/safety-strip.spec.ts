@@ -29,7 +29,7 @@ describe('safety strip', () => {
     const main = wrapper.get('[data-testid="track-power-A"]');
 
     expect(main.attributes('aria-label')).toBe('Main A power, off');
-    expect(main.get('.power__state').text()).toBe('OFF');
+    expect(main.get('[data-testid="power-state"]').text()).toBe('OFF');
     expect(main.attributes('aria-pressed')).toBe('false');
 
     await main.trigger('click');
@@ -41,8 +41,28 @@ describe('safety strip', () => {
     await flushPromises();
 
     expect(
-      wrapper.get('[data-testid="track-power-A"] .power__state').text(),
+      wrapper
+        .get('[data-testid="track-power-A"] [data-testid="power-state"]')
+        .text(),
     ).toBe('ON');
+  });
+
+  it('switches every track at once, and says when they disagree', async () => {
+    const { pinia, station } = await connectedApp();
+    const wrapper = mount(SafetyStrip, { global: { plugins: [pinia] } });
+    const all = () => wrapper.get('[data-testid="master-power"]');
+
+    expect(all().text()).toContain('Track power');
+
+    station.receives('<= A MAIN><= B PROG><pA><pb>');
+    await flushPromises();
+
+    expect(all().text()).toContain('All tracks');
+    expect(all().get('[data-testid="power-state"]').text()).toBe('MIXED');
+    expect(all().attributes('aria-pressed')).toBe('mixed');
+
+    await all().trigger('click');
+    expect(station.sent.at(-1)).toBe('<0>');
   });
 
   it('counts new layout changes and lists them newest first in the event log', async () => {

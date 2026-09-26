@@ -13,7 +13,15 @@ const power = usePowerStore();
 
 const newest = computed(() => events.events[0]?.text ?? '');
 
-const masterOn = computed(() => power.master === PowerState.ON);
+// The state as the word the switch shows, and as its pressed state for
+// assistive tech (a mixed toggle is part of ARIA).
+const ALL_TRACKS = {
+  on: { word: 'ON', pressed: 'true' },
+  off: { word: 'OFF', pressed: 'false' },
+  mixed: { word: 'MIXED', pressed: 'mixed' },
+} as const;
+
+const allTracks = computed(() => ALL_TRACKS[power.allTracks]);
 
 // The count says "something changed" without the strip spelling each change
 // out; the Events panel it opens shows them in order.
@@ -31,10 +39,6 @@ function onLogToggle(event: Event): void {
 function toggleTrack(letter: string, on: boolean): void {
   power.setTrack(letter, on ? PowerState.OFF : PowerState.ON);
 }
-
-function toggleMaster(): void {
-  power.setMaster(masterOn.value ? PowerState.OFF : PowerState.ON);
-}
 </script>
 
 <template>
@@ -49,6 +53,25 @@ function toggleMaster(): void {
     </button>
 
     <div class="safety__power">
+      <!-- Every track at once; a station that has not listed its tracks
+           still has this one. -->
+      <button
+        type="button"
+        class="power"
+        :class="{ 'power--on': power.allTracks === 'on' }"
+        :aria-pressed="allTracks.pressed"
+        :aria-label="`${power.tracks.length > 0 ? 'All tracks' : 'Track'} power, ${allTracks.word.toLowerCase()}`"
+        data-testid="master-power"
+        @click="power.toggleAll()"
+      >
+        <span class="power__name">{{
+          power.tracks.length > 0 ? 'All tracks' : 'Track power'
+        }}</span>
+        <span class="power__state" data-testid="power-state">{{
+          allTracks.word
+        }}</span>
+      </button>
+
       <button
         v-for="track in power.tracks"
         :key="track.letter"
@@ -61,21 +84,9 @@ function toggleMaster(): void {
         @click="toggleTrack(track.letter, track.on)"
       >
         <span class="power__name">{{ track.name }} {{ track.letter }}</span>
-        <span class="power__state">{{ track.on ? 'ON' : 'OFF' }}</span>
-      </button>
-
-      <!-- A station that has not listed its tracks still has master power. -->
-      <button
-        v-if="power.tracks.length === 0"
-        type="button"
-        class="power"
-        :class="{ 'power--on': masterOn }"
-        :aria-pressed="masterOn"
-        data-testid="master-power"
-        @click="toggleMaster"
-      >
-        <span class="power__name">Track power</span>
-        <span class="power__state">{{ masterOn ? 'ON' : 'OFF' }}</span>
+        <span class="power__state" data-testid="power-state">{{
+          track.on ? 'ON' : 'OFF'
+        }}</span>
       </button>
     </div>
 

@@ -155,7 +155,7 @@ The workstation is built almost entirely from these.
 ### Named Rules
 **The One Meaning Rule.** Every state colour means exactly one thing and never takes a second job: teal = live/selected/on, Stop Red = stop, Occupied Red = section occupied, Describer Amber = the loco tag. If a new state needs a colour, it does not borrow an existing one.
 
-**The State-Is-A-Word Rule.** State never rides on colour alone. Power reads `ON`/`OFF`, a turnout reads `Thrown`/`Closed`, an occupied section is labelled `Occupied`. Colour confirms the word; it never replaces it.
+**The State-Is-A-Word Rule.** State never rides on colour alone. Power reads `ON`/`OFF` (the all-tracks switch reads `MIXED` when the tracks disagree), a turnout reads `Thrown`/`Closed`, an occupied section is labelled `Occupied`. Colour confirms the word; it never replaces it.
 
 **The One Accent Rule.** There is a single accent (teal). Do not add a second decorative colour to "brighten" a screen — the restraint is the identity, and the signal colours only work because the field around them is quiet.
 

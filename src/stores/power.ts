@@ -1,8 +1,10 @@
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 
 import { PowerState, powerOff, powerOn, powerTrack } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
+
+export type AllTracksState = 'on' | 'off' | 'mixed';
 
 export interface TrackPower {
   // Command-station letter (A–H), used to address this track.
@@ -92,13 +94,35 @@ export const usePowerStore = defineStore('power', () => {
     },
   );
 
+  // Every track at once. Once the station has listed its tracks, this is what
+  // their own reports add up to; before that only a bare <p1>/<p0> says.
+  const allTracks = computed<AllTracksState>(() => {
+    if (tracks.value.length === 0) {
+      return master.value === PowerState.ON ? 'on' : 'off';
+    }
+
+    const on = tracks.value.filter((entry) => entry.on).length;
+
+    if (on === 0) {
+      return 'off';
+    }
+
+    return on === tracks.value.length ? 'on' : 'mixed';
+  });
+
   function setMaster(state: PowerState): void {
     connection.send(state === PowerState.ON ? powerOn() : powerOff());
+  }
+
+  // Off while any track has power, on only when every track is off: when the
+  // tracks disagree, cutting power is the safe way round.
+  function toggleAll(): void {
+    setMaster(allTracks.value === 'off' ? PowerState.ON : PowerState.OFF);
   }
 
   function setTrack(letter: string, state: PowerState): void {
     connection.send(powerTrack(letter, state === PowerState.ON));
   }
 
-  return { master, tracks, setMaster, setTrack };
+  return { master, tracks, allTracks, setMaster, toggleAll, setTrack };
 });

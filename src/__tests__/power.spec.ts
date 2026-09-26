@@ -85,6 +85,37 @@ describe('power store', () => {
     expect(power.tracks).toEqual([]);
   });
 
+  it('adds the tracks up for the all-tracks switch, cutting power when they disagree', async () => {
+    const connection = useConnectionStore();
+    const power = usePowerStore();
+    const station = new MockTransport();
+
+    await connection.connect(station);
+
+    // Before the tracks are listed, only the bare broadcast says.
+    station.receives('<p1>');
+    await flushPromises();
+    expect(power.allTracks).toBe('on');
+
+    station.receives('<= A MAIN><= B PROG><pA><pb>');
+    await flushPromises();
+    expect(power.allTracks).toBe('mixed');
+
+    power.toggleAll();
+    expect(station.sent.at(-1)).toBe('<0>');
+
+    station.receives('<p0>');
+    await flushPromises();
+    expect(power.allTracks).toBe('off');
+
+    power.toggleAll();
+    expect(station.sent.at(-1)).toBe('<1>');
+
+    station.receives('<p1>');
+    await flushPromises();
+    expect(power.allTracks).toBe('on');
+  });
+
   it('sends the right commands for master and track switches', async () => {
     const connection = useConnectionStore();
     const power = usePowerStore();
