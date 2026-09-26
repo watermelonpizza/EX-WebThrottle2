@@ -14,13 +14,6 @@ export interface WebSocketLike {
 
 export type WebSocketFactory = (url: string) => WebSocketLike;
 
-class WebSocketTransportError extends Error {
-  constructor(url: string, reason: string) {
-    super(`${reason} ${url}`);
-    this.name = 'WebSocketTransportError';
-  }
-}
-
 export class WebSocketTransport implements Transport {
   readonly name = 'Emulator';
   connected = false;
@@ -54,7 +47,7 @@ export class WebSocketTransport implements Transport {
 
   async connect(): Promise<void> {
     if (this.connected || this.socket) {
-      throw new WebSocketTransportError(this.url, 'already connected to');
+      throw new Error(`already connected to ${this.url}`);
     }
 
     const socket = this.createSocket(this.url);
@@ -76,7 +69,7 @@ export class WebSocketTransport implements Transport {
         }
 
         this.socket = undefined;
-        reject(new WebSocketTransportError(this.url, 'could not connect to'));
+        reject(new Error(`could not connect to ${this.url}`));
       };
       socket.onclose = () => {
         this.connected = false;
@@ -87,9 +80,7 @@ export class WebSocketTransport implements Transport {
             callback();
           }
         } else {
-          reject(
-            new WebSocketTransportError(this.url, 'connection closed before'),
-          );
+          reject(new Error(`connection closed before ${this.url}`));
         }
       };
       socket.onmessage = (event) => {
@@ -107,7 +98,7 @@ export class WebSocketTransport implements Transport {
 
   send(command: string): void {
     if (!this.connected || this.socket?.readyState !== WebSocket.OPEN) {
-      throw new WebSocketTransportError(this.url, 'not connected to');
+      throw new Error(`not connected to ${this.url}`);
     }
 
     this.socket.send(command);
