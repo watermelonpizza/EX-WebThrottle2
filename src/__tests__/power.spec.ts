@@ -52,6 +52,39 @@ describe('power store', () => {
     ]);
   });
 
+  it('keeps unknown modes and ignores invalid track letters', async () => {
+    const connection = useConnectionStore();
+    const power = usePowerStore();
+    const station = new MockTransport();
+
+    await connection.connect(station);
+    station.receives('<= C CUSTOM><p1 Z><pC><p1><p0>');
+    await flushPromises();
+
+    expect(power.tracks[0]).toEqual({
+      letter: 'C',
+      name: 'CUSTOM',
+      on: false,
+    });
+  });
+
+  it('clears power state after disconnect and sends off commands', async () => {
+    const connection = useConnectionStore();
+    const power = usePowerStore();
+    const station = new MockTransport();
+
+    await connection.connect(station);
+    station.receives('<= A MAIN><p1>');
+    await flushPromises();
+    power.setMaster(PowerState.OFF);
+    power.setTrack('A', PowerState.ON);
+    await connection.disconnect();
+
+    expect(station.sent).toContain('<0>');
+    expect(station.sent).toContain('<1 A>');
+    expect(power.tracks).toEqual([]);
+  });
+
   it('sends the right commands for master and track switches', async () => {
     const connection = useConnectionStore();
     const power = usePowerStore();

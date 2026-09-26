@@ -212,7 +212,11 @@ function sendCommand(): void {
       </div>
     </div>
 
-    <form class="traffic__send" @submit.prevent="sendCommand">
+    <form
+      class="traffic__send"
+      data-testid="traffic-send-form"
+      @submit.prevent="sendCommand"
+    >
       <input
         v-model="command"
         class="field traffic__input"

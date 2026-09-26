@@ -1,5 +1,12 @@
 class ResizeObserverStub {
-  observe() {}
+  constructor(private readonly callback: ResizeObserverCallback) {}
+
+  observe(): void {
+    this.callback(
+      [{ contentRect: { width: 0, height: 0 } } as ResizeObserverEntry],
+      this as unknown as ResizeObserver,
+    );
+  }
 
   unobserve() {}
 

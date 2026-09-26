@@ -33,6 +33,7 @@ describe('diagram store', () => {
     expect(diagrams.turnoutName(3)).toBe('Yard throat');
     // The station's own description always wins.
     expect(diagrams.turnoutName(3, 'Goods yard')).toBe('Goods yard');
+    expect(diagrams.sensorName(20)).not.toBe('Sensor 20');
   });
 
   it('has no diagram for a real Command Station', async () => {
@@ -42,6 +43,9 @@ describe('diagram store', () => {
 
     expect(diagrams.diagram).toBeNull();
     expect(diagrams.turnoutName(3)).toBe('');
+    expect(diagrams.sensorName(999)).toBe('Sensor 999');
+    diagrams.place('west', 3);
+    expect(diagrams.occupant('west')).toBeUndefined();
   });
 
   it('keeps a loco in one berth at a time and remembers placements', async () => {

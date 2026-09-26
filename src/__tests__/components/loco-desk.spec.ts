@@ -83,6 +83,38 @@ describe('loco desk', () => {
     expect(station.sent.at(-1)).toBe('<F 3 2 0>');
   });
 
+  it('changes the function map and releases the cab from its menu', async () => {
+    const app = await desk();
+    const maps = useMapsStore();
+    const mapId = maps.createMap('Switcher', [
+      { fn: 0, label: 'Lights', momentary: false },
+    ]);
+    await flushPromises();
+
+    await app.wrapper.get('[data-testid="function-map"]').setValue(mapId);
+    expect(app.locos.throttles[0]?.mapId).toBe(mapId);
+
+    await app.wrapper.get('[data-testid="release"]').trigger('click');
+    expect(app.locos.throttles).toEqual([]);
+    expect(app.station.sent).toContain('<- 3>');
+  });
+
+  it('offers a compact drive form when adding a second loco', async () => {
+    const app = await desk();
+    const wrapper = mount(LocoDesk, {
+      props: { throttle: app.locos.throttles[0], canAdd: true },
+      global: { plugins: [app.pinia, app.router] },
+    });
+
+    expect(wrapper.find('[data-testid="desk-add"]').exists()).toBe(true);
+    expect(
+      wrapper
+        .get('[data-testid="drive-form"]')
+        .find('[data-testid="drive-name"]')
+        .exists(),
+    ).toBe(false);
+  });
+
   it('shows only the functions a map keeps, counting them in the heading', async () => {
     const app = await connectedApp();
     const locos = useLocosStore();

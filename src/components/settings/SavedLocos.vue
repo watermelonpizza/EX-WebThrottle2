@@ -79,7 +79,11 @@ function remove(loco: { address: number; name: string }): void {
       </li>
     </ul>
 
-    <form class="loco-form" @submit.prevent="save">
+    <form
+      class="loco-form"
+      data-testid="saved-loco-form"
+      @submit.prevent="save"
+    >
       <label class="loco-form__field">
         <span>Address</span>
         <input

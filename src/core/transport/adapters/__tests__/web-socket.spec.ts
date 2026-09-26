@@ -108,6 +108,59 @@ describe('WebSocketTransport', () => {
     expect(transport.connected).toBe(false);
   });
 
+  it('rejects duplicate and unopened socket connections', async () => {
+    const socket = new FakeWebSocket();
+    const transport = new WebSocketTransport(
+      'ws://127.0.0.1:4444',
+      fakeFactory(socket, []),
+    );
+    const connecting = transport.connect();
+
+    await expect(transport.connect()).rejects.toThrow('already connected');
+    socket.close();
+    await expect(connecting).rejects.toThrow('connection closed before');
+    expect(() => transport.send('<s>')).toThrow('not connected');
+  });
+
+  it('ignores errors after the socket has opened', async () => {
+    const socket = new FakeWebSocket();
+    const transport = new WebSocketTransport(
+      'ws://127.0.0.1:4444',
+      fakeFactory(socket, []),
+    );
+    const connected = transport.connect();
+
+    socket.open();
+    await connected;
+    socket.fail();
+    expect(transport.connected).toBe(true);
+  });
+
+  it('removes data and disconnect listeners when unsubscribed', async () => {
+    const socket = new FakeWebSocket();
+    const transport = new WebSocketTransport(
+      'ws://127.0.0.1:4444',
+      fakeFactory(socket, []),
+    );
+    const data: string[] = [];
+    let disconnected = false;
+    const removeData = transport.onData((text) => data.push(text));
+    const removeDisconnect = transport.onDisconnect(() => {
+      disconnected = true;
+    });
+    const connected = transport.connect();
+
+    socket.open();
+    await connected;
+    removeData();
+    removeDisconnect();
+    socket.receive('<p1>');
+    socket.close();
+
+    expect(data).toEqual([]);
+    expect(disconnected).toBe(false);
+  });
+
   it('reports when an open socket closes', async () => {
     const socket = new FakeWebSocket();
     const transport = new WebSocketTransport(

@@ -76,6 +76,20 @@ describe('locos store', () => {
     ]);
   });
 
+  it('reconciles repeated broadcasts and ignores commands for unknown cabs', async () => {
+    const { emulator } = await connectedSetup();
+    const locos = useLocosStore();
+
+    await broadcast(emulator, '<l 9 0 2 0>');
+    locos.setSpeed(9, 10);
+    locos.setDirection(9, Direction.REVERSE);
+    locos.emergencyStop(9);
+    locos.setFunction(9, 0, true);
+    locos.setMap(9, 'missing');
+
+    expect(locos.throttles).toEqual([]);
+  });
+
   it('reconciles speed, direction and functions from broadcasts', async () => {
     const { emulator } = await connectedSetup();
     const locos = useLocosStore();
@@ -93,6 +107,10 @@ describe('locos store', () => {
     );
     expect(locos.throttles[0].functions[0]).toBe(true);
     expect(locos.throttles[0].functions[2]).toBe(true);
+
+    await broadcast(emulator, '<l 3 0 23 0>\n');
+    expect(locos.throttles[0]?.direction).toBe(Direction.REVERSE);
+    expect(locos.throttles[0]?.speed).toBe(22);
   });
 
   it('ignores broadcasts for locos that are not being driven', async () => {
@@ -168,14 +186,17 @@ describe('locos store', () => {
     const locos = useLocosStore();
 
     locos.saveLoco(42, 'Flying Scotsman');
+    locos.saveLoco(42, 'Updated Scotsman', 'shunter');
 
     expect(JSON.parse(localStorage.getItem('exwt-roster') ?? '[]')).toEqual([
-      expect.objectContaining({ address: 42, name: 'Flying Scotsman' }),
+      expect.objectContaining({ address: 42, name: 'Updated Scotsman' }),
     ]);
 
     locos.acquire(42);
 
-    expect(locos.throttles[0].name).toBe('Flying Scotsman');
+    expect(locos.throttles[0].name).toBe('Updated Scotsman');
+    locos.setMap(42, 'default');
+    expect(locos.roster[0]?.mapId).toBe('default');
     expect(emulator.sent).toContain('<t 42>');
 
     locos.removeLoco(42);

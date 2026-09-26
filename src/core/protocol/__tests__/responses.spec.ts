@@ -17,6 +17,12 @@ describe('response catalog', () => {
     });
   });
 
+  it('describes identification without a build suffix', () => {
+    expect(
+      describeResponse('<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD>')?.parameters,
+    ).toHaveLength(3);
+  });
+
   it('describes the current firmware identification format with a build suffix', () => {
     expect(
       describeResponse(
@@ -84,6 +90,28 @@ describe('response catalog', () => {
     );
     expect(describeResponse('<Q 20>')?.summary).toBe('Sensor active');
     expect(describeResponse('<q 20>')?.summary).toBe('Sensor clear');
+  });
+
+  it('explains the remaining inventory and layout replies', () => {
+    expect(describeResponse('<p0>')?.parameters[0].meaning).toBe(
+      'Power is off.',
+    );
+    expect(describeResponse('<pA>')?.parameters[1].value).toBe('on');
+    expect(describeResponse('<= A DC 12>')?.parameters).toHaveLength(3);
+    expect(describeResponse('<= B MAIN>')?.parameters).toHaveLength(2);
+    expect(describeResponse('<jT>')?.parameters[0].value).toBe('(none)');
+    expect(describeResponse('<jT 4 X>')?.summary).toBe('Turnout not available');
+    expect(describeResponse('<Y 10 100 0 1>')?.parameters).toHaveLength(4);
+    expect(describeResponse('<Q 20 21 1>')?.parameters).toHaveLength(3);
+    expect(describeResponse('<e 1 2 3>')?.parameters).toHaveLength(3);
+    expect(describeResponse('<!PAUSED>')?.parameters[0].meaning).toContain(
+      'paused',
+    );
+    expect(describeResponse('<!RESUMED>')?.parameters[0].meaning).toContain(
+      'running',
+    );
+    expect(describeResponse('<O>')?.parameters).toEqual([]);
+    expect(describeResponse('<X>')?.parameters).toEqual([]);
   });
 
   it('leaves unlisted frames to the caller', () => {

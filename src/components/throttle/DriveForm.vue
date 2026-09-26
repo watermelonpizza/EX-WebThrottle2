@@ -58,7 +58,11 @@ function submit(): void {
 
 <template>
   <div class="drive-form" :class="{ 'drive-form--compact': compact }">
-    <form class="drive-form__row" @submit.prevent="submit">
+    <form
+      class="drive-form__row"
+      data-testid="drive-form"
+      @submit.prevent="submit"
+    >
       <label class="drive-form__field">
         <span class="drive-form__label">Loco address</span>
         <input

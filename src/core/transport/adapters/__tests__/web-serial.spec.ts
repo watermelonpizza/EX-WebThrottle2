@@ -56,6 +56,27 @@ function fakeSerial(port: FakePort): Serial {
 }
 
 describe('WebSerialTransport', () => {
+  it('rejects duplicate connections and sends only while connected', async () => {
+    const port = new FakePort();
+    const transport = new WebSerialTransport(fakeSerial(port));
+
+    expect(() => transport.send('<s>')).toThrow('not connected');
+    await transport.connect();
+    await expect(transport.connect()).rejects.toThrow('already connected');
+  });
+
+  it('connects even when a serial port has no readable side', async () => {
+    const port = {
+      open: async () => {},
+      close: async () => {},
+      readable: undefined,
+    } as unknown as FakePort;
+    const transport = new WebSerialTransport(fakeSerial(port));
+
+    await transport.connect();
+    expect(transport.connected).toBe(true);
+  });
+
   it('requests a port and opens it at the command station baud rate', async () => {
     const port = new FakePort();
     const transport = new WebSerialTransport(fakeSerial(port));
@@ -69,6 +90,7 @@ describe('WebSerialTransport', () => {
 
   it('emits decoded text to data listeners', async () => {
     const chunks = [
+      new Uint8Array(),
       new TextEncoder().encode('<p1><p'),
       new TextEncoder().encode('0>'),
     ];
@@ -99,6 +121,13 @@ describe('WebSerialTransport', () => {
     expect(
       port.written.map((bytes) => new TextDecoder().decode(bytes)),
     ).toEqual(['<1>', '<s>']);
+  });
+
+  it('can disconnect before a port is opened', async () => {
+    const transport = new WebSerialTransport(fakeSerial(new FakePort()));
+
+    await transport.disconnect();
+    expect(transport.connected).toBe(false);
   });
 
   it('closes the port on disconnect', async () => {

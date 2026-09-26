@@ -83,6 +83,30 @@ describe('events store', () => {
     expect(texts(events)[0]).toBe('Loco 12 set to 10 by another Throttle');
   });
 
+  it('reports output, power, and turnout changes with their state', async () => {
+    const { events, station } = await connect();
+
+    station.receives('<jT 4 C "Yard"><Y 7 100 0 0><pA>');
+    station.receives('<Y 7 100 0 1><pa>');
+    await flushPromises();
+
+    expect(texts(events)).toEqual(['Track A power off', 'Output 7 on']);
+
+    station.receives('<H 4 1><Y 7 100 0 0><pa>');
+    await flushPromises();
+    expect(texts(events)).toContain('Output 7 off');
+    expect(texts(events)).toContain('Turnout 4 thrown');
+  });
+
+  it('ignores stopped and repeated loco broadcasts', async () => {
+    const { events, station } = await connect();
+
+    station.receives('<l 5 0 128 0><l 5 0 128 0>');
+    await flushPromises();
+
+    expect(events.events).toEqual([]);
+  });
+
   it('reports an emergency stop and forgets everything on disconnect', async () => {
     const { connection, events, station } = await connect();
 

@@ -107,7 +107,12 @@ function remove(map: LocoMap): void {
     </ul>
     <p v-else class="settings-section__lead">No function maps yet.</p>
 
-    <form v-if="open" class="map-editor" @submit.prevent="save">
+    <form
+      v-if="open"
+      class="map-editor"
+      data-testid="function-map-form"
+      @submit.prevent="save"
+    >
       <label class="map-editor__name">
         <span>Map name</span>
         <input v-model="editing.name" class="field" data-testid="map-name" />
@@ -139,6 +144,7 @@ function remove(map: LocoMap): void {
             :checked="!def.hidden"
             type="checkbox"
             :aria-label="`Show F${def.fn} on the throttle`"
+            data-testid="function-visible"
             @change="def.hidden = !($event.target as HTMLInputElement).checked"
           />
         </div>

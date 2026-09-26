@@ -107,6 +107,16 @@ describe('inventory store', () => {
     expect(inventory.outputs[0]?.active).toBe(false);
   });
 
+  it('ignores switches for items the station has not reported', async () => {
+    const { inventory, station } = await connect();
+
+    inventory.toggleTurnout(999);
+    inventory.toggleOutput(999);
+
+    expect(station.sent).not.toContain('<T 999 T>');
+    expect(station.sent).not.toContain('<Z 999 1>');
+  });
+
   it('switches turnouts and outputs to the opposite of the state it knows', async () => {
     const { inventory, station } = await connect();
 

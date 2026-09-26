@@ -31,6 +31,45 @@ describe('connection store', () => {
     expect(store.connectionError).toBe('');
   });
 
+  it('ignores duplicate connects and can disconnect while idle', async () => {
+    const store = useConnectionStore();
+    const emulator = new MockTransport();
+
+    await store.disconnect();
+    await store.connect(emulator);
+    await store.connect(emulator);
+
+    expect(emulator.sent.filter((command) => command === '<s>')).toHaveLength(
+      1,
+    );
+  });
+
+  it('rejects serial connection when Web Serial is unavailable', () => {
+    const store = useConnectionStore();
+
+    expect(() => store.connectToSerial()).toThrow(
+      'Web Serial is not available',
+    );
+  });
+
+  it('keeps the connection usable when a transport send fails', async () => {
+    const store = useConnectionStore();
+    const transport = {
+      name: 'Broken',
+      connected: true,
+      onData: () => () => {},
+      connect: async () => {},
+      send: () => {
+        throw new Error('write failed');
+      },
+    } as unknown as MockTransport;
+
+    await store.connect(transport);
+    store.send('<1>');
+
+    expect(store.status).toBe('connected');
+  });
+
   it('connects, reports status and sends the bootstrap command', async () => {
     const store = useConnectionStore();
     const emulator = new MockTransport();

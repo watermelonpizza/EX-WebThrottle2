@@ -26,6 +26,8 @@ describe('maps store', () => {
 
     maps.updateMap(id, 'Renamed', []);
     expect(maps.maps[0].name).toBe('Renamed');
+    maps.updateMap('missing', 'Ignored', []);
+    expect(maps.maps[0].name).toBe('Renamed');
 
     maps.deleteMap(id);
     expect(maps.maps).toHaveLength(0);
