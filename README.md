@@ -63,7 +63,7 @@ pnpm run format:check   # Prettier check; format to rewrite
 pnpm run test:unit      # Vitest unit and component tests, with coverage
 pnpm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests
-pnpm run test:e2e       # Playwright tests (starts the emulator and dev server itself)
+pnpm run test:e2e       # Playwright tests (starts its own emulator on port 4455 and app on 5174)
 ```
 
 Before your first `test:e2e` run, run `pnpm exec playwright install` to download the browsers.

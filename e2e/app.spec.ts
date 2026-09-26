@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { EMULATOR_URL } from './ports';
+
 // These run against the host emulator (the real CommandStation-EX firmware,
-// started by playwright.config.ts), so every reply is the firmware's own.
+// started by playwright.config.ts on its own port), so every reply is the
+// firmware's own.
 
 async function connect(page: Page, path = '/'): Promise<void> {
   await page.goto(`/#${path}`);
@@ -15,6 +18,7 @@ async function connect(page: Page, path = '/'): Promise<void> {
     await other.locator('summary').click();
   }
 
+  await page.getByTestId('emulator-url').fill(EMULATOR_URL);
   await page.getByTestId('connect-emulator').click();
   await expect(page.getByTestId('shell-status')).toContainText('Connected');
 }

@@ -1,6 +1,8 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
 
+import { APP_PORT, EMULATOR_PORT } from './e2e/ports';
+
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
   timeout: 30 * 1000,
@@ -13,7 +15,7 @@ const config: PlaywrightTestConfig = {
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: `http://localhost:${APP_PORT}`,
     trace: 'on-first-retry',
     // Headless by default; pass --headed to watch the run.
     headless: true,
@@ -29,14 +31,18 @@ const config: PlaywrightTestConfig = {
   webServer: [
     {
       command: 'pnpm run emulator',
-      wait: { stdout: /emulator bridge on ws:\/\/127\.0\.0\.1:4444/ },
+      env: { WSPORT: String(EMULATOR_PORT) },
+      wait: {
+        stdout: new RegExp(
+          `emulator bridge on ws://127\\.0\\.0\\.1:${EMULATOR_PORT}`,
+        ),
+      },
       stdout: 'pipe',
       timeout: 120_000,
     },
     {
-      command: process.env.CI ? 'vite preview --port 5173' : 'vite dev',
-      url: 'http://localhost:5173',
-      reuseExistingServer: !process.env.CI,
+      command: `vite ${process.env.CI ? 'preview' : 'dev'} --port ${APP_PORT} --strictPort`,
+      url: `http://localhost:${APP_PORT}`,
     },
   ],
 };

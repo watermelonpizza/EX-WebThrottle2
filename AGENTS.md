@@ -98,10 +98,11 @@ pnpm run format:check   # Prettier check on src/; format to write
 pnpm run test:unit      # Vitest unit/component tests with coverage (= pnpm test)
 pnpm run emulator       # build the host emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests
-pnpm run test:e2e       # Playwright e2e (starts the emulator + dev server itself)
+pnpm run test:e2e       # Playwright e2e (starts its own emulator + app server)
 ```
 
 - Before the first e2e run, run `pnpm exec playwright install`, or the tests fail with "Executable doesn't exist".
+- An e2e run starts its own emulator on port 4455 and app server on 5174 (`e2e/ports.ts`), so it never shares state with an emulator or dev server you already have running on 4444 or 5173.
 - The emulator needs the submodule (`git submodule update --init`) and a C++ toolchain with `make`. See `emulator/README.md`.
 - Run lint, type-check, and unit tests after every change.
 
