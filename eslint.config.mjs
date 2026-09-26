@@ -57,4 +57,29 @@ export default defineConfigWithVueTs(
       curly: ['error', 'all'],
     },
   },
+  {
+    // Components know stores, not the wire: protocol and transport details
+    // reach the screen only through store state and actions (AGENTS.md).
+    name: 'app/layers',
+    files: ['src/components/**', 'src/views/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/core/protocol',
+                '@/core/protocol/*',
+                '@/core/transport',
+                '@/core/transport/*',
+              ],
+              message:
+                'Components use stores, not protocol or transport code: add a store action or getter instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

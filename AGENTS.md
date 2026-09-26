@@ -87,7 +87,7 @@ Rules:
 
 - `src/core/*` must not depend on Vue or Pinia.
 - Stores must not touch the DOM.
-- Components must not know protocol details — they call store actions and read store state.
+- Components must not know protocol details — they call store actions and read store state. Stores hand them plain values (`forward`, `thrown`, `on`), not protocol types. ESLint enforces it: files under `src/components` and `src/views` cannot import `@/core/protocol` or `@/core/transport`.
 - Keep logic out of `.vue` files. A component holds what is specific to rendering and the DOM; calculations belong in a store, in `src/core`, or in a plain `.ts` module beside the component (`throttle/fit-keys.ts`, `schematic/changeover.ts`), where a unit test can reach them.
 - The Command Station is authoritative. Stores send commands and fold in replies and broadcasts; they do not assume a command's reply is the next message.
 - Components only ever read colours, spacing, and type from `var(--*)` tokens in `src/styles/tokens.css`, never hard-coded values, so new themes need no component changes.
