@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import type { FunctionDef } from '@/core/loco/functions';
 import { loadSaved } from '@/stores/saved';
 
@@ -10,8 +9,8 @@ export const MAPS_KEY = 'exwt-maps';
 export interface LocoMap {
   id: string;
   name: string;
-  // The 32 broadcast functions a loco shows. A map may store a partial list;
-  // fullFunctions() fills the gaps from the default definitions.
+  // The functions this loco has. One the map does not list is one the loco
+  // lacks, so the desk leaves it out.
   functions: FunctionDef[];
 }
 
@@ -22,15 +21,6 @@ export const useMapsStore = defineStore('maps', () => {
 
   function persist(): void {
     localStorage.setItem(MAPS_KEY, JSON.stringify(maps.value));
-  }
-
-  function fullFunctions(id: string): FunctionDef[] {
-    const override = maps.value.find((map) => map.id === id);
-
-    return DEFAULT_FUNCTIONS.map(
-      (def) =>
-        override?.functions.find((candidate) => candidate.fn === def.fn) ?? def,
-    );
   }
 
   function createMap(name: string, functions: FunctionDef[]): string {
@@ -59,5 +49,5 @@ export const useMapsStore = defineStore('maps', () => {
     persist();
   }
 
-  return { maps, fullFunctions, createMap, updateMap, deleteMap };
+  return { maps, createMap, updateMap, deleteMap };
 });

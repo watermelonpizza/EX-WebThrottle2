@@ -10,14 +10,8 @@ beforeEach(() => {
 });
 
 describe('maps store', () => {
-  it('starts empty with the default map as the fallback', () => {
-    const maps = useMapsStore();
-
-    expect(maps.maps).toEqual([]);
-    expect(maps.fullFunctions('default')).toHaveLength(32);
-    expect(maps.fullFunctions('default').find((fn) => fn.fn === 2)).toEqual(
-      expect.objectContaining({ label: 'Horn', momentary: true }),
-    );
+  it('starts empty', () => {
+    expect(useMapsStore().maps).toEqual([]);
   });
 
   it('creates, updates and deletes maps', () => {
@@ -28,15 +22,7 @@ describe('maps store', () => {
 
     const id = maps.createMap('Steam sound', custom);
 
-    expect(maps.maps).toHaveLength(1);
-
-    // Partial maps fall back to the default labels for the rest.
-    expect(maps.fullFunctions(id).find((fn) => fn.fn === 2)?.label).toBe(
-      'Whistle',
-    );
-    expect(maps.fullFunctions(id).find((fn) => fn.fn === 0)?.label).toBe(
-      'Headlight',
-    );
+    expect(maps.maps).toEqual([{ id, name: 'Steam sound', functions: custom }]);
 
     maps.updateMap(id, 'Renamed', []);
     expect(maps.maps[0].name).toBe('Renamed');

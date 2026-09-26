@@ -135,12 +135,12 @@ describe('locos store', () => {
     expect(throttle.direction).toBe(Direction.REVERSE);
   });
 
-  it('toggles and sets functions with native function commands', async () => {
+  it('sets functions with native function commands', async () => {
     const { emulator } = await connectedSetup();
     const locos = useLocosStore();
 
     locos.acquire(3);
-    locos.toggleFunction(3, 0);
+    locos.setFunction(3, 0, true);
 
     expect(emulator.sent).toContain('<F 3 0 1>');
     expect(locos.throttles[0].functions[0]).toBe(true);

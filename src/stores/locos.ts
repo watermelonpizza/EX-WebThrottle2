@@ -276,18 +276,6 @@ export const useLocosStore = defineStore('locos', () => {
     throttle.functions[fn] = state;
   }
 
-  function toggleFunction(address: number, fn: number): void {
-    const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
-    );
-
-    if (!throttle) {
-      return;
-    }
-
-    setFunction(address, fn, !throttle.functions[fn]);
-  }
-
   function saveLoco(address: number, name: string, mapId = 'default'): boolean {
     const existing = rosterEntry(address);
 
@@ -324,7 +312,6 @@ export const useLocosStore = defineStore('locos', () => {
     stopAll,
     setMap,
     setFunction,
-    toggleFunction,
     saveLoco,
     removeLoco,
   };
