@@ -3,7 +3,6 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { Direction } from '@/core/protocol';
 import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useLocosStore } from '@/stores/locos';
@@ -51,7 +50,7 @@ describe('locos store', () => {
         address: 3,
         name: 'Loco 3',
         speed: 0,
-        direction: Direction.FORWARD,
+        forward: true,
         functions: new Array(32).fill(false),
       }),
     ]);
@@ -82,7 +81,7 @@ describe('locos store', () => {
 
     await broadcast(emulator, '<l 9 0 2 0>');
     locos.setSpeed(9, 10);
-    locos.setDirection(9, Direction.REVERSE);
+    locos.setForward(9, false);
     locos.emergencyStop(9);
     locos.setFunction(9, 0, true);
     locos.setMap(9, 'missing');
@@ -101,7 +100,7 @@ describe('locos store', () => {
     expect(locos.throttles[0]).toEqual(
       expect.objectContaining({
         speed: 5,
-        direction: Direction.FORWARD,
+        forward: true,
         estop: false,
       }),
     );
@@ -109,7 +108,7 @@ describe('locos store', () => {
     expect(locos.throttles[0].functions[2]).toBe(true);
 
     await broadcast(emulator, '<l 3 0 23 0>\n');
-    expect(locos.throttles[0]?.direction).toBe(Direction.REVERSE);
+    expect(locos.throttles[0]?.forward).toBe(false);
     expect(locos.throttles[0]?.speed).toBe(22);
   });
 
@@ -139,7 +138,7 @@ describe('locos store', () => {
 
     locos.acquire(3);
     locos.setSpeed(3, 12);
-    locos.setDirection(3, Direction.REVERSE);
+    locos.setForward(3, false);
     locos.emergencyStop(3);
 
     expect(emulator.sent).toContain('<t 3 12 1>');
@@ -150,7 +149,7 @@ describe('locos store', () => {
 
     expect(throttle.speed).toBe(0);
     expect(throttle.estop).toBe(true);
-    expect(throttle.direction).toBe(Direction.REVERSE);
+    expect(throttle.forward).toBe(false);
   });
 
   it('sets functions with native function commands', async () => {
@@ -203,6 +202,57 @@ describe('locos store', () => {
     expect(locos.roster).toEqual([]);
   });
 
+  it('drives by address, saving a named loco but never renaming a saved one', async () => {
+    const { emulator } = await connectedSetup();
+    const locos = useLocosStore();
+
+    locos.saveLoco(12, 'Shunter');
+    locos.drive(7, '  Yard pilot ');
+    locos.drive(12, 'Something else');
+    locos.drive(9);
+
+    expect(emulator.sent).toEqual(
+      expect.arrayContaining(['<t 7>', '<t 12>', '<t 9>']),
+    );
+    expect(locos.roster).toEqual([
+      { address: 12, name: 'Shunter', mapId: 'default' },
+      { address: 7, name: 'Yard pilot', mapId: 'default' },
+    ]);
+  });
+
+  it('lists saved locos not yet on a desk, and the desks that are moving', async () => {
+    await connectedSetup();
+    const locos = useLocosStore();
+
+    locos.saveLoco(3, 'Class 37');
+    locos.saveLoco(8, 'Shunter');
+    locos.acquire(3);
+    locos.acquire(4);
+    locos.setSpeed(4, 20);
+
+    expect(locos.savedNotDriven.map((loco) => loco.address)).toEqual([8]);
+    expect(locos.movingHere.map((throttle) => throttle.address)).toEqual([4]);
+  });
+
+  it('names locos moving on the layout from the saved list where it can', async () => {
+    const { emulator } = await connectedSetup();
+    const locos = useLocosStore();
+
+    locos.saveLoco(12, 'Shunter');
+    await broadcast(emulator, '<l 12 0 169 0><l 14 0 23 0>');
+
+    expect(
+      locos.moving.map(({ address, name, forward }) => [
+        address,
+        name,
+        forward,
+      ]),
+    ).toEqual([
+      [12, 'Shunter', true],
+      [14, 'Loco 14', false],
+    ]);
+  });
+
   it('stops every loco on the layout with one command', async () => {
     const connection = useConnectionStore();
     const locos = useLocosStore();
@@ -252,7 +302,7 @@ describe('locos store', () => {
       [12, 40],
       [14, 22],
     ]);
-    expect(locos.throttles[1]?.direction).toBe(Direction.REVERSE);
+    expect(locos.throttles[1]?.forward).toBe(false);
     // Driving them here takes them out of the list of locos to pick up.
     expect(locos.moving).toEqual([]);
   });

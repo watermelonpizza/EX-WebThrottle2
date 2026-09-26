@@ -30,7 +30,7 @@ export interface Throttle extends RosterLoco {
   // Speed in the 0..126 range the <t> command accepts; emergency stop shows
   // speed 0 with estop set so the panel can render the stop distinctly.
   speed: number;
-  direction: Direction;
+  forward: boolean;
   estop: boolean;
   // Live function states reconciled from the <l> broadcast.
   functions: boolean[];
@@ -40,7 +40,17 @@ export interface Throttle extends RosterLoco {
 export interface LayoutLoco {
   address: number;
   speed: number;
-  direction: Direction;
+  forward: boolean;
+}
+
+// A loco moving on the layout, by name where it is saved and by address where
+// it is not.
+export interface MovingLoco extends LayoutLoco {
+  name: string;
+}
+
+function direction(forward: boolean): Direction {
+  return forward ? Direction.FORWARD : Direction.REVERSE;
 }
 
 // Saved-loco list, local-first. If Hub ever backs this the store keeps its
@@ -63,8 +73,23 @@ export const useLocosStore = defineStore('locos', () => {
 
   // Locos moving on the layout that this browser is not driving yet, such as
   // ones another Throttle started, so an operator can pick them all up.
-  const moving = computed(() =>
-    onLayout.value.filter((loco) => loco.speed > 0 && !driving(loco.address)),
+  const moving = computed<MovingLoco[]>(() =>
+    onLayout.value
+      .filter((loco) => loco.speed > 0 && !driving(loco.address))
+      .map((loco) => ({
+        ...loco,
+        name: rosterEntry(loco.address)?.name ?? `Loco ${loco.address}`,
+      })),
+  );
+
+  // Saved locos that are not on a desk yet, ready to drive.
+  const savedNotDriven = computed(() =>
+    roster.value.filter((loco) => !driving(loco.address)),
+  );
+
+  // Locos driven here that are moving, which disconnecting would leave running.
+  const movingHere = computed(() =>
+    throttles.value.filter((throttle) => throttle.speed > 0),
   );
 
   function persist(): void {
@@ -114,16 +139,18 @@ export const useLocosStore = defineStore('locos', () => {
   });
 
   function reconcile(loco: LocoState): void {
-    const { speed, direction, estop } = decodeSpeedByte(loco.speedByte);
+    const decoded = decodeSpeedByte(loco.speedByte);
+    const { speed, estop } = decoded;
+    const forward = decoded.direction === Direction.FORWARD;
     const seen = onLayout.value.find(
       (candidate) => candidate.address === loco.address,
     );
 
     if (seen) {
       seen.speed = speed;
-      seen.direction = direction;
+      seen.forward = forward;
     } else {
-      onLayout.value.push({ address: loco.address, speed, direction });
+      onLayout.value.push({ address: loco.address, speed, forward });
     }
 
     const throttle = throttles.value.find(
@@ -135,7 +162,7 @@ export const useLocosStore = defineStore('locos', () => {
     }
 
     throttle.speed = speed;
-    throttle.direction = direction;
+    throttle.forward = forward;
     throttle.estop = estop;
     throttle.functions = decodeFunctionMap(loco.functionMap);
   }
@@ -162,12 +189,22 @@ export const useLocosStore = defineStore('locos', () => {
       name: saved?.name ?? `Loco ${address}`,
       mapId: saved?.mapId ?? mapId,
       speed: seen?.speed ?? 0,
-      direction: seen?.direction ?? Direction.FORWARD,
+      forward: seen?.forward ?? true,
       estop: false,
       functions: new Array<boolean>(BROADCAST_FUNCTIONS).fill(false),
     });
 
     connection.send(requestLocoUpdate(address));
+  }
+
+  // Drive a loco by address. A name typed with it saves the loco for next
+  // time, one step rather than two; a saved loco keeps its own name and map.
+  function drive(address: number, name = ''): void {
+    if (!rosterEntry(address) && name.trim()) {
+      saveLoco(address, name.trim());
+    }
+
+    acquire(address);
   }
 
   // Put several locos on desks at once: every saved loco, or everything
@@ -216,12 +253,12 @@ export const useLocosStore = defineStore('locos', () => {
       return;
     }
 
-    connection.send(setLocoSpeed(address, speed, throttle.direction));
+    connection.send(setLocoSpeed(address, speed, direction(throttle.forward)));
     throttle.speed = speed;
     throttle.estop = false;
   }
 
-  function setDirection(address: number, direction: Direction): void {
+  function setForward(address: number, forward: boolean): void {
     const throttle = throttles.value.find(
       (candidate) => candidate.address === address,
     );
@@ -230,8 +267,8 @@ export const useLocosStore = defineStore('locos', () => {
       return;
     }
 
-    connection.send(setLocoSpeed(address, throttle.speed, direction));
-    throttle.direction = direction;
+    connection.send(setLocoSpeed(address, throttle.speed, direction(forward)));
+    throttle.forward = forward;
   }
 
   function emergencyStop(address: number): void {
@@ -243,7 +280,7 @@ export const useLocosStore = defineStore('locos', () => {
       return;
     }
 
-    connection.send(setLocoSpeed(address, -1, throttle.direction));
+    connection.send(setLocoSpeed(address, -1, direction(throttle.forward)));
     throttle.speed = 0;
     throttle.estop = true;
   }
@@ -303,11 +340,14 @@ export const useLocosStore = defineStore('locos', () => {
     throttles,
     onLayout,
     moving,
+    savedNotDriven,
+    movingHere,
+    drive,
     acquire,
     acquireAll,
     release,
     setSpeed,
-    setDirection,
+    setForward,
     emergencyStop,
     stopAll,
     setMap,

@@ -15,7 +15,6 @@ import {
 } from '@/components/schematic/changeover';
 import type { LayoutDiagram, Point } from '@/core/diagram';
 import { drawDiagram } from '@/core/diagram';
-import { TurnoutState } from '@/core/protocol';
 import { useDiagramStore } from '@/stores/diagram';
 import { useInventoryStore } from '@/stores/inventory';
 import { useLocosStore } from '@/stores/locos';
@@ -59,14 +58,14 @@ function turnoutEntry(id: number) {
   return inventory.turnouts.find((turnout) => turnout.id === id);
 }
 
-function turnoutState(id: number): TurnoutState | undefined {
-  return turnoutEntry(id)?.state;
+function turnoutThrown(id: number): boolean | undefined {
+  return turnoutEntry(id)?.thrown;
 }
 
 const drawing = computed(() =>
   drawDiagram(
     props.diagram,
-    turnoutState,
+    turnoutThrown,
     (id) =>
       inventory.sensors.find((sensor) => sensor.id === id)?.active ?? false,
   ),
@@ -92,7 +91,7 @@ function settle(id: number): void {
 }
 
 watch(
-  () => inventory.turnouts.map((turnout) => `${turnout.id}:${turnout.state}`),
+  () => inventory.turnouts.map((turnout) => `${turnout.id}:${turnout.thrown}`),
   (now, before) => {
     for (const entry of now) {
       if (!before?.includes(entry)) {
@@ -129,9 +128,9 @@ function sectionEnds(line: Point[]) {
 
 const turnouts = computed(() =>
   drawing.value.turnouts.map((turnout) => {
-    const state = turnoutState(turnout.id);
-    const known = state !== undefined;
-    const lie = state === TurnoutState.THROWN ? 'thrown' : 'closed';
+    const thrown = turnoutThrown(turnout.id);
+    const known = thrown !== undefined;
+    const lie = thrown ? 'thrown' : 'closed';
 
     return {
       ...turnout,

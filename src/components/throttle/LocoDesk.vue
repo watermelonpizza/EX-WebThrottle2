@@ -13,8 +13,6 @@ import DriveForm from '@/components/throttle/DriveForm.vue';
 import { fitKeys } from '@/components/throttle/fit-keys';
 import FunctionKeys from '@/components/throttle/FunctionKeys.vue';
 import SpeedScale from '@/components/throttle/SpeedScale.vue';
-import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
-import { Direction } from '@/core/protocol';
 import { useDiagramStore } from '@/stores/diagram';
 import type { Throttle } from '@/stores/locos';
 import { useLocosStore } from '@/stores/locos';
@@ -37,21 +35,9 @@ const menuId = computed(() => `desk-menu-${address.value}`);
 const addId = computed(() => `desk-add-${address.value}`);
 const functionsId = computed(() => `desk-functions-${address.value}`);
 
-const forward = computed(() => props.throttle.direction === Direction.FORWARD);
+const forward = computed(() => props.throttle.forward);
 
-// A custom map lists the functions this loco has; the default shows the full
-// broadcast range so nothing is out of reach.
-const functions = computed(() => {
-  const map = maps.maps.find(
-    (candidate) => candidate.id === props.throttle.mapId,
-  );
-
-  return map
-    ? map.functions
-        .filter((def) => !def.hidden)
-        .sort((first, second) => first.fn - second.fn)
-    : DEFAULT_FUNCTIONS;
-});
+const functions = computed(() => maps.visibleFunctions(props.throttle.mapId));
 
 // How many keys the desk shows (undefined: all of them), and whether they are
 // a touch target high instead of a control high; see fitKeys.
@@ -128,28 +114,11 @@ const valueText = computed(
 
 const berths = computed(() => diagrams.diagram?.berths ?? []);
 
-const berth = computed(
-  () =>
-    berths.value.find(
-      (candidate) => diagrams.occupant(candidate.id) === address.value,
-    )?.id ?? '',
-);
-
-function setDirection(direction: Direction): void {
-  locos.setDirection(address.value, direction);
-}
+const berth = computed(() => diagrams.berthOf(address.value));
 
 function release(): void {
   menu.value?.hidePopover?.();
   locos.release(address.value);
-}
-
-function placeIn(berthId: string): void {
-  if (berthId) {
-    diagrams.place(berthId, address.value);
-  } else if (berth.value) {
-    diagrams.place(berth.value, undefined);
-  }
 }
 </script>
 
@@ -240,7 +209,12 @@ function placeIn(berthId: string): void {
               class="field"
               :value="berth"
               data-testid="berth-select"
-              @change="placeIn(($event.target as HTMLSelectElement).value)"
+              @change="
+                diagrams.setBerth(
+                  address,
+                  ($event.target as HTMLSelectElement).value,
+                )
+              "
             >
               <option value="">Not shown</option>
               <option
@@ -287,7 +261,7 @@ function placeIn(berthId: string): void {
               type="button"
               class="direction__side"
               :aria-pressed="!forward"
-              @click="setDirection(Direction.REVERSE)"
+              @click="locos.setForward(address, false)"
             >
               REV
             </button>
@@ -296,7 +270,7 @@ function placeIn(berthId: string): void {
               type="button"
               class="direction__side"
               :aria-pressed="forward"
-              @click="setDirection(Direction.FORWARD)"
+              @click="locos.setForward(address, true)"
             >
               FWD
             </button>

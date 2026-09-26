@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { TurnoutState } from '../../protocol/types';
 import type { LayoutDiagram } from '../index';
 import {
   EMULATOR_DEMO_DIAGRAM,
@@ -69,7 +68,7 @@ describe('diagram drawing', () => {
   it('lights the leg a turnout lies on and breaks the other at the switch', () => {
     const drawing = drawDiagram(
       diagram,
-      () => TurnoutState.THROWN,
+      () => true,
       () => false,
     );
 
@@ -120,20 +119,20 @@ describe('diagram drawing', () => {
         },
       ],
     };
-    const tone = (state: TurnoutState) =>
+    const tone = (thrown: boolean) =>
       drawDiagram(
         withSiding,
-        () => state,
+        () => thrown,
         () => false,
       ).lines.find((line) => line.key === 'siding')?.tone;
 
-    expect(tone(TurnoutState.THROWN)).toBe('set');
-    expect(tone(TurnoutState.CLOSED)).toBe('unset');
+    expect(tone(true)).toBe('set');
+    expect(tone(false)).toBe('unset');
 
     // Its buffer stop reads in the same tone as the track it ends.
     const closed = drawDiagram(
       withSiding,
-      () => TurnoutState.CLOSED,
+      () => false,
       () => false,
     );
 

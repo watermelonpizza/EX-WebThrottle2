@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { MAX_CAB } from '@/core/protocol';
+import { parseAddress } from '@/core/loco/address';
 import { useLocosStore } from '@/stores/locos';
 import { useMapsStore } from '@/stores/maps';
 
@@ -12,21 +12,13 @@ const address = ref('');
 const name = ref('');
 const mapId = ref('default');
 
-const parsed = computed(() => Number(address.value));
+const parsed = computed(() => parseAddress(address.value));
 const valid = computed(
-  () =>
-    Number.isInteger(parsed.value) &&
-    parsed.value >= 1 &&
-    parsed.value <= MAX_CAB &&
-    name.value.trim().length > 0,
+  () => parsed.value !== undefined && name.value.trim().length > 0,
 );
 
-function mapName(id: string): string {
-  return maps.maps.find((map) => map.id === id)?.name ?? 'Default';
-}
-
 function save(): void {
-  if (!valid.value) {
+  if (parsed.value === undefined || !name.value.trim()) {
     return;
   }
 
@@ -66,7 +58,7 @@ function remove(loco: { address: number; name: string }): void {
       >
         <span class="row__name">{{ loco.name }}</span>
         <span class="row__meta numeric">Address {{ loco.address }}</span>
-        <span class="row__meta">{{ mapName(loco.mapId) }}</span>
+        <span class="row__meta">{{ maps.mapName(loco.mapId) }}</span>
         <button type="button" class="key" @click="edit(loco)">Edit</button>
         <button
           type="button"

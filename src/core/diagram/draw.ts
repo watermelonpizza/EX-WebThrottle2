@@ -1,4 +1,3 @@
-import { TurnoutState } from '../protocol/types';
 import type { DiagramTurnout, LayoutDiagram, Point } from './types';
 
 // How a line reads on the schematic, in the manner of a signalling display:
@@ -279,11 +278,11 @@ function plainTones(
 }
 
 // Turns the diagram plus what the Command Station last reported into lines to
-// draw. A turnout the station has not reported shows both legs idle and no
-// gap, because its position is unknown.
+// draw. A turnout the station has not reported (thrown answers undefined)
+// shows both legs idle and no gap, because its position is unknown.
 export function drawDiagram(
   diagram: LayoutDiagram,
-  turnoutState: (id: number) => TurnoutState | undefined,
+  turnoutThrown: (id: number) => boolean | undefined,
   sensorActive: (id: number) => boolean,
 ): DiagramDrawing {
   const legs: DrawnLine[] = [];
@@ -291,20 +290,18 @@ export function drawDiagram(
   const buffers: DrawnBuffer[] = [];
 
   for (const turnout of diagram.turnouts) {
-    const state = turnoutState(turnout.id);
+    const thrown = turnoutThrown(turnout.id);
 
     for (const leg of ['closed', 'thrown'] as const) {
       const points = turnout[leg];
       const key = legKey(turnout.id, leg);
-      const isSet =
-        state !== undefined &&
-        (leg === 'thrown') === (state === TurnoutState.THROWN);
+      const isSet = thrown !== undefined && (leg === 'thrown') === thrown;
       const tone: LineTone =
-        state === undefined ? 'idle' : isSet ? 'set' : 'unset';
+        thrown === undefined ? 'idle' : isSet ? 'set' : 'unset';
 
       legs.push({ key, points, tone, turnout: turnout.id });
 
-      if (state !== undefined && !isSet) {
+      if (thrown !== undefined && !isSet) {
         gaps.push({
           key: `${key}-gap`,
           from: pointAlong(points, GAP_START),

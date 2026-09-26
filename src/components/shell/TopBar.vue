@@ -14,9 +14,7 @@ const clock = useClock();
 const appMenu = useTemplateRef<HTMLElement>('app-menu');
 const linkPopover = useTemplateRef<HTMLElement>('link-popover');
 
-const moving = computed(() =>
-  locos.throttles.filter((throttle) => throttle.speed > 0),
-);
+const moving = computed(() => locos.movingHere);
 
 // A menu item has done its job once chosen, so the menu gets out of the way.
 function closeMenu(): void {

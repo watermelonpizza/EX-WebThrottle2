@@ -73,6 +73,29 @@ export const useDiagramStore = defineStore('diagram', () => {
     persist();
   }
 
+  // The berth a loco is described in, or '' when it is not on the diagram.
+  function berthOf(address: number): string {
+    return (
+      diagram.value?.berths.find((berth) => occupant(berth.id) === address)
+        ?.id ?? ''
+    );
+  }
+
+  // Put a loco's description in a berth, or take it off the diagram with ''.
+  function setBerth(address: number, berthId: string): void {
+    if (berthId) {
+      place(berthId, address);
+
+      return;
+    }
+
+    const current = berthOf(address);
+
+    if (current) {
+      place(current, undefined);
+    }
+  }
+
   // The station's own description wins; the diagram's name fills the gap.
   function turnoutName(id: number, stationLabel = ''): string {
     return (
@@ -90,5 +113,13 @@ export const useDiagramStore = defineStore('diagram', () => {
     );
   }
 
-  return { diagram, occupant, place, sensorName, turnoutName };
+  return {
+    diagram,
+    occupant,
+    place,
+    berthOf,
+    setBerth,
+    sensorName,
+    turnoutName,
+  };
 });

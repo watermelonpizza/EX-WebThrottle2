@@ -2,7 +2,6 @@
 import { reactive, ref } from 'vue';
 
 import type { FunctionDef } from '@/core/loco/functions';
-import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import type { LocoMap } from '@/stores/maps';
 import { useMapsStore } from '@/stores/maps';
 
@@ -20,23 +19,14 @@ const editing = reactive<EditingMap>({ name: '', functions: [] });
 function openNew(): void {
   editing.id = undefined;
   editing.name = '';
-  // A new map starts with every function; hide the ones the decoder lacks.
-  editing.functions = DEFAULT_FUNCTIONS.map((def) => ({
-    ...def,
-    hidden: false,
-  }));
+  editing.functions = maps.editableFunctions();
   open.value = true;
 }
 
 function openEdit(map: LocoMap): void {
   editing.id = map.id;
   editing.name = map.name;
-  editing.functions = DEFAULT_FUNCTIONS.map((def) => {
-    const own = map.functions.find((candidate) => candidate.fn === def.fn);
-
-    // A function the map never listed is one it does not have.
-    return own ? { ...own } : { ...def, hidden: true };
-  });
+  editing.functions = maps.editableFunctions(map.id);
   open.value = true;
 }
 

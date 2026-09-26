@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
 import type { FunctionDef } from '@/core/loco/functions';
+import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import { loadSaved } from '@/stores/saved';
 
 export const MAPS_KEY = 'exwt-maps';
@@ -49,5 +50,51 @@ export const useMapsStore = defineStore('maps', () => {
     persist();
   }
 
-  return { maps, createMap, updateMap, deleteMap };
+  function findMap(id: string | undefined): LocoMap | undefined {
+    return maps.value.find((map) => map.id === id);
+  }
+
+  function mapName(id: string): string {
+    return findMap(id)?.name ?? 'Default';
+  }
+
+  // The keys a desk shows, in function order. A custom map lists the functions
+  // this loco has; the default shows the full broadcast range so nothing is
+  // out of reach.
+  function visibleFunctions(id: string): FunctionDef[] {
+    const map = findMap(id);
+
+    return map
+      ? map.functions
+          .filter((def) => !def.hidden)
+          .sort((first, second) => first.fn - second.fn)
+      : DEFAULT_FUNCTIONS;
+  }
+
+  // Every function F0–F31 as rows to edit. A new map starts with all of them
+  // shown, to hide the ones the decoder lacks; a function an existing map
+  // never listed is one it does not have.
+  function editableFunctions(id?: string): FunctionDef[] {
+    const map = findMap(id);
+
+    return DEFAULT_FUNCTIONS.map((def) => {
+      if (!map) {
+        return { ...def, hidden: false };
+      }
+
+      const own = map.functions.find((candidate) => candidate.fn === def.fn);
+
+      return own ? { ...own } : { ...def, hidden: true };
+    });
+  }
+
+  return {
+    maps,
+    createMap,
+    updateMap,
+    deleteMap,
+    mapName,
+    visibleFunctions,
+    editableFunctions,
+  };
 });

@@ -124,5 +124,20 @@ export const usePowerStore = defineStore('power', () => {
     connection.send(powerTrack(letter, state === PowerState.ON));
   }
 
-  return { master, tracks, allTracks, setMaster, toggleAll, setTrack };
+  // Only sends: the station's <p…> broadcast is what changes the switch.
+  function toggleTrack(letter: string): void {
+    const entry = tracks.value.find((candidate) => candidate.letter === letter);
+
+    setTrack(letter, entry?.on ? PowerState.OFF : PowerState.ON);
+  }
+
+  return {
+    master,
+    tracks,
+    allTracks,
+    setMaster,
+    toggleAll,
+    setTrack,
+    toggleTrack,
+  };
 });

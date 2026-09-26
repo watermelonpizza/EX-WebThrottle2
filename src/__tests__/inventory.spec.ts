@@ -2,7 +2,6 @@ import { flushPromises } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { TurnoutState } from '@/core/protocol';
 import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useInventoryStore } from '@/stores/inventory';
@@ -45,8 +44,8 @@ describe('inventory store', () => {
     await flushPromises();
 
     expect(inventory.turnouts).toEqual([
-      { id: 1, label: 'Yard entry', state: TurnoutState.CLOSED },
-      { id: 2, label: '', state: TurnoutState.THROWN },
+      { id: 1, label: 'Yard entry', thrown: false },
+      { id: 2, label: '', thrown: true },
     ]);
   });
 
@@ -57,7 +56,7 @@ describe('inventory store', () => {
     station.receives('<H 1 1>');
     await flushPromises();
 
-    expect(inventory.turnouts[0]?.state).toBe(TurnoutState.THROWN);
+    expect(inventory.turnouts[0]?.thrown).toBe(true);
 
     station.receives('<jT 2>');
     await flushPromises();

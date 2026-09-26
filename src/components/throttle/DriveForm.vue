@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { Direction, MAX_CAB } from '@/core/protocol';
+import { parseAddress } from '@/core/loco/address';
 import { useLocosStore } from '@/stores/locos';
 
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
@@ -11,46 +11,19 @@ const locos = useLocosStore();
 const address = ref('');
 const name = ref('');
 
-const parsed = computed(() => Number(address.value));
-const valid = computed(
-  () =>
-    Number.isInteger(parsed.value) &&
-    parsed.value >= 1 &&
-    parsed.value <= MAX_CAB,
-);
+const parsed = computed(() => parseAddress(address.value));
 
-const saved = computed(() =>
-  locos.roster.filter(
-    (loco) =>
-      !locos.throttles.some((throttle) => throttle.address === loco.address),
-  ),
-);
-
-// Moving locos by name where they are saved, by address where they are not.
-const moving = computed(() =>
-  locos.moving.map((loco) => ({
-    ...loco,
-    name:
-      locos.roster.find((candidate) => candidate.address === loco.address)
-        ?.name ?? `Loco ${loco.address}`,
-  })),
-);
+const saved = computed(() => locos.savedNotDriven);
+const moving = computed(() => locos.moving);
 
 function drive(target: number): void {
-  const known = locos.roster.find((loco) => loco.address === target);
-
-  // A name typed here saves the loco for next time; one step, not two.
-  if (!known && name.value.trim()) {
-    locos.saveLoco(target, name.value.trim());
-  }
-
-  locos.acquire(target, known?.mapId);
+  locos.drive(target, name.value);
   address.value = '';
   name.value = '';
 }
 
 function submit(): void {
-  if (valid.value) {
+  if (parsed.value !== undefined) {
     drive(parsed.value);
   }
 }
@@ -85,7 +58,7 @@ function submit(): void {
       <button
         type="submit"
         class="key key--accent"
-        :disabled="!valid"
+        :disabled="parsed === undefined"
         data-testid="drive"
       >
         Drive
@@ -125,7 +98,7 @@ function submit(): void {
           {{ loco.name }}
           <span class="drive-form__speed numeric">
             {{ loco.speed }}
-            {{ loco.direction === Direction.FORWARD ? 'FWD' : 'REV' }}
+            {{ loco.forward ? 'FWD' : 'REV' }}
           </span>
         </button>
       </div>

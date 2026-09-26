@@ -5,14 +5,13 @@ import {
   CHANGEOVER_STYLE,
   changingOver,
 } from '@/components/schematic/changeover';
-import { TurnoutState } from '@/core/protocol';
 import type { TurnoutEntry } from '@/stores/inventory';
 
 const props = defineProps<{ turnout: TurnoutEntry; name?: string }>();
 
 defineEmits<{ toggle: [] }>();
 
-const thrown = computed(() => props.turnout.state === TurnoutState.THROWN);
+const thrown = computed(() => props.turnout.thrown);
 const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
 </script>
 
@@ -28,7 +27,7 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
          other is dimmed with a break at the switch. Keyed by position, so a
          move redraws it and the new leg flashes into place. -->
     <svg
-      :key="turnout.state"
+      :key="String(turnout.thrown)"
       class="turnout-row__route"
       viewBox="0 12 120 48"
       aria-hidden="true"

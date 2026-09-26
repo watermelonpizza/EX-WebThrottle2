@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue';
 
 import EventsPanel from '@/components/panels/EventsPanel.vue';
-import { PowerState } from '@/core/protocol';
 import { useEventsStore } from '@/stores/events';
 import { useLocosStore } from '@/stores/locos';
 import { usePowerStore } from '@/stores/power';
@@ -34,10 +33,6 @@ const unreadText = computed(() =>
 
 function onLogToggle(event: Event): void {
   logOpen.value = (event as ToggleEvent).newState === 'open';
-}
-
-function toggleTrack(letter: string, on: boolean): void {
-  power.setTrack(letter, on ? PowerState.OFF : PowerState.ON);
 }
 </script>
 
@@ -81,7 +76,7 @@ function toggleTrack(letter: string, on: boolean): void {
         :aria-pressed="track.on"
         :aria-label="`${track.name} ${track.letter} power, ${track.on ? 'on' : 'off'}`"
         :data-testid="`track-power-${track.letter}`"
-        @click="toggleTrack(track.letter, track.on)"
+        @click="power.toggleTrack(track.letter)"
       >
         <span class="power__name">{{ track.name }} {{ track.letter }}</span>
         <span class="power__state" data-testid="power-state">{{

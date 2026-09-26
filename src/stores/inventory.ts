@@ -17,7 +17,9 @@ export interface TurnoutEntry {
   id: number;
   // Description the station reports, empty unless the layout gives one.
   label: string;
-  state: TurnoutState;
+  // Closed until the station says otherwise; `reported` below tells a real
+  // position from that placeholder.
+  thrown: boolean;
   // When the station last reported the points moving to the other position,
   // whoever moved them, so a drawing can show them changing over. Unset until
   // they first move while connected.
@@ -73,18 +75,19 @@ export const useInventoryStore = defineStore('inventory', () => {
     return upsert(turnouts, id, () => ({
       id,
       label: '',
-      state: TurnoutState.CLOSED,
+      thrown: false,
     }));
   }
 
   function report(id: number, state: TurnoutState): TurnoutEntry {
     const entry = turnout(id);
+    const thrown = state === TurnoutState.THROWN;
 
-    if (reported.has(id) && entry.state !== state) {
+    if (reported.has(id) && entry.thrown !== thrown) {
       entry.movedAt = Date.now();
     }
 
-    entry.state = state;
+    entry.thrown = thrown;
     reported.add(id);
 
     return entry;
@@ -175,12 +178,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     connection.send(
-      setTurnout(
-        id,
-        entry.state === TurnoutState.THROWN
-          ? TurnoutState.CLOSED
-          : TurnoutState.THROWN,
-      ),
+      setTurnout(id, entry.thrown ? TurnoutState.CLOSED : TurnoutState.THROWN),
     );
   }
 

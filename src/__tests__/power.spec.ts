@@ -116,6 +116,22 @@ describe('power store', () => {
     expect(power.allTracks).toBe('on');
   });
 
+  it('toggles one track to the opposite of what the station last reported', async () => {
+    const connection = useConnectionStore();
+    const power = usePowerStore();
+    const station = new MockTransport();
+
+    await connection.connect(station);
+    station.receives('<= A MAIN><= B PROG><pA><pb>');
+    await flushPromises();
+
+    power.toggleTrack('A');
+    expect(station.sent.at(-1)).toBe('<0 A>');
+
+    power.toggleTrack('B');
+    expect(station.sent.at(-1)).toBe('<1 B>');
+  });
+
   it('sends the right commands for master and track switches', async () => {
     const connection = useConnectionStore();
     const power = usePowerStore();

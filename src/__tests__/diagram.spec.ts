@@ -66,4 +66,24 @@ describe('diagram store', () => {
 
     expect(diagrams.occupant('east')).toBeUndefined();
   });
+
+  it('moves a loco between berths and off the diagram by address', async () => {
+    const { diagrams } = await connectAs(
+      '<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-x>',
+    );
+
+    diagrams.setBerth(3, 'west');
+    expect(diagrams.berthOf(3)).toBe('west');
+
+    diagrams.setBerth(3, 'east');
+    expect(diagrams.berthOf(3)).toBe('east');
+    expect(diagrams.occupant('west')).toBeUndefined();
+
+    diagrams.setBerth(3, '');
+    expect(diagrams.berthOf(3)).toBe('');
+
+    // Taking a loco off that is on no berth changes nothing.
+    diagrams.setBerth(3, '');
+    expect(diagrams.berthOf(3)).toBe('');
+  });
 });
