@@ -2,26 +2,12 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { logTime } from '@/composables/useClock';
-import { matchCommand } from '@/core/protocol/commands';
-import { describeResponse } from '@/core/protocol/responses';
 import type { TraceEntry } from '@/stores/connection';
 import { useConnectionStore } from '@/stores/connection';
-
-interface TraceParameter {
-  name: string;
-  value: string;
-  meaning?: string;
-}
-
-interface TraceExplanation {
-  pattern: string;
-  summary: string;
-  detail: string;
-  parameters: TraceParameter[];
-  needs?: string;
-}
+import { useDiagnosticsStore } from '@/stores/diagnostics';
 
 const store = useConnectionStore();
+const diagnostics = useDiagnosticsStore();
 const command = ref('');
 const raw = ref(false);
 const expandedEntry = ref<TraceEntry | null>(null);
@@ -36,39 +22,9 @@ const rawTrace = computed(() =>
     .join('\n'),
 );
 
-const explanation = computed<TraceExplanation | undefined>(() => {
-  const entry = expandedEntry.value;
-
-  if (!entry) {
-    return undefined;
-  }
-
-  if (entry.direction === 'received') {
-    return describeResponse(entry.text);
-  }
-
-  const match = matchCommand(entry.text);
-
-  if (!match) {
-    return undefined;
-  }
-
-  return {
-    pattern: match.command.pattern,
-    summary: match.command.summary,
-    detail: match.command.detail,
-    needs: match.command.needs,
-    parameters: match.parameters.map(({ input, value }) => ({
-      name: input.name,
-      value,
-      meaning: match.command.detail
-        .split(' · ')
-        .find((note) => note.startsWith(`${input.name}:`))
-        ?.slice(input.name.length + 1)
-        .trim(),
-    })),
-  };
-});
+const explanation = computed(() =>
+  expandedEntry.value ? diagnostics.explain(expandedEntry.value) : undefined,
+);
 
 function toggleEntry(entry: TraceEntry): void {
   expandedEntry.value = expandedEntry.value === entry ? null : entry;

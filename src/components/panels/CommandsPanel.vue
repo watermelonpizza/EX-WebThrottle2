@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
-import type { CommandDef } from '@/core/protocol/commands';
-import {
-  buildCommand,
-  isComplete,
-  searchCommands,
-} from '@/core/protocol/commands';
-import { useConnectionStore } from '@/stores/connection';
+import type { CommandDef } from '@/stores/diagnostics';
+import { useDiagnosticsStore } from '@/stores/diagnostics';
 
-const connection = useConnectionStore();
+const diagnostics = useDiagnosticsStore();
 
 const query = ref('');
 // Patterns are unique, so the open command is kept by its pattern.
@@ -17,19 +12,11 @@ const openPattern = ref('');
 const values = ref<string[]>([]);
 const forms = useTemplateRef<HTMLFormElement[]>('lookup-forms');
 
-const groups = computed(() =>
-  Map.groupBy(searchCommands(query.value), (command) => command.group),
-);
-
-// A command sends on one click unless it needs values filled in, or is risky
-// enough to want a confirm; those open a small form instead.
-function opensForm(command: CommandDef): boolean {
-  return command.inputs.length > 0 || command.risky;
-}
+const groups = computed(() => diagnostics.search(query.value));
 
 async function choose(command: CommandDef): Promise<void> {
-  if (!opensForm(command)) {
-    connection.send(buildCommand(command, []));
+  if (!diagnostics.needsForm(command)) {
+    diagnostics.send(command);
 
     return;
   }
@@ -50,11 +37,9 @@ async function choose(command: CommandDef): Promise<void> {
 }
 
 function send(command: CommandDef): void {
-  if (!isComplete(command, values.value)) {
+  if (!diagnostics.send(command, values.value)) {
     return;
   }
-
-  connection.send(buildCommand(command, values.value));
 
   // Close a risky command once sent, so a stray second click cannot repeat it.
   if (command.risky) {
@@ -94,7 +79,9 @@ function send(command: CommandDef): void {
               type="button"
               class="lookup__head"
               :aria-expanded="
-                opensForm(command) ? openPattern === command.pattern : undefined
+                diagnostics.needsForm(command)
+                  ? openPattern === command.pattern
+                  : undefined
               "
               @click="choose(command)"
             >
@@ -141,13 +128,13 @@ function send(command: CommandDef): void {
 
               <div class="lookup__send">
                 <code class="lookup__preview" data-testid="lookup-preview">
-                  {{ buildCommand(command, values) }}
+                  {{ diagnostics.preview(command, values) }}
                 </code>
                 <button
                   type="submit"
                   class="key"
                   :class="{ 'key--stop': command.risky }"
-                  :disabled="!isComplete(command, values)"
+                  :disabled="!diagnostics.canSend(command, values)"
                   data-testid="lookup-send"
                 >
                   {{ command.risky ? 'Confirm send' : 'Send' }}
