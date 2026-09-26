@@ -13,6 +13,7 @@ import {
   WebSerialTransport,
   WebSocketTransport,
   isWebSerialSupported,
+  webSocketUrlError,
 } from '@/core/transport';
 import { log } from '@/core/logging';
 
@@ -173,6 +174,12 @@ export const useConnectionStore = defineStore('connection', () => {
     return connect(new WebSerialTransport(navigator.serial));
   }
 
+  // Why an emulator or WebSocket address typed on the connect page cannot be
+  // used from a page served over pageProtocol, or '' when it can.
+  function urlProblem(url: string, pageProtocol: string): string {
+    return webSocketUrlError(url, pageProtocol);
+  }
+
   function send(command: string): void {
     if (!transport.value?.connected) {
       return;
@@ -203,6 +210,7 @@ export const useConnectionStore = defineStore('connection', () => {
     connect,
     connectToEmulator,
     connectToSerial,
+    urlProblem,
     disconnect,
     send,
   };

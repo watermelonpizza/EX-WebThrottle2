@@ -44,6 +44,15 @@ describe('connection store', () => {
     );
   });
 
+  it('checks an address typed on the connect page against the page it is on', () => {
+    const store = useConnectionStore();
+
+    expect(store.urlProblem('ws://127.0.0.1:4444', 'http:')).toBe('');
+    expect(store.urlProblem('ws://127.0.0.1:4444', 'https:')).toContain(
+      'wss://',
+    );
+  });
+
   it('rejects serial connection when Web Serial is unavailable', () => {
     const store = useConnectionStore();
 

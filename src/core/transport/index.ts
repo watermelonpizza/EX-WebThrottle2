@@ -1,5 +1,6 @@
 export type { DataListener, DisconnectListener, Transport } from './types';
 export { extractFrames } from './frames';
+export { webSocketUrlError } from './url';
 export {
   WebSerialTransport,
   isWebSerialSupported,

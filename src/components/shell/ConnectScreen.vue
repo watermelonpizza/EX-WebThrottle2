@@ -8,35 +8,9 @@ const connection = useConnectionStore();
 const url = ref(EMULATOR_URL);
 const connecting = computed(() => connection.status === 'connecting');
 
-const urlError = computed(() => {
-  const value = url.value.trim();
-
-  if (!value) {
-    return 'Enter a WebSocket URL.';
-  }
-
-  let parsed: URL;
-
-  try {
-    parsed = new URL(value);
-  } catch {
-    return 'Enter a full WebSocket URL, such as ws://192.168.1.25:4444.';
-  }
-
-  if (parsed.protocol !== 'ws:' && parsed.protocol !== 'wss:') {
-    return 'The URL must start with ws:// or wss://.';
-  }
-
-  if (parsed.username || parsed.password) {
-    return 'WebSocket URLs cannot include a username or password.';
-  }
-
-  if (window.location.protocol === 'https:' && parsed.protocol !== 'wss:') {
-    return 'This page uses HTTPS, so the WebSocket URL must use wss://.';
-  }
-
-  return '';
-});
+const urlError = computed(() =>
+  connection.urlProblem(url.value, window.location.protocol),
+);
 
 function connectUsb(): void {
   void connection.connectToSerial();

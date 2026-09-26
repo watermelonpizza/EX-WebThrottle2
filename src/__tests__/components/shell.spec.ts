@@ -14,6 +14,8 @@ describe('connection and shell components', () => {
     localStorage.clear();
   });
 
+  // The address rules themselves are tested in core/transport; this checks
+  // the connect page shows their verdict and only connects to a good address.
   it('validates WebSocket addresses before connecting', async () => {
     const app = await connectedApp();
     const connection = useConnectionStore();
@@ -23,22 +25,16 @@ describe('connection and shell components', () => {
     });
     const url = wrapper.get('[data-testid="emulator-url"]');
 
-    await url.setValue('');
-    expect(wrapper.get('[data-testid="emulator-url-error"]').text()).toContain(
-      'Enter a WebSocket URL',
-    );
-    await url.setValue('not a URL');
-    expect(wrapper.get('[data-testid="emulator-url-error"]').text()).toContain(
-      'full WebSocket URL',
-    );
     await url.setValue('http://localhost:4444');
     expect(wrapper.get('[data-testid="emulator-url-error"]').text()).toContain(
       'must start with ws://',
     );
-    await url.setValue('ws://user:pass@localhost:4444');
-    expect(wrapper.get('[data-testid="emulator-url-error"]').text()).toContain(
-      'username or password',
-    );
+    expect(
+      wrapper.get('[data-testid="connect-emulator"]').attributes('disabled'),
+    ).toBe('');
+    await wrapper.get('[data-testid="connect-form"]').trigger('submit');
+    expect(connect).not.toHaveBeenCalled();
+
     await url.setValue('ws://localhost:4444');
     await wrapper.get('[data-testid="connect-form"]').trigger('submit');
     expect(connect).toHaveBeenCalledWith('ws://localhost:4444');
