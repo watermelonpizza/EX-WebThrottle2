@@ -18,6 +18,10 @@ export interface TurnoutEntry {
   // Description the station reports, empty unless the layout gives one.
   label: string;
   state: TurnoutState;
+  // When the station last reported the points moving to the other position,
+  // whoever moved them, so a drawing can show them changing over. Unset until
+  // they first move while connected.
+  movedAt?: number;
 }
 
 export interface OutputEntry {
@@ -60,12 +64,30 @@ export const useInventoryStore = defineStore('inventory', () => {
   const outputs = ref<OutputEntry[]>([]);
   const sensors = ref<SensorEntry[]>([]);
 
+  // Turnouts whose position the station has reported at least once. Before
+  // that an entry's position is a placeholder, so the first report is not a
+  // move.
+  const reported = new Set<number>();
+
   function turnout(id: number): TurnoutEntry {
     return upsert(turnouts, id, () => ({
       id,
       label: '',
       state: TurnoutState.CLOSED,
     }));
+  }
+
+  function report(id: number, state: TurnoutState): TurnoutEntry {
+    const entry = turnout(id);
+
+    if (reported.has(id) && entry.state !== state) {
+      entry.movedAt = Date.now();
+    }
+
+    entry.state = state;
+    reported.add(id);
+
+    return entry;
   }
 
   function enumerate(): void {
@@ -91,16 +113,13 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     if (message.kind === 'turnout-detail') {
-      const entry = turnout(message.id);
-
-      entry.label = message.label;
-      entry.state = message.state;
+      report(message.id, message.state).label = message.label;
 
       return;
     }
 
     if (message.kind === 'turnout') {
-      turnout(message.id).state = message.state;
+      report(message.id, message.state);
 
       return;
     }
@@ -132,6 +151,7 @@ export const useInventoryStore = defineStore('inventory', () => {
       }
 
       if (status === 'disconnected') {
+        reported.clear();
         turnouts.value = [];
         outputs.value = [];
         sensors.value = [];

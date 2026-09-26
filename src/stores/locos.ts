@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { decodeFunctionMap } from '@/core/loco/functions';
 import type { LocoState } from '@/core/protocol';
 import {
   Direction,
   decodeSpeedByte,
+  emergencyStopAll,
   forgetLoco,
+  requestCabList,
   requestLocoUpdate,
   setLocoFunction,
   setLocoSpeed,
@@ -33,6 +35,13 @@ export interface Throttle extends RosterLoco {
   functions: boolean[];
 }
 
+// A loco the Command Station has reported this session, driven here or not.
+export interface LayoutLoco {
+  address: number;
+  speed: number;
+  direction: Direction;
+}
+
 // Saved-loco list, local-first. If Hub ever backs this the store keeps its
 // shape and swaps the persistence calls, so the UI is not coupled to storage.
 function loadRoster(): RosterLoco[] {
@@ -50,6 +59,21 @@ export const useLocosStore = defineStore('locos', () => {
   const roster = ref<RosterLoco[]>(loadRoster());
   const throttles = ref<Throttle[]>([]);
 
+  // What each loco on the layout is doing, from the last <l> broadcast for it.
+  // On connecting the station is asked which locos it is driving, and then
+  // each one's state; after that every change any Throttle makes is broadcast.
+  const onLayout = ref<LayoutLoco[]>([]);
+
+  function driving(address: number): boolean {
+    return throttles.value.some((throttle) => throttle.address === address);
+  }
+
+  // Locos moving on the layout that this browser is not driving yet, such as
+  // ones another Throttle started, so an operator can pick them all up.
+  const moving = computed(() =>
+    onLayout.value.filter((loco) => loco.speed > 0 && !driving(loco.address)),
+  );
+
   function persist(): void {
     localStorage.setItem(ROSTER_KEY, JSON.stringify(roster.value));
   }
@@ -65,19 +89,50 @@ export const useLocosStore = defineStore('locos', () => {
     (status) => {
       if (status === 'disconnected') {
         throttles.value = [];
+        onLayout.value = [];
+      }
+
+      if (status === 'connected') {
+        connection.send(requestCabList());
       }
     },
   );
 
-  // Broadcasts are authoritative: apply every <l> update for a loco we are
-  // driving. Other cabs stay invisible until acquired.
+  // The store can be created after connecting (by the first panel that needs
+  // it), so ask straight away when the station is already there.
+  if (connection.status === 'connected') {
+    connection.send(requestCabList());
+  }
+
+  // Broadcasts are authoritative: apply every <l> update to the loco's desk
+  // if it is driven here, and note it on the layout either way. Other cabs get
+  // no desk until acquired.
   connection.onMessage((message) => {
     if (message.kind === 'loco') {
       reconcile(message.loco);
     }
+
+    // Asking after each loco only reads its state: nothing is acquired.
+    if (message.kind === 'cab-list') {
+      for (const address of message.addresses) {
+        connection.send(requestLocoUpdate(address));
+      }
+    }
   });
 
   function reconcile(loco: LocoState): void {
+    const { speed, direction, estop } = decodeSpeedByte(loco.speedByte);
+    const seen = onLayout.value.find(
+      (candidate) => candidate.address === loco.address,
+    );
+
+    if (seen) {
+      seen.speed = speed;
+      seen.direction = direction;
+    } else {
+      onLayout.value.push({ address: loco.address, speed, direction });
+    }
+
     const throttle = throttles.value.find(
       (candidate) => candidate.address === loco.address,
     );
@@ -85,8 +140,6 @@ export const useLocosStore = defineStore('locos', () => {
     if (!throttle) {
       return;
     }
-
-    const { speed, direction, estop } = decodeSpeedByte(loco.speedByte);
 
     throttle.speed = speed;
     throttle.direction = direction;
@@ -107,18 +160,29 @@ export const useLocosStore = defineStore('locos', () => {
     }
 
     const saved = rosterEntry(address);
+    const seen = onLayout.value.find((loco) => loco.address === address);
 
+    // A loco already running shows its speed straight away; the reply to
+    // the request below confirms it.
     throttles.value.push({
       address,
       name: saved?.name ?? `Loco ${address}`,
       mapId: saved?.mapId ?? mapId,
-      speed: 0,
-      direction: Direction.FORWARD,
+      speed: seen?.speed ?? 0,
+      direction: seen?.direction ?? Direction.FORWARD,
       estop: false,
       functions: new Array<boolean>(BROADCAST_FUNCTIONS).fill(false),
     });
 
     connection.send(requestLocoUpdate(address));
+  }
+
+  // Put several locos on desks at once: every saved loco, or everything
+  // moving on the layout.
+  function acquireAll(addresses: number[]): void {
+    for (const address of addresses) {
+      acquire(address);
+    }
   }
 
   function release(address: number): void {
@@ -191,6 +255,21 @@ export const useLocosStore = defineStore('locos', () => {
     throttle.estop = true;
   }
 
+  // One command stops every loco on the layout, including ones driven from
+  // other Throttles; the ones driven here show the stop straight away.
+  function stopAll(): void {
+    connection.send(emergencyStopAll());
+
+    for (const throttle of throttles.value) {
+      throttle.speed = 0;
+      throttle.estop = true;
+    }
+
+    for (const loco of onLayout.value) {
+      loco.speed = 0;
+    }
+  }
+
   function setFunction(address: number, fn: number, state: boolean): void {
     const throttle = throttles.value.find(
       (candidate) => candidate.address === address,
@@ -241,11 +320,15 @@ export const useLocosStore = defineStore('locos', () => {
   return {
     roster,
     throttles,
+    onLayout,
+    moving,
     acquire,
+    acquireAll,
     release,
     setSpeed,
     setDirection,
     emergencyStop,
+    stopAll,
     setMap,
     setFunction,
     toggleFunction,

@@ -36,6 +36,8 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 
 11. **Readable code grouping, with reasons, not magic numbers.** Separate blocks of code with blank lines so related statements are visibly grouped; the `@stylistic/padding-line-between-statements` rule enforces this (`npm run lint:fix` tidies it up). Whenever a value or formula is not self-evidently why (protocol byte layouts, reserved values, range ceilings), add a short comment explaining the reason and the source — and attach it directly to the thing it documents with no blank line between them, so IDE/JSDoc tooling binds it correctly. Core formatting rules are deprecated in ESLint; use the `@stylistic/...` versions, never the deprecated core names.
 
+12. **No pixel-peeping in styles.** Size and space come from the shared tokens in `src/styles/tokens.scss` (type, spacing and control scales) and from layout (flex, grid, content), never from one-off values tuned to match a screenshot: no hand-picked line heights, widths, heights, offsets or letter-spacing. Panels change size at run time and the layout will become user-arrangeable, so anything that only holds at one size is a bug.
+
 ## Stack
 
 | Area            | Choice                                                                                                                                                                                                                                                                                           |

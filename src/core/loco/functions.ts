@@ -7,6 +7,9 @@ export interface FunctionDef {
   // Momentary functions follow the "press and hold" DCC behaviour (horn,
   // whistle) and are released by pointer-up rather than toggled.
   momentary: boolean;
+  // A map can hide functions a decoder does not have, so the throttle only
+  // shows keys that do something.
+  hidden?: boolean;
 }
 
 export const DEFAULT_FUNCTIONS: FunctionDef[] = [

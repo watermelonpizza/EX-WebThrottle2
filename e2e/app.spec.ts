@@ -1,317 +1,201 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/#/');
-});
+// These run against the host emulator (the real CommandStation-EX firmware,
+// started by playwright.config.ts), so every reply is the firmware's own.
 
-test('app loads to the connect page, then connects via the emulator', async ({
-  page,
-}) => {
-  await expect(
-    page.getByRole('heading', { name: 'WebThrottle' }),
-  ).toBeVisible();
-  await expect(page.getByTestId('connect-emulator')).toBeVisible();
+async function connect(page: Page, path = '/'): Promise<void> {
+  await page.goto(`/#${path}`);
 
-  await page.getByTestId('connect-emulator').click();
+  // The emulator lives under "Other ways to connect"; it is already open in
+  // browsers without Web Serial.
+  const other = page.locator('.connect__other');
 
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-  await expect(page.getByTestId('layout-panel')).toBeVisible();
-
-  await expect(page.getByTestId('commander-power')).toBeVisible();
-  await expect(page.getByTestId('track-power-A')).toContainText('Main');
-});
-
-test('connects from the URL field with Enter', async ({ page }) => {
-  const url = page.getByTestId('emulator-url');
-
-  await url.fill('ws://127.0.0.1:4444/custom-path');
-  await url.press('Enter');
-
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-});
-
-test('saves and drives a locomotive on the emulator', async ({ page }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-
-  await page.getByTestId('new-loco-address').fill('7');
-  await page.getByTestId('new-loco-name').fill('Shunter');
-  await page.getByTestId('add-loco').click();
-
-  await expect(page.getByTestId('roster-7')).toContainText('Shunter');
-
-  await page.getByTestId('drive').click();
-
-  const throttle = page.getByTestId('throttle-panel');
-  const slider = page.getByTestId('speed-slider');
-  const direction = page.getByTestId('direction-toggle');
-  const forward = direction.getByRole('button', { name: 'Forward' });
-  const reverse = direction.getByRole('button', { name: 'Reverse' });
-  const headlight = page.locator('[data-test="fun"][data-function="0"]');
-  const trace = page.getByTestId('trace-list');
-
-  await expect(throttle).toBeVisible();
-  await expect(slider).toBeVisible();
-  await expect(trace).toContainText('<t 7>');
-  await expect(trace).toContainText('<l 7');
-
-  if ((await headlight.getAttribute('class'))?.includes('is-selected')) {
-    const receivedCount = await trace.locator('.received').count();
-
-    await headlight.click();
-    await expect(headlight).not.toHaveClass(/is-selected/);
-    await expect
-      .poll(() => trace.locator('.received').count())
-      .toBeGreaterThan(receivedCount);
+  if (!(await other.evaluate((element) => (element as HTMLDetailsElement).open))) {
+    await other.locator('summary').click();
   }
 
-  await forward.click();
-  await slider.evaluate((element) => {
-    if (!(element instanceof HTMLInputElement)) {
-      throw new TypeError('speed slider is not an input');
-    }
+  await page.getByTestId('connect-emulator').click();
+  await expect(page.getByTestId('shell-status')).toContainText('Connected');
+}
 
-    element.value = '12';
-    element.dispatchEvent(new Event('input', { bubbles: true }));
+// A turnout control that is on screen: the diagram on a desktop, route tiles
+// on a phone.
+function turnout(page: Page, id: number) {
+  return page
+    .locator(
+      `[data-testid="diagram-turnout-${id}"]:visible, [data-testid="turnout-${id}"]:visible`,
+    )
+    .first();
+}
+
+test('opens on the connect page and connects to the emulator', async ({
+  page,
+}) => {
+  await page.goto('/#/');
+
+  await expect(
+    page.getByRole('heading', { name: 'Connect to your Command Station' }),
+  ).toBeVisible();
+  await expect(page.getByTestId('stop-all')).toHaveCount(0);
+
+  await connect(page);
+
+  // Control is the default role; Stop all and track power are always there.
+  await expect(page.getByTestId('role-control')).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(page.getByTestId('stop-all')).toBeVisible();
+  await expect(page.getByTestId('track-power-A')).toBeVisible();
+});
+
+test('drives a loco: speed, direction, a function and stop', async ({
+  page,
+}) => {
+  await connect(page, '/drive');
+
+  await page.getByTestId('drive-address').fill('7');
+  await page.getByTestId('drive-name').fill('Shunter');
+  await page.getByTestId('drive').click();
+
+  const desk = page.getByTestId('throttle-panel');
+
+  await expect(desk).toContainText('Shunter');
+
+  const slider = desk.getByTestId('speed-slider');
+
+  await slider.fill('12');
+  // The readout shows what the station reports back, not what was sent.
+  await expect(desk.getByTestId('speed-readout')).toHaveText('12');
+
+  const reverse = desk.getByTestId('direction-toggle').getByRole('button', {
+    name: 'REV',
   });
-
-  await expect(slider).toHaveValue('12');
-  await expect(forward).toHaveAttribute('aria-pressed', 'true');
-  await expect(trace).toContainText('<t 7 12 1>');
-  await expect(trace).toContainText('<l 7 0 141 0>');
 
   await reverse.click();
-
   await expect(reverse).toHaveAttribute('aria-pressed', 'true');
-  await expect(trace).toContainText('<t 7 12 0>');
-  await expect(trace).toContainText('<l 7 0 13 0>');
+
+  const headlight = desk.locator('[data-testid="fun"][data-function="0"]');
+  const before = await headlight.getAttribute('aria-pressed');
 
   await headlight.click();
+  await expect(headlight).not.toHaveAttribute('aria-pressed', before ?? '');
 
-  await expect(headlight).toHaveClass(/is-selected/);
-  await expect(trace).toContainText('<F 7 0 1>');
-  await expect(trace).toContainText('<l 7 0 13 1>');
-
-  await page.getByTestId('estop').click();
-
-  await expect(slider).toHaveValue('0');
-  await expect(reverse).toHaveAttribute('aria-pressed', 'true');
-  await expect(trace).toContainText('<t 7 -1 0>');
-  await expect(trace).toContainText('<l 7 0 1 1>');
+  await desk.getByTestId('estop').click();
+  await expect(desk.getByTestId('estop')).toHaveText('Stopped');
+  await expect(desk.getByTestId('speed-readout')).toHaveText('0');
 });
 
-test('powers the commander and each track from the status bar', async ({
+test('throws a turnout and shows it only once the station confirms', async ({
   page,
 }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
+  await connect(page, '/points');
 
-  const commander = page.getByTestId('commander-power');
-  const mainTrack = page.getByTestId('track-power-A');
+  const first = turnout(page, 1);
 
-  await expect(mainTrack).toBeVisible();
-  await expect(commander).toBeEnabled();
-  await expect(mainTrack).toBeEnabled();
+  await expect(first).toHaveAttribute('aria-label', /Turnout 1.*(closed|thrown)/);
 
-  const commanderWasOn =
-    (await commander.getAttribute('aria-pressed')) === 'true';
-  const switchedState = String(!commanderWasOn);
+  const wasThrown = /thrown/.test((await first.getAttribute('aria-label')) ?? '');
 
-  await commander.click();
-  await expect(commander).toHaveAttribute('aria-pressed', switchedState);
-  await expect(mainTrack).toHaveAttribute('aria-pressed', switchedState);
-
-  await mainTrack.click();
-  await expect(mainTrack).toHaveAttribute(
-    'aria-pressed',
-    String(commanderWasOn),
+  await first.click();
+  await expect(first).toHaveAttribute(
+    'aria-label',
+    wasThrown ? /closed/ : /thrown/,
   );
-  await expect(commander).toHaveAttribute('aria-pressed', switchedState);
+
+  // The change is in the event log, from the strip, as the newest entry.
+  await page.getByTestId('events-button').click();
+  await expect(page.getByTestId('event-log').locator('li').first()).toContainText(
+    `Turnout 1 ${wasThrown ? 'closed' : 'thrown'}`,
+  );
 });
 
-test('debug console is a workspace panel and sends a raw command', async ({
+test('opens Settings from the menu, and the wordmark goes back home', async ({ page }) => {
+  await connect(page);
+
+  await page.getByTestId('app-menu-button').click();
+  await expect(page.getByTestId('app-menu')).toBeVisible();
+
+  // Choosing an item closes the menu.
+  await page.getByTestId('menu-settings').click();
+  await expect(page.getByTestId('page-title')).toHaveText('Settings');
+  await expect(page.getByTestId('app-menu')).toBeHidden();
+
+  await page.getByTestId('home').click();
+  await expect(page.getByTestId('stop-all')).toBeVisible();
+  await expect(page.getByTestId('page-title')).toHaveCount(0);
+});
+
+test('switches track power and stops everything from the strip', async ({
   page,
 }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
+  await connect(page);
 
-  await expect(page.getByTestId('command-input')).toBeVisible();
+  const main = page.getByTestId('track-power-A');
+  const wasOn = (await main.getAttribute('aria-pressed')) === 'true';
 
-  await page.getByTestId('command-input').fill('<1>');
+  await main.click();
+  await expect(main).toHaveAttribute('aria-pressed', String(!wasOn));
+
+  await page.getByTestId('stop-all').click();
+
+  await page.getByTestId('role-diagnostics').click();
+  await expect(page.getByTestId('trace-list')).toContainText('<!>');
+});
+
+test('sends a raw command from Diagnostics and explains the reply', async ({
+  page,
+}) => {
+  await connect(page, '/diagnostics');
+
+  await page.getByTestId('command-input').fill('<s>');
   await page.getByTestId('send-command').click();
 
-  await expect(page.getByTestId('trace-list')).toContainText('<1>');
-});
-
-test('debug descriptions cover firmware info and virtual display replies', async ({ page }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-
-  const trace = page.getByTestId('trace-list');
-  const stationInfo = page
-    .getByTestId('trace-entry')
-    .filter({ hasText: '<iDCC-EX V-' });
-
-  await stationInfo.first().getByTestId('trace-row').click();
-  await expect(stationInfo.first().getByTestId('trace-details')).toContainText(
-    'Command-station identification',
-  );
-  await expect(stationInfo.first().getByTestId('trace-details')).toContainText(
-    'HOST_SHIELD',
-  );
-
-  await page.getByTestId('command-input').fill('<@>');
-  await page.getByTestId('send-command').click();
-  await expect(trace).toContainText('<@ 0 0');
-
-  const displayUpdate = page
-    .getByTestId('trace-entry')
-    .filter({ hasText: '<@ 0 0' })
-    .last();
-
-  await displayUpdate.getByTestId('trace-row').click();
-  await expect(displayUpdate.getByTestId('trace-details')).toContainText(
-    'Virtual display update',
-  );
-});
-
-test('raw debug mode keeps the traffic log selectable', async ({ page }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-  await page.getByTestId('debug-mode-toggle').click();
-
-  const rawLog = page.getByTestId('trace-list');
-
-  await expect(rawLog).toHaveAttribute('readonly', '');
-  await rawLog.selectText();
-
-  const selectedText = await rawLog.evaluate((element) => {
-    const textarea = element as HTMLTextAreaElement;
-
-    return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-  });
-
-  expect(selectedText).toContain('<s>');
-});
-
-test('throws a seeded turnout and receives its broadcast', async ({ page }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-
-  const command = page.getByTestId('command-input');
-  const send = page.getByTestId('send-command');
   const trace = page.getByTestId('trace-list');
 
-  await command.fill('<T 1 C>');
-  await send.click();
-  await command.fill('<T 1 T>');
-  await send.click();
+  await expect(trace).toContainText('<iDCC-EX');
 
-  await expect(trace).toContainText('<T 1 T>');
-  await expect(trace).toContainText('<H 1 1>');
+  // Coming back to Diagnostics opens the log at the latest traffic.
+  await page.getByTestId('role-control').click();
+  await page.getByTestId('role-diagnostics').click();
+  await expect
+    .poll(() =>
+      trace.evaluate(
+        (list) => list.scrollHeight - list.scrollTop - list.clientHeight,
+      ),
+    )
+    .toBeLessThan(2);
+
+  await page.getByTestId('trace-row').filter({ hasText: '<iDCC-EX' }).last().click();
+  await expect(page.getByTestId('trace-details').first()).toBeVisible();
 });
 
-test('operates the turnouts, outputs and sensors the station reports', async ({
-  page,
-}) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
+test('warns before disconnecting while a loco is moving', async ({ page }) => {
+  await connect(page, '/drive');
 
-  const turnout = page.getByTestId('turnout-1');
-  const toggle = page.getByTestId('turnout-toggle-1');
-  const outputSwitch = page.getByTestId('output-10');
-  const output = outputSwitch.locator('input');
-  const trace = page.getByTestId('trace-list');
+  await page.getByTestId('drive-address').fill('9');
+  await page.getByTestId('drive').click();
+  await page.getByTestId('speed-slider').fill('20');
+  await expect(page.getByTestId('speed-readout')).toHaveText('20');
 
-  await expect(turnout).toContainText('Turnout 1');
-  await expect(page.getByTestId('sensor-20')).toContainText('Clear');
-
-  // The emulator keeps its state between tests, so switch whichever way the
-  // station currently reports and expect the opposite back.
-  const closing = (await toggle.innerText()).trim() === 'Close';
-
-  await toggle.click();
-
-  await expect(trace).toContainText(closing ? '<T 1 C>' : '<T 1 T>');
-  await expect(trace).toContainText(closing ? '<H 1 0>' : '<H 1 1>');
-  await expect(turnout).toContainText(closing ? 'Closed' : 'Thrown');
-
-  const switchingOn = !(await output.isChecked());
-
-  // The switch is a styled label around a hidden checkbox, so the label is what
-  // a person clicks.
-  await outputSwitch.click();
-
-  await expect(trace).toContainText(`<Z 10 ${switchingOn ? 1 : 0}>`);
-  await expect(trace).toContainText(`<Y 10 ${switchingOn ? 1 : 0}>`);
-  await expect(output).toBeChecked({ checked: switchingOn });
-});
-
-test('settings holds the arrangement and theme controls, and the logo returns home', async ({
-  page,
-}) => {
-  await page.getByTestId('settings-link').click();
-
-  await expect(page).toHaveURL(/#\/settings/);
-  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-  await expect(page.getByTestId('new-map')).toBeVisible();
-  await expect(page.getByTestId('arrangement-driving')).toBeVisible();
-  await expect(page.getByTestId('theme-light')).toBeVisible();
-
-  await page.getByTestId('arrangement-system').click();
-  await expect(page.getByTestId('arrangement-system')).toHaveClass(
-    /console-layout__choice--active/,
+  await page.getByTestId('shell-status').click();
+  await expect(page.getByTestId('disconnect-warning')).toContainText(
+    'still moving',
   );
 
-  await page.getByTestId('theme-dark').click();
-  await expect(page.getByTestId('theme-dark')).toHaveClass(
-    /theme-picker__choice--active/,
-  );
-
-  await page.getByTestId('brand').click();
-
-  await expect(page).toHaveURL(/#\/$/);
+  await page.getByTestId('stop-and-disconnect').click();
   await expect(
-    page.getByRole('heading', { name: 'WebThrottle' }),
+    page.getByRole('heading', { name: 'Connect to your Command Station' }),
   ).toBeVisible();
 });
 
-test('switches the console arrangement from settings and disconnects', async ({
-  page,
-}) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
+test('remembers a theme choice', async ({ page }) => {
+  await page.goto('/#/settings');
 
-  await page.getByTestId('settings-link').click();
-  await page.getByTestId('arrangement-system').click();
-  await page.getByTestId('brand').click();
+  await page.getByTestId('theme-contrast').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'contrast');
 
-  await expect(page.getByTestId('panel-debug')).toBeVisible();
-  await expect(page.getByTestId('track-power-A')).toBeVisible();
-
-  await page.getByTestId('disconnect').click();
-
-  await expect(page.getByTestId('shell-status')).toContainText('disconnected');
-  await expect(
-    page.getByRole('heading', { name: 'WebThrottle' }),
-  ).toBeVisible();
-});
-
-test('panels hide and come back from the settings screen', async ({ page }) => {
-  await page.getByTestId('connect-emulator').click();
-  await expect(page.getByTestId('shell-status')).toContainText('connected');
-
-  await page.getByTestId('settings-link').click();
-
-  // Panels are managed from Settings: hide the debug console, then bring it
-  // back. There is no close button on the panel itself yet.
-  await page.getByTestId('panel-toggle-debug').uncheck();
-  await page.getByTestId('brand').click();
-  await expect(page.getByTestId('command-input')).toBeHidden();
-
-  await page.getByTestId('settings-link').click();
-  await page.getByTestId('panel-toggle-debug').check();
-  await page.getByTestId('brand').click();
-
-  await expect(page.getByTestId('command-input')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'contrast');
 });

@@ -1,28 +1,35 @@
 <script setup lang="ts">
-import HeaderBar from '@/components/layout/HeaderBar.vue';
-import StatusBar from '@/components/layout/StatusBar.vue';
+import { computed } from 'vue';
+
+import SafetyStrip from '@/components/shell/SafetyStrip.vue';
+import TopBar from '@/components/shell/TopBar.vue';
+import { useConnectionStore } from '@/stores/connection';
+
+const connection = useConnectionStore();
+
+const connected = computed(() => connection.status === 'connected');
 </script>
 
 <template>
-  <div class="shell">
-    <HeaderBar />
-    <main class="shell__main">
+  <div class="app" :class="{ 'app--connected': connected }">
+    <TopBar v-if="connected" />
+    <main class="app__main">
       <router-view />
     </main>
-    <StatusBar />
+    <SafetyStrip v-if="connected" />
   </div>
 </template>
 
 <style lang="scss" scoped>
-.shell {
+.app {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.shell__main {
+.app__main {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: auto;
 }
 </style>

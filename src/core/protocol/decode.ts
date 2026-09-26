@@ -6,7 +6,9 @@ import {
   TurnoutState,
 } from './types';
 import {
+  CAB_LIST_TITLE,
   INFO_TURNOUTS,
+  OPCODE_DIAGNOSTIC_REPLY,
   OPCODE_INFO,
   OPCODE_LOCO_UPDATE,
   OPCODE_OUTPUT,
@@ -99,6 +101,19 @@ export function decodeFrame(frame: string): ProtocolMessage {
 
   if (opcode === OPCODE_INFO && body[1] === INFO_TURNOUTS) {
     return decodeTurnoutInfo(body.slice(2));
+  }
+
+  // <* LocoSlots n/max …\n Loco=3 s=… \n*>: the answer to <D CABS>. It is a
+  // diagnostic dump written for people, so only the addresses are taken.
+  if (
+    opcode === OPCODE_DIAGNOSTIC_REPLY &&
+    body.slice(1).trimStart().startsWith(CAB_LIST_TITLE)
+  ) {
+    const addresses = [...body.matchAll(/Loco=\s*(\d+)/g)].map((match) =>
+      Number(match[1]),
+    );
+
+    return { kind: 'cab-list', addresses };
   }
 
   const params = body.slice(1).trim().split(/\s+/).filter(Boolean);

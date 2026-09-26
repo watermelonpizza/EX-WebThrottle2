@@ -9,6 +9,9 @@ export const OPCODE_SYSTEM_INFO_REQUEST = 's';
 export const OPCODE_LOCO = 't';
 export const OPCODE_FUNCTION = 'F';
 export const OPCODE_FORGET = '-';
+// <!> emergency-stops every loco the command station is driving, whichever
+// throttle set it moving.
+export const OPCODE_EMERGENCY_STOP_ALL = '!';
 
 // Track assignments are listed as <= A MAIN> in answer to <=>.
 export const OPCODE_TRACK_LIST = '=';
@@ -40,3 +43,10 @@ export const OPCODE_OUTPUT = 'Y';
 // <Q id> when active or <q id> when not — the case carries the state.
 export const OPCODE_SENSOR = 'Q';
 export const OPCODE_SENSOR_INACTIVE = 'q';
+
+// Diagnostics: <D CABS> lists the locos the command station is driving, in a
+// <* LocoSlots … *> diagnostic reply with one "Loco=<cab>" line per loco.
+export const OPCODE_DIAGNOSTIC = 'D';
+export const DIAGNOSTIC_CABS = 'CABS';
+export const OPCODE_DIAGNOSTIC_REPLY = '*';
+export const CAB_LIST_TITLE = 'LocoSlots';

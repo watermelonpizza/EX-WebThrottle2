@@ -22,6 +22,13 @@
 # exercised against a list rather than a single row.
 <T 2 DCC 10 1>
 
+# Turnouts 3-5 lead into the yard. With 1 and 2 they match the sample layout
+# diagram the throttle draws for the emulator (a main line, a passing loop and
+# a two-road yard).
+<T 3 DCC 10 2>
+<T 4 DCC 10 3>
+<T 5 DCC 11 0>
+
 # Output 10 driving pin 100, active high (<Z id pin flags>, flag bit 0 low means
 # active high). Outputs are the on/off accessories of a layout - uncouplers,
 # lights, relays. <Z 10 1> switches it and answers <Y 10 1>.
@@ -37,5 +44,7 @@
 # until the emulator gains a way to set sensor state.
 <S 20 200 1>
 
-# Sensor 21 on pin 201, same again.
+# Sensor 21 on pin 201, same again. On the sample diagram, 20 watches
+# Platform 1, 21 the loop and 22 the yard.
 <S 21 201 1>
+<S 22 202 1>

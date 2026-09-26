@@ -47,6 +47,7 @@ export type ProtocolMessage =
   | { kind: 'power'; state: PowerState; track?: string }
   | { kind: 'track'; track: TrackState }
   | { kind: 'loco'; loco: LocoState }
+  | { kind: 'cab-list'; addresses: number[] }
   | { kind: 'turnout'; id: number; state: TurnoutState }
   | { kind: 'turnout-list'; ids: number[] }
   | { kind: 'turnout-detail'; id: number; state: TurnoutState; label: string }

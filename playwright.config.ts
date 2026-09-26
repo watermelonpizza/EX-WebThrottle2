@@ -14,7 +14,6 @@ const config: PlaywrightTestConfig = {
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:5173',
-    testIdAttribute: 'data-test',
     trace: 'on-first-retry',
     // Headless by default; pass --headed to watch the run.
     headless: true,

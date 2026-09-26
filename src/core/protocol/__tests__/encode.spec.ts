@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   Direction,
   TurnoutState,
+  emergencyStopAll,
   forgetLoco,
   powerOff,
   powerOn,
   powerTrack,
+  requestCabList,
   requestLocoUpdate,
   requestOutputList,
   requestSensorStates,
@@ -21,6 +23,10 @@ import {
 } from '../index';
 
 describe('encode', () => {
+  it('encodes the stop-every-loco command', () => {
+    expect(emergencyStopAll()).toBe('<!>');
+  });
+
   it('encodes power commands', () => {
     expect(powerOn()).toBe('<1>');
     expect(powerOff()).toBe('<0>');
@@ -43,6 +49,10 @@ describe('encode', () => {
 
   it('encodes loco update request', () => {
     expect(requestLocoUpdate(3)).toBe('<t 3>');
+  });
+
+  it('encodes the loco table request', () => {
+    expect(requestCabList()).toBe('<D CABS>');
   });
 
   it('encodes forget loco', () => {

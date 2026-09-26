@@ -1,10 +1,21 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 
+import { PRESETS } from '@/core/workspace';
+
+const ROLES = PRESETS.map((preset) => preset.id).join('|');
+
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'console',
+    component: () => import('@/views/ConsoleView.vue'),
+  },
+  // Each role preset has its own link, so a club can hand an operator the
+  // page for their job (for example #/points).
+  {
+    path: `/:role(${ROLES})`,
+    name: 'role',
     component: () => import('@/views/ConsoleView.vue'),
   },
   {
@@ -12,8 +23,7 @@ export const routes: RouteRecordRaw[] = [
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),
   },
-  // Stage 3 routes folded into the single console; keep them pointing at home
-  // so bookmarks and e2e navigation from older builds keep working.
+  // Older builds had a page per feature; send those bookmarks home.
   ...['throttles', 'locos', 'functions', 'communications'].map((path) => ({
     path: `/${path}`,
     redirect: '/',

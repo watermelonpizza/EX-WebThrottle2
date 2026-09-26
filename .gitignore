@@ -5,6 +5,7 @@ node_modules
 # Local AI/developer working notes (never commit)
 .omo/
 AGENTS.local.md
+.impeccable/
 
 # Impeccable design skill: platform binary (the launcher downloads a pinned
 # copy when missing) and per-developer overrides

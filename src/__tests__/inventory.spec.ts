@@ -65,6 +65,27 @@ describe('inventory store', () => {
     expect(inventory.turnouts.map((turnout) => turnout.id)).toEqual([2]);
   });
 
+  it('notes when points move, but not when the station first reports them', async () => {
+    const { inventory, station } = await connect();
+
+    station.receives('<jT 1>');
+    station.receives('<H 1 1>');
+    await flushPromises();
+
+    expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
+
+    // Reporting the same position again is not a move either.
+    station.receives('<H 1 1>');
+    await flushPromises();
+
+    expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
+
+    station.receives('<H 1 0>');
+    await flushPromises();
+
+    expect(inventory.turnouts[0]?.movedAt).toEqual(expect.any(Number));
+  });
+
   it('reads output and sensor state from the station', async () => {
     const { inventory, station } = await connect();
 

@@ -2,21 +2,33 @@ import { defineStore } from 'pinia';
 
 export const THEME_KEY = 'exwt-theme';
 
-export type ThemeName = 'light' | 'dark';
+// Dark suits a train room lit for the layout, light a bright room or daylight,
+// and contrast gives the strongest separation and larger text for low vision.
+export const THEMES = ['dark', 'light', 'contrast'] as const;
+
+export type ThemeName = (typeof THEMES)[number];
+
+function isTheme(value: unknown): value is ThemeName {
+  return THEMES.includes(value as ThemeName);
+}
 
 function initialTheme(): ThemeName {
   const saved = localStorage.getItem(THEME_KEY);
 
-  if (saved === 'light' || saved === 'dark') {
+  if (isTheme(saved)) {
     return saved;
   }
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+  if (window.matchMedia('(prefers-contrast: more)').matches) {
+    return 'contrast';
+  }
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches
+    ? 'light'
+    : 'dark';
 }
 
-// The token blocks in styles/main.scss key off data-theme on <html>.
+// The token blocks in styles/tokens.scss key off data-theme on <html>.
 export function applyTheme(theme: ThemeName): void {
   document.documentElement.dataset.theme = theme;
 }

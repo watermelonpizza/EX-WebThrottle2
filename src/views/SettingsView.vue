@@ -1,33 +1,71 @@
 <script setup lang="ts">
-import ConsoleLayout from '@/components/settings/ConsoleLayout.vue';
-import FunctionMapsEditor from '@/components/settings/FunctionMapsEditor.vue';
-import ThemePicker from '@/components/settings/ThemePicker.vue';
+import FunctionMaps from '@/components/settings/FunctionMaps.vue';
+import SavedLocos from '@/components/settings/SavedLocos.vue';
+import ThemeChoice from '@/components/settings/ThemeChoice.vue';
+import { useConnectionStore } from '@/stores/connection';
+
+const connection = useConnectionStore();
 </script>
 
 <template>
   <div class="settings">
-    <h1 class="settings__title" data-test="page-title">Settings</h1>
+    <header class="settings__head">
+      <router-link class="settings__back" to="/" data-testid="settings-back">
+        {{ connection.status === 'connected' ? 'Back to the console' : 'Back to connect' }}
+      </router-link>
+      <h1 class="settings__title" data-testid="page-title">Settings</h1>
+    </header>
 
-    <ThemePicker />
-    <ConsoleLayout />
-    <FunctionMapsEditor />
+    <ThemeChoice />
+    <SavedLocos />
+    <FunctionMaps />
   </div>
 </template>
 
 <style lang="scss" scoped>
 .settings {
-  max-width: 44rem;
+  display: grid;
+  gap: var(--space-6);
+  width: min(52rem, 100%);
   margin: 0 auto;
-  padding: 1rem;
+  padding: var(--space-6) var(--space-5);
+}
+
+.settings__head {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.settings__back {
+  font-size: var(--text-xs);
 }
 
 .settings__title {
-  margin-top: 0;
+  font-size: var(--text-2xl);
+  font-weight: 600;
 }
 
-.settings > * + * {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-panel-edge);
+:deep(.settings-section) {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+:deep(.settings-section__head) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+:deep(.settings-section__title) {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+:deep(.settings-section__lead) {
+  max-width: 62ch;
+  color: var(--ink-muted);
 }
 </style>

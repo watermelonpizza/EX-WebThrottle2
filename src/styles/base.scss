@@ -1,0 +1,290 @@
+@use './tokens';
+
+@font-face {
+  font-family: 'Alan Sans';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('@/assets/fonts/alan-sans-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Alan Sans';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('@/assets/fonts/alan-sans-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  color: var(--ink);
+  background: var(--ground);
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+  -webkit-font-smoothing: antialiased;
+  caret-color: var(--accent);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+button,
+input,
+select,
+textarea {
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+// Numbers on this console are measurements: they keep their width.
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  color: var(--ink);
+  background: var(--selection);
+}
+
+:focus-visible {
+  outline: var(--line) solid var(--focus);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-color: var(--edge) transparent;
+  scrollbar-width: thin;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Shared control language: flat keys with a thin edge, one height.
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target);
+  padding: 0 var(--space-4);
+
+  color: var(--ink);
+  background: var(--raised);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+
+  transition:
+    background-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out);
+
+  &:hover:not(:disabled) {
+    background: var(--raised-hover);
+  }
+
+  &:disabled {
+    color: var(--ink-muted);
+    opacity: 0.6;
+  }
+}
+
+.key--stop {
+  color: var(--stop-ink);
+  background: var(--stop);
+  border-color: transparent;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: var(--stop-hover);
+  }
+}
+
+.key--accent {
+  color: var(--ink-on-accent);
+  background: var(--accent);
+  border-color: transparent;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    filter: brightness(1.08);
+  }
+}
+
+// A floating surface opened from a button: menus, the add-loco form and the
+// event log. It sits beside the button that opened it (each popup names its
+// button with position-anchor) and flips to stay on screen; browsers without
+// anchor positioning use the fixed place each popup gives as a fallback.
+.popup {
+  position: fixed;
+  inset: auto;
+  max-width: calc(100vw - 2 * var(--space-3));
+  max-height: calc(100dvh - 2 * var(--space-3));
+  margin: 0;
+  padding: var(--space-3);
+  overflow: auto;
+
+  color: var(--ink);
+  background: var(--raised);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  box-shadow: 0 var(--space-2) var(--space-5) rgb(0 0 0 / 0.35);
+
+  &:popover-open {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  @supports (position-area: bottom) {
+    margin-block: var(--space-1);
+    position-area: bottom span-left;
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+}
+
+// Lists of compact rows: points, outputs and sensors. A list that has to
+// scroll shows only whole rows. Its height rounds down to a whole number of
+// rows and scrolling snaps from row to row, so the last row in view is never
+// sliced. The list needs a parent with a definite height (a panel) to round
+// against; anywhere else it is simply as tall as its rows.
+.row-list {
+  --row: var(--target);
+
+  display: grid;
+  grid-auto-rows: var(--row);
+  max-block-size: round(down, 100%, var(--row));
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  scroll-snap-type: y mandatory;
+
+  > * {
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+}
+
+// A list panel (points, outputs, sensors): a title, then rows filling the
+// rest of the panel, in more than one column when the panel is wide.
+.list-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-3) var(--space-4);
+}
+
+.list-panel__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+}
+
+.list-panel__count {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.list-panel__empty {
+  color: var(--ink-muted);
+}
+
+.list-panel__rows {
+  align-self: start;
+  column-gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
+.field {
+  min-height: var(--target);
+  padding: 0 var(--space-3);
+
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+
+  &::placeholder {
+    color: var(--ink-muted);
+  }
+}
+
+// Points changing over (components/schematic/changeover.ts sets the timing):
+// each flash shows the new route dark, then lit, and it ends lit.
+.changing-over {
+  animation: changeover var(--changeover-flash) step-end
+    var(--changeover-flashes);
+}
+
+@keyframes changeover {
+  0% {
+    stroke: var(--track-unset);
+  }
+
+  50% {
+    stroke: var(--track-set);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

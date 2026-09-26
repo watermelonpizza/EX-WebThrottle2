@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref, shallowRef } from 'vue';
 
-import type { ProtocolMessage } from '@/core/protocol';
+import type { ProtocolMessage, SystemInfo } from '@/core/protocol';
 import {
   decodeFrame,
   requestSystemInfo,
@@ -45,8 +45,11 @@ export const useConnectionStore = defineStore('connection', () => {
   const status = ref<ConnectionStatus>('disconnected');
   const connectionError = ref('');
   const trace = ref<TraceEntry[]>([]);
+  // What the Command Station says it is, from its <i…> reply to <s>.
+  const station = ref<SystemInfo | undefined>();
 
   const messageListeners = new Set<(message: ProtocolMessage) => void>();
+  const sentListeners = new Set<(command: string) => void>();
 
   // The transport lives in a shallowRef so Vue observes it being swapped but
   // never proxies the object itself (a proxy breaks the class internals).
@@ -81,6 +84,10 @@ export const useConnectionStore = defineStore('connection', () => {
 
       const message = decodeFrame(frame);
 
+      if (message.kind === 'system-info') {
+        station.value = message.info;
+      }
+
       for (const listener of messageListeners) {
         listener(message);
       }
@@ -93,6 +100,12 @@ export const useConnectionStore = defineStore('connection', () => {
     messageListeners.add(listener);
   }
 
+  // Lets a store tell this browser's own commands apart from changes another
+  // Throttle made, which arrive as the same broadcasts.
+  function onSent(listener: (command: string) => void): void {
+    sentListeners.add(listener);
+  }
+
   function clearConnectionState(): void {
     unsubscribeData?.();
     unsubscribeData = undefined;
@@ -101,6 +114,7 @@ export const useConnectionStore = defineStore('connection', () => {
 
     transport.value = undefined;
     buffer = '';
+    station.value = undefined;
     status.value = 'disconnected';
     trace.value = [];
   }
@@ -129,6 +143,10 @@ export const useConnectionStore = defineStore('connection', () => {
     unsubscribeDisconnect = nextTransport.onDisconnect?.(() => {
       if (transport.value === nextTransport) {
         clearConnectionState();
+        // The link dropped on its own (cable out, emulator stopped). Say so:
+        // locos keep running on the Command Station until something stops them.
+        connectionError.value =
+          'The connection to the Command Station was lost. Trains may still be moving: reconnect to stop them.';
       }
     });
     status.value = 'connecting';
@@ -169,6 +187,10 @@ export const useConnectionStore = defineStore('connection', () => {
 
     addTrace('sent', command);
 
+    for (const listener of sentListeners) {
+      listener(command);
+    }
+
     try {
       transport.value.send(command);
     } catch (error) {
@@ -180,9 +202,11 @@ export const useConnectionStore = defineStore('connection', () => {
     status,
     connectionError,
     transportName,
+    station,
     trace,
     serialAvailable,
     onMessage,
+    onSent,
     connect,
     connectToEmulator,
     connectToSerial,

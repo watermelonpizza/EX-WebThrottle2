@@ -66,7 +66,14 @@ describe('locos store', () => {
     locos.acquire(3);
 
     expect(locos.throttles).toHaveLength(2);
-    expect(emulator.sent).toEqual(['<s>', '<=>', '<t 3>', '<t 4>', '<t 3>']);
+    expect(emulator.sent).toEqual([
+      '<s>',
+      '<=>',
+      '<D CABS>',
+      '<t 3>',
+      '<t 4>',
+      '<t 3>',
+    ]);
   });
 
   it('reconciles speed, direction and functions from broadcasts', async () => {
@@ -173,5 +180,53 @@ describe('locos store', () => {
 
     locos.removeLoco(42);
     expect(locos.roster).toEqual([]);
+  });
+
+  it('stops every loco on the layout with one command', async () => {
+    const connection = useConnectionStore();
+    const locos = useLocosStore();
+    const station = new MockTransport();
+
+    await connection.connect(station);
+    locos.acquire(3);
+    locos.acquire(8);
+    locos.setSpeed(3, 40);
+    locos.stopAll();
+
+    expect(station.sent.at(-1)).toBe('<!>');
+    expect(locos.throttles.every((throttle) => throttle.estop && throttle.speed === 0)).toBe(true);
+  });
+
+  it('finds the locos other Throttles are running and drives them all at once', async () => {
+    const { emulator } = await connectedSetup();
+    const locos = useLocosStore();
+
+    // Asked on connecting; the answer's addresses are then asked after.
+    expect(emulator.sent).toContain('<D CABS>');
+
+    await broadcast(
+      emulator,
+      '<* LocoSlots 2/120 size=56b\n Loco=14 s=23 f=0\n Loco=12 s=169 f=0\n*>',
+    );
+
+    expect(emulator.sent).toContain('<t 14>');
+    expect(emulator.sent).toContain('<t 12>');
+
+    // Loco 12 forward at 40 (129 + 40), loco 14 reverse at 22 (1 + 22), and
+    // loco 5 stopped.
+    await broadcast(emulator, '<l 12 0 169 0><l 14 0 23 0><l 5 0 128 0>');
+
+    expect(locos.moving.map((loco) => loco.address)).toEqual([12, 14]);
+    expect(locos.throttles).toEqual([]);
+
+    locos.acquireAll(locos.moving.map((loco) => loco.address));
+
+    expect(locos.throttles.map((throttle) => [throttle.address, throttle.speed])).toEqual([
+      [12, 40],
+      [14, 22],
+    ]);
+    expect(locos.throttles[1]?.direction).toBe(Direction.REVERSE);
+    // Driving them here takes them out of the list of locos to pick up.
+    expect(locos.moving).toEqual([]);
   });
 });

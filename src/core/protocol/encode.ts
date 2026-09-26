@@ -1,6 +1,9 @@
 import { Direction, TurnoutState } from './types';
 import {
+  DIAGNOSTIC_CABS,
   INFO_TURNOUTS,
+  OPCODE_DIAGNOSTIC,
+  OPCODE_EMERGENCY_STOP_ALL,
   OPCODE_FORGET,
   OPCODE_FUNCTION,
   OPCODE_INFO_REQUEST,
@@ -80,6 +83,12 @@ export function requestLocoUpdate(cab: number): string {
   return `<${OPCODE_LOCO} ${cab}>`;
 }
 
+// Asks which locos the command station is driving, from any throttle. Only
+// the addresses are read from the answer; <t cab> then asks each one's state.
+export function requestCabList(): string {
+  return `<${OPCODE_DIAGNOSTIC} ${DIAGNOSTIC_CABS}>`;
+}
+
 export function forgetLoco(cab: number): string {
   assertCab(cab);
 
@@ -95,6 +104,10 @@ export function setLocoSpeed(
   assertSpeed(speed);
 
   return `<${OPCODE_LOCO} ${cab} ${speed} ${direction}>`;
+}
+
+export function emergencyStopAll(): string {
+  return `<${OPCODE_EMERGENCY_STOP_ALL}>`;
 }
 
 export function requestTurnoutList(): string {

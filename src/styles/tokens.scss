@@ -1,0 +1,168 @@
+// Design tokens for the operating-centre console. Components read only these
+// custom properties, so a theme is one block here and never a component edit.
+// Dark is the workstation default; light and contrast switch on data-theme.
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  // Surfaces, from the room behind the screen to raised controls.
+  --ground: #151a1f;
+  // The recessed bezel around the working field: top bar and safety strip.
+  --chrome: #0e1418;
+  --panel: #192025;
+  --raised: #1f272d;
+  --raised-hover: #263038;
+  --rule: #2b343b;
+  --edge: #3a444b;
+
+  // Text. Muted is still AA on every surface above.
+  --ink: #eef2f4;
+  --ink-muted: #9ba4ab;
+  --ink-on-accent: #04181b;
+
+  // Schematic linework, in the manner of a signalling display.
+  --track-idle: #5f6b73;
+  --track-set: #eef2f4;
+  --track-unset: #4a545b;
+  --occupied: #e5484d;
+  --describer: #eeab35;
+  --describer-ink: #1a1405;
+
+  // State colours: each means one thing only.
+  --accent: #00a3b9; // selected, on, the live value
+  --stop: #c1292e; // stop, and nothing else
+  --stop-hover: #d3353a;
+  --stop-ink: #ffffff;
+  --attention: #f7b656;
+
+  --focus: #6fdcea;
+  --selection: rgb(0 163 185 / 0.35);
+
+  --text-scale: 1;
+  --line: 2px;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+
+  --ground: #eef1f3;
+  --chrome: #e2e7ea;
+  --panel: #f8fafb;
+  --raised: #ffffff;
+  --raised-hover: #f1f5f7;
+  --rule: #d6dce0;
+  --edge: #b9c2c8;
+
+  --ink: #111820;
+  --ink-muted: #4b5660;
+  --ink-on-accent: #ffffff;
+
+  --track-idle: #7d8890;
+  --track-set: #111820;
+  --track-unset: #c3cad0;
+  --occupied: #c42b31;
+  --describer: #f0a52e;
+  --describer-ink: #1a1405;
+
+  --accent: #00788a;
+  --stop: #b3261e;
+  --stop-hover: #c52f26;
+  --stop-ink: #ffffff;
+  --attention: #a86a00;
+
+  --focus: #00788a;
+  --selection: rgb(0 120 138 / 0.22);
+}
+
+// Strongest separation and larger type for low vision: black and white, one
+// cyan for selection, pure red for stop, and no muted text at all.
+[data-theme='contrast'] {
+  color-scheme: dark;
+
+  --ground: #000000;
+  --chrome: #000000;
+  --panel: #000000;
+  --raised: #000000;
+  --raised-hover: #1a1a1a;
+  --rule: #ffffff;
+  --edge: #ffffff;
+
+  --ink: #ffffff;
+  --ink-muted: #ffffff;
+  --ink-on-accent: #000000;
+
+  --track-idle: #9a9a9a;
+  --track-set: #ffffff;
+  --track-unset: #6e6e6e;
+  --occupied: #ff5c5c;
+  --describer: #ffd23f;
+  --describer-ink: #000000;
+
+  --accent: #3ee6ff;
+  --stop: #e00000;
+  --stop-hover: #ff1f1f;
+  --stop-ink: #ffffff;
+  --attention: #ffd23f;
+
+  --focus: #ffd23f;
+  --selection: rgb(62 230 255 / 0.4);
+
+  --text-scale: 1.125;
+  --line: 3px;
+}
+
+:root {
+  --font: 'Alan Sans', system-ui, sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  // One compact type scale, so a screen holds as much of the layout as it
+  // can. Everything is in rem, so browser zoom enlarges the whole console for
+  // anyone who wants bigger text and controls; the contrast theme also raises
+  // --text-scale to enlarge every step at once.
+  --text-xs: calc(0.75rem * var(--text-scale));
+  --text-sm: calc(0.875rem * var(--text-scale));
+  --text-md: calc(1rem * var(--text-scale));
+  --text-lg: calc(1.125rem * var(--text-scale));
+  --text-xl: calc(1.375rem * var(--text-scale));
+  --text-2xl: calc(1.75rem * var(--text-scale));
+  --text-display: calc(3.5rem * var(--text-scale));
+
+  --leading-tight: 1.1;
+  --leading: 1.35;
+
+  // One spacing scale; components pick steps, never their own values.
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+
+  --radius: 4px;
+
+  // Control sizes follow the pointer, not the screen. A mouse or trackpad
+  // points precisely, so a desk or control station gets compact controls and
+  // more of the layout on screen, as in any productive desktop tool. A finger
+  // needs bigger targets set further apart (see the coarse pointer below).
+  // --target is the smallest thing to hit, --control the size of the
+  // controls a driver reaches for without looking (stop, direction), and
+  // --control-gap the space between neighbouring controls.
+  --target: calc(2rem * var(--text-scale));
+  --control: calc(2.75rem * var(--text-scale));
+  --control-gap: var(--space-2);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+// A touch screen, whatever its width: a phone walking the layout or a tablet
+// on the fascia. 2.75rem is the 44 px touch target the Apple and WCAG
+// guidance ask for.
+@media (pointer: coarse) {
+  :root {
+    --target: calc(2.75rem * var(--text-scale));
+    --control: calc(3.5rem * var(--text-scale));
+    --control-gap: var(--space-3);
+  }
+}
