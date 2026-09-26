@@ -67,7 +67,11 @@ describe('diagram drawing', () => {
   });
 
   it('lights the leg a turnout lies on and breaks the other at the switch', () => {
-    const drawing = drawDiagram(diagram, () => TurnoutState.THROWN, () => false);
+    const drawing = drawDiagram(
+      diagram,
+      () => TurnoutState.THROWN,
+      () => false,
+    );
 
     const tones = Object.fromEntries(
       drawing.lines.map((line) => [line.key, line.tone]),
@@ -89,7 +93,11 @@ describe('diagram drawing', () => {
   });
 
   it('shows a turnout the station has not reported as unknown: nothing lit, no gap', () => {
-    const drawing = drawDiagram(diagram, () => undefined, () => false);
+    const drawing = drawDiagram(
+      diagram,
+      () => undefined,
+      () => false,
+    );
 
     expect(drawing.lines.every((line) => line.tone === 'idle')).toBe(true);
     expect(drawing.gaps).toHaveLength(0);
@@ -113,48 +121,79 @@ describe('diagram drawing', () => {
       ],
     };
     const tone = (state: TurnoutState) =>
-      drawDiagram(withSiding, () => state, () => false).lines.find(
-        (line) => line.key === 'siding',
-      )?.tone;
+      drawDiagram(
+        withSiding,
+        () => state,
+        () => false,
+      ).lines.find((line) => line.key === 'siding')?.tone;
 
     expect(tone(TurnoutState.THROWN)).toBe('set');
     expect(tone(TurnoutState.CLOSED)).toBe('unset');
 
     // Its buffer stop reads in the same tone as the track it ends.
-    const closed = drawDiagram(withSiding, () => TurnoutState.CLOSED, () => false);
+    const closed = drawDiagram(
+      withSiding,
+      () => TurnoutState.CLOSED,
+      () => false,
+    );
 
-    expect(closed.buffers.find((stop) => stop.key === 'siding-end')?.tone).toBe('unset');
+    expect(closed.buffers.find((stop) => stop.key === 'siding-end')?.tone).toBe(
+      'unset',
+    );
   });
 
   it('places a berth halfway along the line it names, and nowhere else', () => {
     const drawing = drawDiagram(
-      { ...diagram, berths: [...diagram.berths, { id: 'nowhere', label: 'Nowhere', on: 'no-such-track' }] },
+      {
+        ...diagram,
+        berths: [
+          ...diagram.berths,
+          { id: 'nowhere', label: 'Nowhere', on: 'no-such-track' },
+        ],
+      },
       () => undefined,
       () => false,
     );
 
-    expect(drawing.berths).toEqual([{ id: 'approach', label: 'Approach', at: { x: 10, y: 50 } }]);
+    expect(drawing.berths).toEqual([
+      { id: 'approach', label: 'Approach', at: { x: 10, y: 50 } },
+    ]);
   });
 
   it('marks a section occupied only while its sensor is active', () => {
     expect(
-      drawDiagram(diagram, () => undefined, (id) => id === 3).sections[0]
-        ?.occupied,
+      drawDiagram(
+        diagram,
+        () => undefined,
+        (id) => id === 3,
+      ).sections[0]?.occupied,
     ).toBe(true);
     expect(
-      drawDiagram(diagram, () => undefined, () => false).sections[0]?.occupied,
+      drawDiagram(
+        diagram,
+        () => undefined,
+        () => false,
+      ).sections[0]?.occupied,
     ).toBe(false);
   });
 
   it('draws buffer stops across the track end', () => {
-    const [stop] = drawDiagram(diagram, () => undefined, () => false).buffers;
+    const [stop] = drawDiagram(
+      diagram,
+      () => undefined,
+      () => false,
+    ).buffers;
 
     expect(stop?.at).toEqual({ x: 0, y: 50 });
     expect(stop?.angle).toBeCloseTo(Math.PI);
   });
 
   it('puts a turnout number in the open space beside its own switch point', () => {
-    const [turnout] = drawDiagram(diagram, () => undefined, () => false).turnouts;
+    const [turnout] = drawDiagram(
+      diagram,
+      () => undefined,
+      () => false,
+    ).turnouts;
 
     // The approach comes in from the west, the legs leave east and north-east,
     // so the widest gap, and the number, is straight below the switch.
@@ -164,8 +203,12 @@ describe('diagram drawing', () => {
   });
 
   it('draws the emulator sample from the ids the emulator layout script defines', () => {
-    const turnouts = EMULATOR_DEMO_DIAGRAM.turnouts.map((turnout) => turnout.id);
-    const sensors = EMULATOR_DEMO_DIAGRAM.sections.map((section) => section.sensor);
+    const turnouts = EMULATOR_DEMO_DIAGRAM.turnouts.map(
+      (turnout) => turnout.id,
+    );
+    const sensors = EMULATOR_DEMO_DIAGRAM.sections.map(
+      (section) => section.sensor,
+    );
 
     // emulator/layout.txt: turnouts 1-5, sensors 20-22.
     expect(turnouts).toEqual([1, 2, 3, 4, 5]);

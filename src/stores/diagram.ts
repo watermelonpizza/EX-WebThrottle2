@@ -85,8 +85,8 @@ export const useDiagramStore = defineStore('diagram', () => {
   // What a sensor watches, by the diagram's name for that stretch of track.
   function sensorName(id: number): string {
     return (
-      diagram.value?.sections.find((section) => section.sensor === id)
-        ?.label ?? `Sensor ${id}`
+      diagram.value?.sections.find((section) => section.sensor === id)?.label ??
+      `Sensor ${id}`
     );
   }
 

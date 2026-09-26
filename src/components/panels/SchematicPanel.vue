@@ -12,7 +12,9 @@ const diagrams = useDiagramStore();
     <template v-if="diagrams.diagram">
       <div
         class="schematic-panel__drawing"
-        :style="{ '--drawing-ratio': `${diagrams.diagram.width} / ${diagrams.diagram.height}` }"
+        :style="{
+          '--drawing-ratio': `${diagrams.diagram.width} / ${diagrams.diagram.height}`,
+        }"
       >
         <SchematicDiagram :diagram="diagrams.diagram" />
         <div class="schematic-panel__foot">

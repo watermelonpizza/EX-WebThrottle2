@@ -29,7 +29,9 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
       :aria-label="label"
       :aria-valuetext="valueText"
       data-testid="speed-slider"
-      @input="$emit('change', Number(($event.target as HTMLInputElement).value))"
+      @input="
+        $emit('change', Number(($event.target as HTMLInputElement).value))
+      "
     />
     <div class="scale__ticks" aria-hidden="true">
       <span

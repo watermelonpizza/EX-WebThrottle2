@@ -40,7 +40,9 @@ describe('safety strip', () => {
     station.receives('<pA>');
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="track-power-A"] .power__state').text()).toBe('ON');
+    expect(
+      wrapper.get('[data-testid="track-power-A"] .power__state').text(),
+    ).toBe('ON');
   });
 
   it('counts new layout changes and lists them newest first in the event log', async () => {
@@ -59,12 +61,14 @@ describe('safety strip', () => {
     await flushPromises();
 
     expect(wrapper.get('[data-testid="events-unread"]').text()).toBe('2');
-    expect(wrapper.get('[data-testid="events-button"]').attributes('aria-label')).toBe(
-      'Events, 2 new',
-    );
+    expect(
+      wrapper.get('[data-testid="events-button"]').attributes('aria-label'),
+    ).toBe('Events, 2 new');
 
     const log = wrapper.get('[data-testid="event-log"]').text();
 
-    expect(log.indexOf('Turnout 5 closed')).toBeLessThan(log.indexOf('Turnout 4 thrown'));
+    expect(log.indexOf('Turnout 5 closed')).toBeLessThan(
+      log.indexOf('Turnout 4 thrown'),
+    );
   });
 });

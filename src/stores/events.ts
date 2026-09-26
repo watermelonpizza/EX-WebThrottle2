@@ -69,10 +69,10 @@ export const useEventsStore = defineStore('events', () => {
   }
 
   function add(text: string): void {
-    events.value = [{ id: nextId++, at: Date.now(), text }, ...events.value].slice(
-      0,
-      MAX_EVENTS,
-    );
+    events.value = [
+      { id: nextId++, at: Date.now(), text },
+      ...events.value,
+    ].slice(0, MAX_EVENTS);
   }
 
   connection.onSent((command) => {
@@ -116,7 +116,9 @@ export const useEventsStore = defineStore('events', () => {
 
     if (message.kind === 'sensor') {
       if (changed(`sensor-${message.id}`, message.active)) {
-        add(`${diagram.sensorName(message.id)} ${message.active ? 'occupied' : 'clear'}`);
+        add(
+          `${diagram.sensorName(message.id)} ${message.active ? 'occupied' : 'clear'}`,
+        );
       }
 
       return;

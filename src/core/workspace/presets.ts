@@ -16,7 +16,14 @@ export const PRESETS: Preset[] = [
     // most, then the outputs and sensors a layout usually has fewer of.
     layout: row(
       [panel('schematic'), 2],
-      [column([panel('points'), 3], [panel('outputs'), 2], [panel('sensors'), 2]), 1],
+      [
+        column(
+          [panel('points'), 3],
+          [panel('outputs'), 2],
+          [panel('sensors'), 2],
+        ),
+        1,
+      ],
     ),
   },
   {

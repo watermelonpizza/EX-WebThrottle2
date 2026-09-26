@@ -29,9 +29,10 @@ const CATALOG: ResponseDefinition[] = [
     summary: 'Command-station identification',
     detail: 'The station sends this identification frame in response to <s>.',
     match(frame) {
-      const match = /^<iDCC-?EX\s+V-?([^/\s]+)\s*\/\s*([^/]+?)\s*\/\s*([^/]+?)(?:\s*\/\s*([^>]+))?>$/i.exec(
-        frame,
-      );
+      const match =
+        /^<iDCC-?EX\s+V-?([^/\s]+)\s*\/\s*([^/]+?)\s*\/\s*([^/]+?)(?:\s*\/\s*([^>]+))?>$/i.exec(
+          frame,
+        );
 
       if (!match) {
         return undefined;
@@ -65,14 +66,19 @@ const CATALOG: ResponseDefinition[] = [
       return [
         parameter('Display', match[1], 'Virtual display receiving the text.'),
         parameter('Row', match[2], 'Row on that display.'),
-        parameter('Text', match[3], 'Literal text the station displays on that row.'),
+        parameter(
+          'Text',
+          match[3],
+          'Literal text the station displays on that row.',
+        ),
       ];
     },
   },
   {
     pattern: '<p state [track]>',
     summary: 'Track power state',
-    detail: 'A power status reply or broadcast. Track changes may generate these without a request.',
+    detail:
+      'A power status reply or broadcast. Track changes may generate these without a request.',
     match(frame) {
       const match = /^<p([01])(?:\s+([^>]+))?>$/.exec(frame);
 
@@ -104,15 +110,24 @@ const CATALOG: ResponseDefinition[] = [
       const isOn = track[1] === track[1].toUpperCase();
 
       return [
-        parameter('Track output', track[1].toUpperCase(), 'Command-station output A–H.'),
-        parameter('State', isOn ? 'on' : 'off', 'Uppercase means powered; lowercase means off.'),
+        parameter(
+          'Track output',
+          track[1].toUpperCase(),
+          'Command-station output A–H.',
+        ),
+        parameter(
+          'State',
+          isOn ? 'on' : 'off',
+          'Uppercase means powered; lowercase means off.',
+        ),
       ];
     },
   },
   {
     pattern: '<= track mode [loco]>',
     summary: 'Track-output assignment',
-    detail: 'Reports how a track output is configured, usually after <=> or a mode change.',
+    detail:
+      'Reports how a track output is configured, usually after <=> or a mode change.',
     match(frame) {
       const match = /^<=\s+([A-H])\s+(\S+)(?:\s+(\d+))?>$/.exec(frame);
 
@@ -122,7 +137,11 @@ const CATALOG: ResponseDefinition[] = [
 
       return [
         parameter('Track output', match[1], 'Command-station output A–H.'),
-        parameter('Mode', match[2], 'Signal or operating mode assigned to this output.'),
+        parameter(
+          'Mode',
+          match[2],
+          'Signal or operating mode assigned to this output.',
+        ),
         ...(match[3]
           ? [
               parameter(
@@ -138,7 +157,8 @@ const CATALOG: ResponseDefinition[] = [
   {
     pattern: '<l loco register speedByte functionMap>',
     summary: 'Loco speed and function state',
-    detail: 'A loco-state broadcast. The register field is retained for legacy compatibility.',
+    detail:
+      'A loco-state broadcast. The register field is retained for legacy compatibility.',
     match(frame) {
       const match = /^<l\s+(\d+)\s+(-?\d+)\s+(\d+)\s+(\d+)>$/.exec(frame);
 
@@ -148,7 +168,11 @@ const CATALOG: ResponseDefinition[] = [
 
       return [
         parameter('Loco address', match[1], 'DCC address of the locomotive.'),
-        parameter('Register', match[2], 'Legacy field; clients normally ignore it.'),
+        parameter(
+          'Register',
+          match[2],
+          'Legacy field; clients normally ignore it.',
+        ),
         parameter(
           'Speed byte',
           match[3],
@@ -174,19 +198,20 @@ const CATALOG: ResponseDefinition[] = [
       }
 
       return [
-        parameter('Turnout id', match[1], 'Identifier assigned to the turnout.'),
         parameter(
-          'State',
-          match[2],
-          match[2] === '1' ? 'Thrown.' : 'Closed.',
+          'Turnout id',
+          match[1],
+          'Identifier assigned to the turnout.',
         ),
+        parameter('State', match[2], match[2] === '1' ? 'Thrown.' : 'Closed.'),
       ];
     },
   },
   {
     pattern: '<jT turnout-id ...>',
     summary: 'Turnout list',
-    detail: 'Lists the turnout ids the command station can report, usually in response to <JT>.',
+    detail:
+      'Lists the turnout ids the command station can report, usually in response to <JT>.',
     match(frame) {
       const match = /^<jT(?:\s+([\d\s]+))?>$/.exec(frame);
 
@@ -217,12 +242,12 @@ const CATALOG: ResponseDefinition[] = [
       }
 
       return [
-        parameter('Turnout id', match[1], 'Identifier assigned to the turnout.'),
         parameter(
-          'State',
-          match[2],
-          match[2] === 'T' ? 'Thrown.' : 'Closed.',
+          'Turnout id',
+          match[1],
+          'Identifier assigned to the turnout.',
         ),
+        parameter('State', match[2], match[2] === 'T' ? 'Thrown.' : 'Closed.'),
         ...(match[3] !== undefined
           ? [
               parameter(
@@ -243,14 +268,21 @@ const CATALOG: ResponseDefinition[] = [
       const match = /^<jT\s+(\d+)\s+X>$/.exec(frame);
 
       return match
-        ? [parameter('Turnout id', match[1], 'The id that could not be found or reported.')]
+        ? [
+            parameter(
+              'Turnout id',
+              match[1],
+              'The id that could not be found or reported.',
+            ),
+          ]
         : undefined;
     },
   },
   {
     pattern: '<Y id pin flags state>',
     summary: 'Output definition and state',
-    detail: 'One configured output returned while the station lists its outputs.',
+    detail:
+      'One configured output returned while the station lists its outputs.',
     match(frame) {
       const match = /^<Y\s+(\d+)\s+(\d+)\s+(\d+)\s+([01])>$/.exec(frame);
 
@@ -262,7 +294,11 @@ const CATALOG: ResponseDefinition[] = [
         parameter('Output id', match[1], 'Identifier assigned to this output.'),
         parameter('Pin', match[2], 'Hardware pin used by the output.'),
         parameter('Flags', match[3], 'Output configuration flags.'),
-        parameter('State', match[4], match[4] === '1' ? 'Active.' : 'Inactive.'),
+        parameter(
+          'State',
+          match[4],
+          match[4] === '1' ? 'Active.' : 'Inactive.',
+        ),
       ];
     },
   },
@@ -279,14 +315,19 @@ const CATALOG: ResponseDefinition[] = [
 
       return [
         parameter('Output id', match[1], 'Identifier assigned to this output.'),
-        parameter('State', match[2], match[2] === '1' ? 'Active.' : 'Inactive.'),
+        parameter(
+          'State',
+          match[2],
+          match[2] === '1' ? 'Active.' : 'Inactive.',
+        ),
       ];
     },
   },
   {
     pattern: '<Q sensor-id pin pullup>',
     summary: 'Sensor definition',
-    detail: 'Describes a configured sensor returned while sensor definitions are listed.',
+    detail:
+      'Describes a configured sensor returned while sensor definitions are listed.',
     match(frame) {
       const match = /^<Q\s+(\d+)\s+(\d+)\s+(\d+)>$/.exec(frame);
 
@@ -297,7 +338,11 @@ const CATALOG: ResponseDefinition[] = [
       return [
         parameter('Sensor id', match[1], 'Identifier assigned to the sensor.'),
         parameter('Pin', match[2], 'Hardware input pin used by the sensor.'),
-        parameter('Pull-up', match[3], 'Whether the input uses a pull-up resistor (1 = on).'),
+        parameter(
+          'Pull-up',
+          match[3],
+          'Whether the input uses a pull-up resistor (1 = on).',
+        ),
       ];
     },
   },
@@ -309,7 +354,13 @@ const CATALOG: ResponseDefinition[] = [
       const match = /^<Q\s+(\d+)>$/.exec(frame);
 
       return match
-        ? [parameter('Sensor id', match[1], 'Identifier assigned to the active sensor.')]
+        ? [
+            parameter(
+              'Sensor id',
+              match[1],
+              'Identifier assigned to the active sensor.',
+            ),
+          ]
         : undefined;
     },
   },
@@ -321,14 +372,21 @@ const CATALOG: ResponseDefinition[] = [
       const match = /^<q\s+(\d+)>$/.exec(frame);
 
       return match
-        ? [parameter('Sensor id', match[1], 'Identifier assigned to the inactive sensor.')]
+        ? [
+            parameter(
+              'Sensor id',
+              match[1],
+              'Identifier assigned to the inactive sensor.',
+            ),
+          ]
         : undefined;
     },
   },
   {
     pattern: '<e turnouts sensors outputs>',
     summary: 'Stored inventory counts',
-    detail: 'Reports the number of turnout, sensor and output definitions stored by the station.',
+    detail:
+      'Reports the number of turnout, sensor and output definitions stored by the station.',
     match(frame) {
       const match = /^<e\s+(\d+)\s+(\d+)\s+(\d+)>$/.exec(frame);
 
@@ -337,7 +395,11 @@ const CATALOG: ResponseDefinition[] = [
       }
 
       return [
-        parameter('Turnouts', match[1], 'Number of stored turnout definitions.'),
+        parameter(
+          'Turnouts',
+          match[1],
+          'Number of stored turnout definitions.',
+        ),
         parameter('Sensors', match[2], 'Number of stored sensor definitions.'),
         parameter('Outputs', match[3], 'Number of stored output definitions.'),
       ];
@@ -355,7 +417,9 @@ const CATALOG: ResponseDefinition[] = [
             parameter(
               'State',
               match[1],
-              match[1] === 'PAUSED' ? 'The layout is paused.' : 'The layout is running.',
+              match[1] === 'PAUSED'
+                ? 'The layout is paused.'
+                : 'The layout is running.',
             ),
           ]
         : undefined;
@@ -364,18 +428,22 @@ const CATALOG: ResponseDefinition[] = [
   {
     pattern: '<O>',
     summary: 'Operation completed',
-    detail: 'The station acknowledged a command that does not return other data.',
+    detail:
+      'The station acknowledged a command that does not return other data.',
     match: (frame) => (frame === '<O>' ? [] : undefined),
   },
   {
     pattern: '<X>',
     summary: 'Command rejected',
-    detail: 'The station did not understand the command or could not apply it. The frame contains no further reason.',
+    detail:
+      'The station did not understand the command or could not apply it. The frame contains no further reason.',
     match: (frame) => (frame === '<X>' ? [] : undefined),
   },
 ];
 
-export function describeResponse(frame: string): ResponseDescription | undefined {
+export function describeResponse(
+  frame: string,
+): ResponseDescription | undefined {
   const trimmed = frame.trim();
 
   for (const response of CATALOG) {

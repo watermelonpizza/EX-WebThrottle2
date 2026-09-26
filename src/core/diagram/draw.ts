@@ -180,10 +180,7 @@ function directionsFrom(at: Point, line: Point[]): number[] {
 // its switch point (its toe and its two legs, at the least), so it sits right
 // beside its own points without touching a line. With three lines the widest
 // gap is at least 120°, which leaves room for the number either side.
-export function labelToward(
-  turnout: DiagramTurnout,
-  lines: Point[][],
-): Point {
+export function labelToward(turnout: DiagramTurnout, lines: Point[][]): Point {
   const at = turnout.closed[0];
   const closed = heading(at, turnout.closed[1]);
   const found = lines.flatMap((line) => directionsFrom(at, line));

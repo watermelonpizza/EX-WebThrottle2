@@ -98,12 +98,12 @@ describe('matchCommand', () => {
     const wifi = matchCommand('<C WIFI "Yard WiFi" "secret">');
 
     expect(wifi?.command.pattern).toBe('<C WIFI "ssid" "password">');
-    expect(wifi?.parameters.map(({ input, value }) => [input.name, value])).toEqual(
-      [
-        ['ssid', 'Yard WiFi'],
-        ['password', 'secret'],
-      ],
-    );
+    expect(
+      wifi?.parameters.map(({ input, value }) => [input.name, value]),
+    ).toEqual([
+      ['ssid', 'Yard WiFi'],
+      ['password', 'secret'],
+    ]);
     expect(matchCommand('<M 0 FF 00 01>')?.parameters.at(-1)?.value).toBe(
       '00 01',
     );

@@ -28,11 +28,15 @@ describe('schematic panel', () => {
     const { station, wrapper } = await panel(EMULATOR_BANNER);
 
     expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="section-20"]').text()).toBe('Platform 1 · Occupied');
+    expect(wrapper.get('[data-testid="section-20"]').text()).toBe(
+      'Platform 1 · Occupied',
+    );
 
     const turnout = wrapper.get('[data-testid="diagram-turnout-1"]');
 
-    expect(turnout.attributes('aria-label')).toBe('Turnout 1, closed. Press to throw.');
+    expect(turnout.attributes('aria-label')).toBe(
+      'Turnout 1, closed. Press to throw.',
+    );
 
     await turnout.trigger('keydown', { key: 'Enter' });
 
@@ -44,7 +48,9 @@ describe('schematic panel', () => {
     await flushPromises();
 
     expect(turnout.classes()).not.toContain('turnout--pending');
-    expect(turnout.attributes('aria-label')).toBe('Turnout 1, thrown. Press to close.');
+    expect(turnout.attributes('aria-label')).toBe(
+      'Turnout 1, thrown. Press to close.',
+    );
   });
 
   it('flashes the new route into place whenever the station reports the points moving', async () => {
@@ -57,15 +63,23 @@ describe('schematic panel', () => {
     station.receives('<H 1 1>');
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="leg-turnout-1-thrown"]').classes()).toContain('changing-over');
-    expect(wrapper.get('[data-testid="leg-turnout-1-closed"]').classes()).not.toContain('changing-over');
+    expect(
+      wrapper.get('[data-testid="leg-turnout-1-thrown"]').classes(),
+    ).toContain('changing-over');
+    expect(
+      wrapper.get('[data-testid="leg-turnout-1-closed"]').classes(),
+    ).not.toContain('changing-over');
   });
 
   it('shows route tiles for a Command Station with no diagram', async () => {
-    const { station, wrapper } = await panel('<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-test>');
+    const { station, wrapper } = await panel(
+      '<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-test>',
+    );
 
     expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="turnout-state-2"]').text()).toBe('Thrown');
+    expect(wrapper.get('[data-testid="turnout-state-2"]').text()).toBe(
+      'Thrown',
+    );
 
     await wrapper.get('[data-testid="turnout-2"]').trigger('click');
 

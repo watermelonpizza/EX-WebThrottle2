@@ -41,7 +41,9 @@ const forward = computed(() => props.throttle.direction === Direction.FORWARD);
 // A custom map lists the functions this loco has; the default shows the full
 // broadcast range so nothing is out of reach.
 const functions = computed(() => {
-  const map = maps.maps.find((candidate) => candidate.id === props.throttle.mapId);
+  const map = maps.maps.find(
+    (candidate) => candidate.id === props.throttle.mapId,
+  );
 
   return map
     ? map.functions
@@ -140,7 +142,10 @@ const valueText = computed(
 const berths = computed(() => diagrams.diagram?.berths ?? []);
 
 const berth = computed(
-  () => berths.value.find((candidate) => diagrams.occupant(candidate.id) === address.value)?.id ?? '',
+  () =>
+    berths.value.find(
+      (candidate) => diagrams.occupant(candidate.id) === address.value,
+    )?.id ?? '',
 );
 
 function setDirection(direction: Direction): void {
@@ -169,192 +174,216 @@ function placeIn(berthId: string): void {
     data-testid="throttle-panel"
   >
     <div class="desk__grid">
-    <header class="desk__head">
-      <!-- The separator belongs to the address, so it sits between the two
+      <header class="desk__head">
+        <!-- The separator belongs to the address, so it sits between the two
            on one line, and is clipped off the start of the line when the
            address wraps onto a line of its own. -->
-      <button
-        type="button"
-        class="desk__title"
-        :popovertarget="menuId"
-        :style="{ anchorName: `--${menuId}` }"
-        data-testid="desk-title"
-      >
-        <span class="desk__name">{{ throttle.name }}</span>
-        <span class="desk__address numeric">
-          <span class="desk__sep" aria-hidden="true">·</span>Address {{ throttle.address }}
-        </span>
-      </button>
-
-      <button
-        v-if="canAdd"
-        type="button"
-        class="desk__add key"
-        :popovertarget="addId"
-        :style="{ anchorName: `--${addId}` }"
-        aria-label="Add loco"
-        title="Add loco"
-        data-testid="desk-add"
-      >
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-        </svg>
-      </button>
-
-      <div
-        v-if="canAdd"
-        :id="addId"
-        popover
-        class="popup desk-menu"
-        :style="{ positionAnchor: `--${addId}` }"
-        aria-label="Drive another loco"
-      >
-        <h3 class="desk-menu__title">Drive another loco</h3>
-        <DriveForm compact />
-      </div>
-
-      <div
-        :id="menuId"
-        ref="menu"
-        popover
-        class="popup desk-menu desk-menu--start"
-        :style="{ positionAnchor: `--${menuId}` }"
-        data-testid="desk-menu"
-      >
-        <label class="desk-menu__row">
-          <span>Function map</span>
-          <select
-            class="field"
-            :value="throttle.mapId"
-            data-testid="function-map"
-            @change="locos.setMap(address, ($event.target as HTMLSelectElement).value)"
-          >
-            <option value="default">Default (F0–F31)</option>
-            <option v-for="map in maps.maps" :key="map.id" :value="map.id">
-              {{ map.name }}
-            </option>
-          </select>
-        </label>
-
-        <label v-if="berths.length > 0" class="desk-menu__row">
-          <span>On the diagram</span>
-          <select
-            class="field"
-            :value="berth"
-            data-testid="berth-select"
-            @change="placeIn(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="">Not shown</option>
-            <option v-for="candidate in berths" :key="candidate.id" :value="candidate.id">
-              {{ candidate.label }}
-            </option>
-          </select>
-        </label>
-
-        <button type="button" class="key" data-testid="release" @click="release">
-          Release {{ throttle.name }}
+        <button
+          type="button"
+          class="desk__title"
+          :popovertarget="menuId"
+          :style="{ anchorName: `--${menuId}` }"
+          data-testid="desk-title"
+        >
+          <span class="desk__name">{{ throttle.name }}</span>
+          <span class="desk__address numeric">
+            <span class="desk__sep" aria-hidden="true">·</span>Address
+            {{ throttle.address }}
+          </span>
         </button>
-      </div>
-    </header>
 
-    <section class="desk__drive">
-      <output class="desk__speed numeric" data-testid="speed-readout">
-        {{ throttle.speed }}
-      </output>
+        <button
+          v-if="canAdd"
+          type="button"
+          class="desk__add key"
+          :popovertarget="addId"
+          :style="{ anchorName: `--${addId}` }"
+          aria-label="Add loco"
+          title="Add loco"
+          data-testid="desk-add"
+        >
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+          </svg>
+        </button>
 
-      <SpeedScale
-        :speed="throttle.speed"
-        :label="`Speed, ${throttle.name}`"
-        :value-text="valueText"
-        @change="locos.setSpeed(address, $event)"
-      />
+        <div
+          v-if="canAdd"
+          :id="addId"
+          popover
+          class="popup desk-menu"
+          :style="{ positionAnchor: `--${addId}` }"
+          aria-label="Drive another loco"
+        >
+          <h3 class="desk-menu__title">Drive another loco</h3>
+          <DriveForm compact />
+        </div>
 
-      <div class="desk__controls">
-        <div class="direction" role="group" aria-label="Direction" data-testid="direction-toggle">
+        <div
+          :id="menuId"
+          ref="menu"
+          popover
+          class="popup desk-menu desk-menu--start"
+          :style="{ positionAnchor: `--${menuId}` }"
+          data-testid="desk-menu"
+        >
+          <label class="desk-menu__row">
+            <span>Function map</span>
+            <select
+              class="field"
+              :value="throttle.mapId"
+              data-testid="function-map"
+              @change="
+                locos.setMap(
+                  address,
+                  ($event.target as HTMLSelectElement).value,
+                )
+              "
+            >
+              <option value="default">Default (F0–F31)</option>
+              <option v-for="map in maps.maps" :key="map.id" :value="map.id">
+                {{ map.name }}
+              </option>
+            </select>
+          </label>
+
+          <label v-if="berths.length > 0" class="desk-menu__row">
+            <span>On the diagram</span>
+            <select
+              class="field"
+              :value="berth"
+              data-testid="berth-select"
+              @change="placeIn(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="">Not shown</option>
+              <option
+                v-for="candidate in berths"
+                :key="candidate.id"
+                :value="candidate.id"
+              >
+                {{ candidate.label }}
+              </option>
+            </select>
+          </label>
+
           <button
             type="button"
-            class="direction__side"
-            :aria-pressed="!forward"
-            @click="setDirection(Direction.REVERSE)"
+            class="key"
+            data-testid="release"
+            @click="release"
           >
-            REV
+            Release {{ throttle.name }}
           </button>
-          <span class="direction__rule" aria-hidden="true" />
+        </div>
+      </header>
+
+      <section class="desk__drive">
+        <output class="desk__speed numeric" data-testid="speed-readout">
+          {{ throttle.speed }}
+        </output>
+
+        <SpeedScale
+          :speed="throttle.speed"
+          :label="`Speed, ${throttle.name}`"
+          :value-text="valueText"
+          @change="locos.setSpeed(address, $event)"
+        />
+
+        <div class="desk__controls">
+          <div
+            class="direction"
+            role="group"
+            aria-label="Direction"
+            data-testid="direction-toggle"
+          >
+            <button
+              type="button"
+              class="direction__side"
+              :aria-pressed="!forward"
+              @click="setDirection(Direction.REVERSE)"
+            >
+              REV
+            </button>
+            <span class="direction__rule" aria-hidden="true" />
+            <button
+              type="button"
+              class="direction__side"
+              :aria-pressed="forward"
+              @click="setDirection(Direction.FORWARD)"
+            >
+              FWD
+            </button>
+          </div>
+
           <button
             type="button"
-            class="direction__side"
-            :aria-pressed="forward"
-            @click="setDirection(Direction.FORWARD)"
+            class="desk__stop"
+            :aria-label="`Stop ${throttle.name} now`"
+            data-testid="estop"
+            @click="locos.emergencyStop(address)"
           >
-            FWD
+            {{ throttle.estop ? 'Stopped' : 'Stop' }}
+          </button>
+
+          <button
+            type="button"
+            class="desk__all desk__all--slim key"
+            :popovertarget="functionsId"
+            :aria-label="`All ${functions.length} functions`"
+          >
+            Functions
+          </button>
+        </div>
+      </section>
+
+      <section
+        ref="functions-area"
+        class="desk__functions"
+        :aria-label="`Functions for ${throttle.name}`"
+      >
+        <div class="desk__functions-head">
+          <h3 class="desk__functions-title">
+            Functions · {{ functions.length }}
+          </h3>
+          <button
+            v-if="limit !== undefined"
+            type="button"
+            class="desk__all key"
+            :popovertarget="functionsId"
+            data-testid="all-functions"
+          >
+            All {{ functions.length }} functions
           </button>
         </div>
 
-        <button
-          type="button"
-          class="desk__stop"
-          :aria-label="`Stop ${throttle.name} now`"
-          data-testid="estop"
-          @click="locos.emergencyStop(address)"
-        >
-          {{ throttle.estop ? 'Stopped' : 'Stop' }}
-        </button>
-
-        <button
-          type="button"
-          class="desk__all desk__all--slim key"
-          :popovertarget="functionsId"
-          :aria-label="`All ${functions.length} functions`"
-        >
-          Functions
-        </button>
-      </div>
-    </section>
-
-    <section
-      ref="functions-area"
-      class="desk__functions"
-      :aria-label="`Functions for ${throttle.name}`"
-    >
-      <div class="desk__functions-head">
-        <h3 class="desk__functions-title">Functions · {{ functions.length }}</h3>
-        <button
-          v-if="limit !== undefined"
-          type="button"
-          class="desk__all key"
-          :popovertarget="functionsId"
-          data-testid="all-functions"
-        >
-          All {{ functions.length }} functions
-        </button>
-      </div>
-
-      <FunctionKeys
-        class="desk__keys"
-        :class="{ 'desk__keys--tight': tight }"
-        :functions="functions"
-        :limit="limit"
-        :states="throttle.functions"
-        @set="(fn, on) => locos.setFunction(address, fn, on)"
-      />
-
-      <!-- Only needed when the desk leaves keys out; one copy of each key
-           otherwise, for people and for assistive tech. -->
-      <div
-        v-if="limit !== undefined"
-        :id="functionsId"
-        popover
-        class="popup desk-functions"
-        :aria-label="`All functions for ${throttle.name}`"
-      >
-        <h3 class="desk__functions-title">{{ throttle.name }} · Functions · {{ functions.length }}</h3>
         <FunctionKeys
+          class="desk__keys"
+          :class="{ 'desk__keys--tight': tight }"
           :functions="functions"
+          :limit="limit"
           :states="throttle.functions"
           @set="(fn, on) => locos.setFunction(address, fn, on)"
         />
-      </div>
-    </section>
+
+        <!-- Only needed when the desk leaves keys out; one copy of each key
+           otherwise, for people and for assistive tech. -->
+        <div
+          v-if="limit !== undefined"
+          :id="functionsId"
+          popover
+          class="popup desk-functions"
+          :aria-label="`All functions for ${throttle.name}`"
+        >
+          <h3 class="desk__functions-title">
+            {{ throttle.name }} · Functions · {{ functions.length }}
+          </h3>
+          <FunctionKeys
+            :functions="functions"
+            :states="throttle.functions"
+            @set="(fn, on) => locos.setFunction(address, fn, on)"
+          />
+        </div>
+      </section>
     </div>
   </article>
 </template>

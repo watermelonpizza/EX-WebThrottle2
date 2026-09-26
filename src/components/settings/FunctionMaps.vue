@@ -21,7 +21,10 @@ function openNew(): void {
   editing.id = undefined;
   editing.name = '';
   // A new map starts with every function; hide the ones the decoder lacks.
-  editing.functions = DEFAULT_FUNCTIONS.map((def) => ({ ...def, hidden: false }));
+  editing.functions = DEFAULT_FUNCTIONS.map((def) => ({
+    ...def,
+    hidden: false,
+  }));
   open.value = true;
 }
 
@@ -74,15 +77,30 @@ function remove(map: LocoMap): void {
     </p>
 
     <ul v-if="maps.maps.length > 0" class="rows">
-      <li v-for="map in maps.maps" :key="map.id" class="row" data-testid="map-entry">
+      <li
+        v-for="map in maps.maps"
+        :key="map.id"
+        class="row"
+        data-testid="map-entry"
+      >
         <span class="row__name">{{ map.name }}</span>
         <span class="row__meta numeric">
           {{ map.functions.filter((def) => !def.hidden).length }} functions
         </span>
-        <button type="button" class="key" data-testid="edit-map" @click="openEdit(map)">
+        <button
+          type="button"
+          class="key"
+          data-testid="edit-map"
+          @click="openEdit(map)"
+        >
           Edit
         </button>
-        <button type="button" class="key" data-testid="delete-map" @click="remove(map)">
+        <button
+          type="button"
+          class="key"
+          data-testid="delete-map"
+          @click="remove(map)"
+        >
           Delete
         </button>
       </li>
@@ -99,7 +117,11 @@ function remove(map: LocoMap): void {
         <div class="map-editor__row map-editor__row--head" aria-hidden="true">
           <span>Key</span><span>Name</span><span>Hold</span><span>Show</span>
         </div>
-        <div v-for="def in editing.functions" :key="def.fn" class="map-editor__row">
+        <div
+          v-for="def in editing.functions"
+          :key="def.fn"
+          class="map-editor__row"
+        >
           <span class="numeric">F{{ def.fn }}</span>
           <input
             v-model="def.label"

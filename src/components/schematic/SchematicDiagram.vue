@@ -230,7 +230,10 @@ function toggle(id: number, known: boolean): void {
 
     <template v-for="section in drawing.sections" :key="section.sensor">
       <template v-if="section.occupied">
-        <polyline class="line line--occupied" :points="points(section.points)" />
+        <polyline
+          class="line line--occupied"
+          :points="points(section.points)"
+        />
         <line
           v-for="(end, index) in sectionEnds(section.points)"
           :key="index"
@@ -258,7 +261,10 @@ function toggle(id: number, known: boolean): void {
       v-bind="across(stop.at, stop.angle, 9)"
     />
 
-    <template v-for="section in drawing.sections" :key="`label-${section.sensor}`">
+    <template
+      v-for="section in drawing.sections"
+      :key="`label-${section.sensor}`"
+    >
       <text
         v-if="section.occupied"
         class="section-label"
@@ -293,7 +299,10 @@ function toggle(id: number, known: boolean): void {
            at any size. -->
       <g
         class="turnout__mark"
-        :style="{ '--toward-x': turnout.toward.x, '--toward-y': turnout.toward.y }"
+        :style="{
+          '--toward-x': turnout.toward.x,
+          '--toward-y': turnout.toward.y,
+        }"
       >
         <circle class="turnout__ring" :cx="turnout.at.x" :cy="turnout.at.y" />
         <text class="turnout__label" :x="turnout.at.x" :y="turnout.at.y">

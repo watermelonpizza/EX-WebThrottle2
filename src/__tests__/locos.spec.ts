@@ -194,7 +194,11 @@ describe('locos store', () => {
     locos.stopAll();
 
     expect(station.sent.at(-1)).toBe('<!>');
-    expect(locos.throttles.every((throttle) => throttle.estop && throttle.speed === 0)).toBe(true);
+    expect(
+      locos.throttles.every(
+        (throttle) => throttle.estop && throttle.speed === 0,
+      ),
+    ).toBe(true);
   });
 
   it('finds the locos other Throttles are running and drives them all at once', async () => {
@@ -221,7 +225,9 @@ describe('locos store', () => {
 
     locos.acquireAll(locos.moving.map((loco) => loco.address));
 
-    expect(locos.throttles.map((throttle) => [throttle.address, throttle.speed])).toEqual([
+    expect(
+      locos.throttles.map((throttle) => [throttle.address, throttle.speed]),
+    ).toEqual([
       [12, 40],
       [14, 22],
     ]);

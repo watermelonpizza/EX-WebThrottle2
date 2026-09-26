@@ -11,7 +11,9 @@ const diagrams = useDiagramStore();
   <div class="list-panel" data-testid="layout-panel">
     <h2 class="list-panel__title">
       Points
-      <span class="list-panel__count numeric">{{ inventory.turnouts.length }}</span>
+      <span class="list-panel__count numeric">{{
+        inventory.turnouts.length
+      }}</span>
     </h2>
 
     <p v-if="inventory.turnouts.length === 0" class="list-panel__empty">

@@ -26,7 +26,9 @@ describe('console', () => {
 
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="page-title"]').text()).toBe('Connect to your Command Station');
+    expect(wrapper.get('[data-testid="page-title"]').text()).toBe(
+      'Connect to your Command Station',
+    );
     expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(false);
   });
 
@@ -38,8 +40,12 @@ describe('console', () => {
 
     expect(wrapper.find('[data-testid="panel-schematic"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="panel-points"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="panel-throttles"]').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="role-points"]').attributes('aria-current')).toBe('page');
+    expect(wrapper.find('[data-testid="panel-throttles"]').exists()).toBe(
+      false,
+    );
+    expect(
+      wrapper.get('[data-testid="role-points"]').attributes('aria-current'),
+    ).toBe('page');
     expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
 
     await router.push('/diagnostics');

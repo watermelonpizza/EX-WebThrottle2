@@ -71,13 +71,18 @@ describe('decodeFrame', () => {
       '<* LocoSlots 2/120 size=56b\n Loco=14    s=23  f=0 t=23  mA=255 mD=255\n' +
       ' Loco=12    s=169 f=0 t=169 mA=255 mD=255\n*>';
 
-    expect(decodeFrame(table)).toEqual({ kind: 'cab-list', addresses: [14, 12] });
+    expect(decodeFrame(table)).toEqual({
+      kind: 'cab-list',
+      addresses: [14, 12],
+    });
     expect(decodeFrame('<* LocoSlots 0/120 size=56b\n*>')).toEqual({
       kind: 'cab-list',
       addresses: [],
     });
     // Other diagnostic replies are not the loco table.
-    expect(decodeFrame('<* Default momentum=0/0 *>')).toEqual({ kind: 'ignored' });
+    expect(decodeFrame('<* Default momentum=0/0 *>')).toEqual({
+      kind: 'ignored',
+    });
   });
 
   it('parses a turnout state broadcast', () => {

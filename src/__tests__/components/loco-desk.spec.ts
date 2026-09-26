@@ -30,8 +30,12 @@ describe('loco desk', () => {
   it('names the loco and gives the speed control an accessible name and value', async () => {
     const { wrapper } = await desk();
 
-    expect(wrapper.get('[data-testid="desk-title"]').text()).toContain('37 025 · Class 37');
-    expect(wrapper.get('[data-testid="desk-title"]').text()).toContain('Address 3');
+    expect(wrapper.get('[data-testid="desk-title"]').text()).toContain(
+      '37 025 · Class 37',
+    );
+    expect(wrapper.get('[data-testid="desk-title"]').text()).toContain(
+      'Address 3',
+    );
 
     const slider = wrapper.get('[data-testid="speed-slider"]');
 
@@ -45,7 +49,9 @@ describe('loco desk', () => {
     await wrapper.get('[data-testid="speed-slider"]').setValue('30');
     expect(station.sent).toContain('<t 3 30 1>');
 
-    await wrapper.get('[data-testid="direction-toggle"] button').trigger('click');
+    await wrapper
+      .get('[data-testid="direction-toggle"] button')
+      .trigger('click');
     expect(station.sent).toContain('<t 3 30 0>');
 
     await wrapper.get('[data-testid="estop"]').trigger('click');
@@ -97,9 +103,10 @@ describe('loco desk', () => {
     });
 
     expect(wrapper.get('.desk__functions-title').text()).toBe('Functions · 2');
-    expect(wrapper.findAll('.desk__keys [data-testid="fun"]').map((key) => key.text())).toEqual([
-      'Lights',
-      'Sound',
-    ]);
+    expect(
+      wrapper
+        .findAll('.desk__keys [data-testid="fun"]')
+        .map((key) => key.text()),
+    ).toEqual(['Lights', 'Sound']);
   });
 });

@@ -45,10 +45,17 @@ function waiting(at: number): boolean {
 </script>
 
 <template>
-  <div class="events-panel" role="region" :aria-labelledby="titleId" data-testid="events-panel">
+  <div
+    class="events-panel"
+    role="region"
+    :aria-labelledby="titleId"
+    data-testid="events-panel"
+  >
     <h2 :id="titleId" class="events-panel__title">
       Events
-      <span class="events-panel__count numeric">{{ events.events.length }}</span>
+      <span class="events-panel__count numeric">{{
+        events.events.length
+      }}</span>
     </h2>
 
     <p v-if="events.events.length === 0" class="events-panel__empty">

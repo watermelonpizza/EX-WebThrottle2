@@ -28,10 +28,12 @@ describe('workspace layout', () => {
   it('accepts a well-formed saved layout and rejects anything else', () => {
     expect(isLayoutNode(row([panel('throttles'), 1]))).toBe(true);
 
-    expect(isLayoutNode({ type: 'panel', id: 'x', kind: 'teapot' })).toBe(false);
-    expect(isLayoutNode({ type: 'split', direction: 'row', children: [] })).toBe(
+    expect(isLayoutNode({ type: 'panel', id: 'x', kind: 'teapot' })).toBe(
       false,
     );
+    expect(
+      isLayoutNode({ type: 'split', direction: 'row', children: [] }),
+    ).toBe(false);
     expect(
       isLayoutNode({
         type: 'split',

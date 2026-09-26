@@ -143,7 +143,12 @@ function connectUrl(): void {
 
       <!-- A stretch of idle track between buffer stops, waiting for a
            Command Station; a lit route runs along it while connecting. -->
-      <svg class="connect__track" viewBox="0 0 600 24" preserveAspectRatio="none" aria-hidden="true">
+      <svg
+        class="connect__track"
+        viewBox="0 0 600 24"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
         <line class="connect__rail" x1="2" y1="12" x2="598" y2="12" />
         <line class="connect__stop" x1="2" y1="2" x2="2" y2="22" />
         <line class="connect__stop" x1="598" y1="2" x2="598" y2="22" />
@@ -157,8 +162,6 @@ function connectUrl(): void {
         />
       </svg>
     </div>
-
-
   </section>
 </template>
 

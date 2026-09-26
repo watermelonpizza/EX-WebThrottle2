@@ -204,7 +204,10 @@ export function decodeFrame(frame: string): ProtocolMessage {
 
   // <Y id active> answers a change and <Y id pin flags active> lists a
   // configured output; the state is the last field either way.
-  if (opcode === OPCODE_OUTPUT && (params.length === 2 || params.length === 4)) {
+  if (
+    opcode === OPCODE_OUTPUT &&
+    (params.length === 2 || params.length === 4)
+  ) {
     const id = toNumber(params[0]);
     const active = toNumber(params[params.length - 1]);
 

@@ -12,7 +12,9 @@ defineProps<{ sensor: SensorEntry; name: string }>();
       <line x1="62" y1="2" x2="62" y2="14" />
     </svg>
     <span class="sensor__name" :title="name">{{ name }}</span>
-    <span class="sensor__state">{{ sensor.active ? 'Occupied' : 'Clear' }}</span>
+    <span class="sensor__state">{{
+      sensor.active ? 'Occupied' : 'Clear'
+    }}</span>
   </div>
 </template>
 

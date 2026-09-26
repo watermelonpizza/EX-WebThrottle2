@@ -191,7 +191,10 @@ function sendCommand(): void {
             <p v-if="explanation.detail">{{ explanation.detail }}</p>
             <p v-if="explanation.needs">Needs: {{ explanation.needs }}</p>
             <dl v-if="explanation.parameters.length > 0" class="trace__params">
-              <div v-for="parameter in explanation.parameters" :key="parameter.name">
+              <div
+                v-for="parameter in explanation.parameters"
+                :key="parameter.name"
+              >
                 <dt>{{ parameter.name }}</dt>
                 <dd>
                   <code>{{ parameter.value }}</code>
@@ -201,8 +204,9 @@ function sendCommand(): void {
             </dl>
           </template>
           <p v-else>
-            WebThrottle does not know this {{ entry.direction === 'sent' ? 'command' : 'reply' }} yet,
-            so it cannot explain it. The raw text is shown above.
+            WebThrottle does not know this
+            {{ entry.direction === 'sent' ? 'command' : 'reply' }} yet, so it
+            cannot explain it. The raw text is shown above.
           </p>
         </div>
       </div>

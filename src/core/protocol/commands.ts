@@ -1054,7 +1054,9 @@ export interface CommandMatch {
   parameters: MatchedCommandParameter[];
 }
 
-function frameTokens(frame: string): { opcode: string; rest: string[] } | undefined {
+function frameTokens(
+  frame: string,
+): { opcode: string; rest: string[] } | undefined {
   const trimmed = frame.trim();
 
   if (!trimmed.startsWith('<') || !trimmed.endsWith('>')) {
@@ -1069,9 +1071,7 @@ function frameTokens(frame: string): { opcode: string; rest: string[] } | undefi
 
   return {
     opcode: body[0],
-    rest: body
-      .slice(1)
-      .match(/"(?:\\.|[^"\\])*"|\S+/g) ?? [],
+    rest: body.slice(1).match(/"(?:\\.|[^"\\])*"|\S+/g) ?? [],
   };
 }
 
@@ -1114,9 +1114,10 @@ function matchParts(
       return [
         {
           input: part,
-          value: word.startsWith('"') && word.endsWith('"')
-            ? word.slice(1, -1)
-            : word,
+          value:
+            word.startsWith('"') && word.endsWith('"')
+              ? word.slice(1, -1)
+              : word,
         },
         ...rest,
       ];

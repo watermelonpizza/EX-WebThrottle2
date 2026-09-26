@@ -8,7 +8,9 @@ const inventory = useInventoryStore();
   <div class="list-panel">
     <h2 class="list-panel__title">
       Outputs
-      <span class="list-panel__count numeric">{{ inventory.outputs.length }}</span>
+      <span class="list-panel__count numeric">{{
+        inventory.outputs.length
+      }}</span>
     </h2>
 
     <p v-if="inventory.outputs.length === 0" class="list-panel__empty">

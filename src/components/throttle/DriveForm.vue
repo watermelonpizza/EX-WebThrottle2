@@ -90,9 +90,15 @@ function submit(): void {
 
     <!-- Locos other Throttles are running, so an operator joining the
          layout can take them all over in one press. -->
-    <section v-if="moving.length > 0" class="drive-form__group" aria-labelledby="drive-moving">
+    <section
+      v-if="moving.length > 0"
+      class="drive-form__group"
+      aria-labelledby="drive-moving"
+    >
       <div class="drive-form__group-head">
-        <h3 id="drive-moving" class="drive-form__label">Moving on the layout</h3>
+        <h3 id="drive-moving" class="drive-form__label">
+          Moving on the layout
+        </h3>
         <button
           v-if="moving.length > 1"
           type="button"
@@ -114,13 +120,18 @@ function submit(): void {
         >
           {{ loco.name }}
           <span class="drive-form__speed numeric">
-            {{ loco.speed }} {{ loco.direction === Direction.FORWARD ? 'FWD' : 'REV' }}
+            {{ loco.speed }}
+            {{ loco.direction === Direction.FORWARD ? 'FWD' : 'REV' }}
           </span>
         </button>
       </div>
     </section>
 
-    <section v-if="saved.length > 0" class="drive-form__group" aria-labelledby="drive-saved">
+    <section
+      v-if="saved.length > 0"
+      class="drive-form__group"
+      aria-labelledby="drive-saved"
+    >
       <div class="drive-form__group-head">
         <h3 id="drive-saved" class="drive-form__label">Saved locos</h3>
         <button

@@ -92,6 +92,8 @@ describe('connection lifecycle', () => {
     expect(store.transportName).toBe('');
     expect(store.trace).toEqual([]);
     // A drop the user did not ask for is said out loud: trains may still run.
-    expect(store.connectionError).toMatch(/connection to the Command Station was lost/);
+    expect(store.connectionError).toMatch(
+      /connection to the Command Station was lost/,
+    );
   });
 });

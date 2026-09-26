@@ -53,9 +53,8 @@ function remove(loco: { address: number; name: string }): void {
   <section class="settings-section" aria-labelledby="locos-title">
     <h2 id="locos-title" class="settings-section__title">Saved locos</h2>
     <p class="settings-section__lead">
-      Saved locos are kept in this browser. Give each one a name like
-      "37 025 · Class 37": the part before the dot is what shows on the layout
-      diagram.
+      Saved locos are kept in this browser. Give each one a name like "37 025 ·
+      Class 37": the part before the dot is what shows on the layout diagram.
     </p>
 
     <ul v-if="locos.roster.length > 0" class="rows">
@@ -69,7 +68,12 @@ function remove(loco: { address: number; name: string }): void {
         <span class="row__meta numeric">Address {{ loco.address }}</span>
         <span class="row__meta">{{ mapName(loco.mapId) }}</span>
         <button type="button" class="key" @click="edit(loco)">Edit</button>
-        <button type="button" class="key" data-testid="delete-loco" @click="remove(loco)">
+        <button
+          type="button"
+          class="key"
+          data-testid="delete-loco"
+          @click="remove(loco)"
+        >
           Delete
         </button>
       </li>
@@ -78,7 +82,12 @@ function remove(loco: { address: number; name: string }): void {
     <form class="loco-form" @submit.prevent="save">
       <label class="loco-form__field">
         <span>Address</span>
-        <input v-model="address" class="field numeric" inputmode="numeric" data-testid="new-loco-address" />
+        <input
+          v-model="address"
+          class="field numeric"
+          inputmode="numeric"
+          data-testid="new-loco-address"
+        />
       </label>
       <label class="loco-form__field loco-form__field--wide">
         <span>Name</span>
@@ -93,7 +102,12 @@ function remove(loco: { address: number; name: string }): void {
           </option>
         </select>
       </label>
-      <button type="submit" class="key key--accent" :disabled="!valid" data-testid="add-loco">
+      <button
+        type="submit"
+        class="key key--accent"
+        :disabled="!valid"
+        data-testid="add-loco"
+      >
         Save loco
       </button>
     </form>

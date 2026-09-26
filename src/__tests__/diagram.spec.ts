@@ -25,7 +25,9 @@ describe('diagram store', () => {
   });
 
   it('uses the sample diagram only for the host emulator', async () => {
-    const { diagrams } = await connectAs('<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-x>');
+    const { diagrams } = await connectAs(
+      '<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-x>',
+    );
 
     expect(diagrams.diagram?.id).toBe('emulator-demo');
     expect(diagrams.turnoutName(3)).toBe('Yard throat');
@@ -34,14 +36,18 @@ describe('diagram store', () => {
   });
 
   it('has no diagram for a real Command Station', async () => {
-    const { diagrams } = await connectAs('<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-x>');
+    const { diagrams } = await connectAs(
+      '<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-x>',
+    );
 
     expect(diagrams.diagram).toBeNull();
     expect(diagrams.turnoutName(3)).toBe('');
   });
 
   it('keeps a loco in one berth at a time and remembers placements', async () => {
-    const { diagrams } = await connectAs('<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-x>');
+    const { diagrams } = await connectAs(
+      '<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-x>',
+    );
 
     diagrams.place('west', 3);
     diagrams.place('east', 3);

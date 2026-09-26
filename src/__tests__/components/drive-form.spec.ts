@@ -38,12 +38,20 @@ describe('drive form', () => {
     station.receives('<l 12 0 169 0><l 14 0 23 0>');
     await flushPromises();
 
-    expect(wrapper.get('[data-testid="drive-moving-12"]').text()).toContain('Shunter');
-    expect(wrapper.get('[data-testid="drive-moving-14"]').text()).toContain('22 REV');
+    expect(wrapper.get('[data-testid="drive-moving-12"]').text()).toContain(
+      'Shunter',
+    );
+    expect(wrapper.get('[data-testid="drive-moving-14"]').text()).toContain(
+      '22 REV',
+    );
 
     await wrapper.get('[data-testid="drive-all-moving"]').trigger('click');
 
-    expect(locos.throttles.map((throttle) => throttle.address)).toEqual([12, 14]);
-    expect(wrapper.find('[data-testid="drive-all-moving"]').exists()).toBe(false);
+    expect(locos.throttles.map((throttle) => throttle.address)).toEqual([
+      12, 14,
+    ]);
+    expect(wrapper.find('[data-testid="drive-all-moving"]').exists()).toBe(
+      false,
+    );
   });
 });

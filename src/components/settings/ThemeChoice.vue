@@ -40,7 +40,14 @@ const OPTIONS: { value: ThemeName; label: string; hint: string }[] = [
         <svg class="theme__sample" viewBox="0 0 120 40" aria-hidden="true">
           <line x1="4" y1="28" x2="116" y2="28" class="theme__idle" />
           <polyline points="30,28 50,10 116,10" class="theme__set" />
-          <rect x="66" y="20" width="26" height="14" rx="2" class="theme__tag" />
+          <rect
+            x="66"
+            y="20"
+            width="26"
+            height="14"
+            rx="2"
+            class="theme__tag"
+          />
         </svg>
         <span class="theme__label">
           {{ option.label }}

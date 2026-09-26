@@ -37,7 +37,11 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   <header class="top-bar">
     <!-- The wordmark goes home, as on any website; the menu has its own
          button at the other end of the bar. -->
-    <router-link class="top-bar__brand" :to="{ name: 'console' }" data-testid="home">
+    <router-link
+      class="top-bar__brand"
+      :to="{ name: 'console' }"
+      data-testid="home"
+    >
       <span class="top-bar__wordmark">WebThrottle</span>
       <span class="top-bar__tag">DCC-EX</span>
     </router-link>
@@ -64,104 +68,109 @@ async function disconnect(stopFirst: boolean): Promise<void> {
     </nav>
 
     <div class="top-bar__status">
-    <button
-      type="button"
-      class="top-bar__link"
-      popovertarget="link-popover"
-      data-testid="shell-status"
-    >
-      <span class="lamp" aria-hidden="true" />
-      <span><span class="top-bar__link-state">Connected · </span>{{ connection.transportName }}</span>
-    </button>
-
-    <div
-      id="link-popover"
-      ref="link-popover"
-      popover
-      class="popup menu menu--end"
-      data-testid="link-popover"
-    >
-      <p class="menu__note">
-        Connected to your Command Station by {{ connection.transportName }}.
-        <template v-if="connection.station">
-          It runs DCC-EX {{ connection.station.version }} on
-          {{ connection.station.microprocessor }}.
-        </template>
-      </p>
-
-      <template v-if="moving.length > 0">
-        <p class="menu__warning" data-testid="disconnect-warning">
-          {{ moving.map((throttle) => throttle.name).join(', ') }}
-          {{ moving.length === 1 ? 'is' : 'are' }} still moving.
-        </p>
-        <button
-          type="button"
-          class="key key--stop"
-          data-testid="stop-and-disconnect"
-          @click="disconnect(true)"
+      <button
+        type="button"
+        class="top-bar__link"
+        popovertarget="link-popover"
+        data-testid="shell-status"
+      >
+        <span class="lamp" aria-hidden="true" />
+        <span
+          ><span class="top-bar__link-state">Connected · </span
+          >{{ connection.transportName }}</span
         >
-          Stop all and disconnect
-        </button>
+      </button>
+
+      <div
+        id="link-popover"
+        ref="link-popover"
+        popover
+        class="popup menu menu--end"
+        data-testid="link-popover"
+      >
+        <p class="menu__note">
+          Connected to your Command Station by {{ connection.transportName }}.
+          <template v-if="connection.station">
+            It runs DCC-EX {{ connection.station.version }} on
+            {{ connection.station.microprocessor }}.
+          </template>
+        </p>
+
+        <template v-if="moving.length > 0">
+          <p class="menu__warning" data-testid="disconnect-warning">
+            {{ moving.map((throttle) => throttle.name).join(', ') }}
+            {{ moving.length === 1 ? 'is' : 'are' }} still moving.
+          </p>
+          <button
+            type="button"
+            class="key key--stop"
+            data-testid="stop-and-disconnect"
+            @click="disconnect(true)"
+          >
+            Stop all and disconnect
+          </button>
+          <button
+            type="button"
+            class="key"
+            data-testid="disconnect"
+            @click="disconnect(false)"
+          >
+            Disconnect anyway
+          </button>
+        </template>
         <button
+          v-else
           type="button"
           class="key"
           data-testid="disconnect"
           @click="disconnect(false)"
         >
-          Disconnect anyway
+          Disconnect
         </button>
-      </template>
+      </div>
+
+      <time class="top-bar__clock numeric" data-testid="clock">{{
+        clock
+      }}</time>
+
       <button
-        v-else
         type="button"
-        class="key"
-        data-testid="disconnect"
-        @click="disconnect(false)"
+        class="top-bar__menu"
+        popovertarget="app-menu"
+        aria-label="Menu"
+        title="Menu"
+        data-testid="app-menu-button"
       >
-        Disconnect
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+        </svg>
       </button>
-    </div>
 
-    <time class="top-bar__clock numeric" data-testid="clock">{{ clock }}</time>
-
-    <button
-      type="button"
-      class="top-bar__menu"
-      popovertarget="app-menu"
-      aria-label="Menu"
-      title="Menu"
-      data-testid="app-menu-button"
-    >
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
-      </svg>
-    </button>
-
-    <div
-      id="app-menu"
-      ref="app-menu"
-      popover
-      class="popup menu menu--app"
-      data-testid="app-menu"
-    >
-      <router-link
-        class="menu__item"
-        :to="{ name: 'settings' }"
-        data-testid="menu-settings"
-        @click="closeMenu"
+      <div
+        id="app-menu"
+        ref="app-menu"
+        popover
+        class="popup menu menu--app"
+        data-testid="app-menu"
       >
-        Settings
-      </router-link>
-      <a
-        class="menu__item"
-        href="https://dcc-ex.com/throttles/software/ex-webthrottle.html"
-        target="_blank"
-        rel="noopener"
-        @click="closeMenu"
-      >
-        Help on dcc-ex.com
-      </a>
-    </div>
+        <router-link
+          class="menu__item"
+          :to="{ name: 'settings' }"
+          data-testid="menu-settings"
+          @click="closeMenu"
+        >
+          Settings
+        </router-link>
+        <a
+          class="menu__item"
+          href="https://dcc-ex.com/throttles/software/ex-webthrottle.html"
+          target="_blank"
+          rel="noopener"
+          @click="closeMenu"
+        >
+          Help on dcc-ex.com
+        </a>
+      </div>
     </div>
   </header>
 </template>

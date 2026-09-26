@@ -37,7 +37,11 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
       <line class="route route--set" x1="6" y1="48" x2="42" y2="48" />
       <line
         class="route"
-        :class="thrown ? 'route--unset' : ['route--set', { 'changing-over': changingOver(turnout) }]"
+        :class="
+          thrown
+            ? 'route--unset'
+            : ['route--set', { 'changing-over': changingOver(turnout) }]
+        "
         x1="42"
         y1="48"
         x2="114"
@@ -45,7 +49,11 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
       />
       <polyline
         class="route"
-        :class="thrown ? ['route--set', { 'changing-over': changingOver(turnout) }] : 'route--unset'"
+        :class="
+          thrown
+            ? ['route--set', { 'changing-over': changingOver(turnout) }]
+            : 'route--unset'
+        "
         points="42,48 72,18 114,18"
       />
       <line v-if="thrown" class="route__gap" x1="52" y1="48" x2="62" y2="48" />
@@ -54,7 +62,10 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
     </svg>
     <span class="turnout-row__number numeric">{{ turnout.id }}</span>
     <span class="turnout-row__name" :title="name">{{ name }}</span>
-    <span class="turnout-row__state" :data-testid="`turnout-state-${turnout.id}`">
+    <span
+      class="turnout-row__state"
+      :data-testid="`turnout-state-${turnout.id}`"
+    >
       {{ lie }}
     </span>
   </button>
