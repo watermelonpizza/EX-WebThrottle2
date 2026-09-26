@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { useConnectionStore } from '@/stores/connection';
+import { EMULATOR_URL, useConnectionStore } from '@/stores/connection';
 
 const connection = useConnectionStore();
 
-const url = ref('ws://127.0.0.1:4444');
+const url = ref(EMULATOR_URL);
 const connecting = computed(() => connection.status === 'connecting');
 
 const urlError = computed(() => {

@@ -30,7 +30,7 @@ export interface TraceEntry {
 const MAX_TRACE = 500;
 
 const serialAvailable = isWebSerialSupported();
-const EMULATOR_URL = 'ws://127.0.0.1:4444';
+export const EMULATOR_URL = 'ws://127.0.0.1:4444';
 
 // Owns the whole connection: how far the browser got in the connect lifecycle,
 // the raw sent/received traffic log, and the delivery of decoded broadcasts to

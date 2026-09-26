@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
-import { Direction } from '@/core/protocol';
+import { Direction, MAX_CAB } from '@/core/protocol';
 import { useLocosStore } from '@/stores/locos';
 
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
@@ -11,15 +11,12 @@ const locos = useLocosStore();
 const address = ref('');
 const name = ref('');
 
-// The largest DCC long address DCC-EX accepts.
-const MAX_ADDRESS = 10293;
-
 const parsed = computed(() => Number(address.value));
 const valid = computed(
   () =>
     Number.isInteger(parsed.value) &&
     parsed.value >= 1 &&
-    parsed.value <= MAX_ADDRESS,
+    parsed.value <= MAX_CAB,
 );
 
 const saved = computed(() =>

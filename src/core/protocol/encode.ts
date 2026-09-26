@@ -22,7 +22,7 @@ import {
 // - <t> speed accepts 0..127, with -1 meaning emergency stop
 // - <F> functions cover 0..68 (the RCN-212/217 extended function range)
 
-const MAX_CAB = 10293;
+export const MAX_CAB = 10293;
 const MIN_SPEED = -1;
 const MAX_SPEED = 127;
 const MAX_FUNCTION = 68;

@@ -6,6 +6,7 @@ export type {
   TrackState,
 } from './types';
 export {
+  MAX_CAB,
   powerOn,
   powerOff,
   powerTrack,

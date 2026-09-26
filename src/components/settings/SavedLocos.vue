@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 
+import { MAX_CAB } from '@/core/protocol';
 import { useLocosStore } from '@/stores/locos';
 import { useMapsStore } from '@/stores/maps';
 
@@ -11,15 +12,12 @@ const address = ref('');
 const name = ref('');
 const mapId = ref('default');
 
-// The largest DCC long address DCC-EX accepts.
-const MAX_ADDRESS = 10293;
-
 const parsed = computed(() => Number(address.value));
 const valid = computed(
   () =>
     Number.isInteger(parsed.value) &&
     parsed.value >= 1 &&
-    parsed.value <= MAX_ADDRESS &&
+    parsed.value <= MAX_CAB &&
     name.value.trim().length > 0,
 );
 
