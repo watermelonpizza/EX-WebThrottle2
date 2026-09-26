@@ -1,14 +1,22 @@
+import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 
 import type { PanelKind } from '@/core/workspace';
-import CommandsPanel from '@/components/panels/CommandsPanel.vue';
 import EventsPanel from '@/components/panels/EventsPanel.vue';
 import OutputsPanel from '@/components/panels/OutputsPanel.vue';
 import PointsPanel from '@/components/panels/PointsPanel.vue';
 import SchematicPanel from '@/components/panels/SchematicPanel.vue';
 import SensorsPanel from '@/components/panels/SensorsPanel.vue';
 import ThrottlesPanel from '@/components/panels/ThrottlesPanel.vue';
-import TrafficPanel from '@/components/panels/TrafficPanel.vue';
+
+// Diagnostics carries the whole native command catalog; it downloads only
+// when a layout first shows one of its panels, not for every operator.
+const CommandsPanel = defineAsyncComponent(
+  () => import('@/components/panels/CommandsPanel.vue'),
+);
+const TrafficPanel = defineAsyncComponent(
+  () => import('@/components/panels/TrafficPanel.vue'),
+);
 
 export interface PanelType {
   // Names the panel for screen readers and, later, the panel list.

@@ -27,13 +27,3 @@ export {
 } from './encode';
 export { decodeFrame } from './decode';
 export { decodeSpeedByte } from './speed';
-export {
-  COMMANDS,
-  buildCommand,
-  isComplete,
-  matchCommand,
-  searchCommands,
-} from './commands';
-export type { CommandDef, CommandInput, CommandMatch } from './commands';
-export { describeResponse } from './responses';
-export type { ResponseDescription, ResponseParameter } from './responses';

@@ -2,7 +2,8 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { logTime } from '@/composables/useClock';
-import { describeResponse, matchCommand } from '@/core/protocol';
+import { matchCommand } from '@/core/protocol/commands';
+import { describeResponse } from '@/core/protocol/responses';
 import type { TraceEntry } from '@/stores/connection';
 import { useConnectionStore } from '@/stores/connection';
 

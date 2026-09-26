@@ -61,7 +61,10 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 One-way dependency flow, top to bottom:
 
 ```text
-src/core/protocol     pure: DCC-EX Native Protocol encode/decode, speed bytes, opcode constants
+src/core/protocol     pure: DCC-EX Native Protocol encode/decode, speed bytes, opcode
+                      constants; commands.ts (the command catalog) and responses.ts
+                      (reply explanations) are imported directly, never through
+                      index.ts, so only Diagnostics downloads them
 src/core/transport    Transport interface + frame extractor; adapters/ = Web Serial,
                       WebSocket (emulator bridge), MockTransport (offline test double)
 src/core/loco         pure loco helpers (function-state reconciliation)

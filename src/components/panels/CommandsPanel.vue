@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
-import type { CommandDef } from '@/core/protocol';
-import { buildCommand, isComplete, searchCommands } from '@/core/protocol';
+import type { CommandDef } from '@/core/protocol/commands';
+import {
+  buildCommand,
+  isComplete,
+  searchCommands,
+} from '@/core/protocol/commands';
 import { useConnectionStore } from '@/stores/connection';
 
 const connection = useConnectionStore();

@@ -1,6 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import App from '@/App.vue';
@@ -49,10 +49,12 @@ describe('console', () => {
     expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
 
     await router.push('/diagnostics');
+    // Diagnostics loads on demand; wait for its panels to arrive and render.
+    await vi.dynamicImportSettled();
     await flushPromises();
 
-    expect(wrapper.find('[data-testid="panel-traffic"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="panel-commands"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="trace-list"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="commands-panel"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
   });
 });
