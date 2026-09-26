@@ -112,7 +112,9 @@ describe('settings components', () => {
     await wrapper
       .get('[data-testid="function-map-form"] button[type="button"]')
       .trigger('click');
-    expect(wrapper.find('.map-editor').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="function-map-form"]').exists()).toBe(
+      false,
+    );
 
     vi.spyOn(window, 'confirm').mockReturnValue(false);
     await wrapper.get('[data-testid="delete-map"]').trigger('click');

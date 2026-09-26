@@ -93,10 +93,23 @@ function connectUrl(): void {
         or Microsoft Edge on a computer, or use another way to connect below.
       </p>
 
-      <details class="connect__other" :open="!connection.serialAvailable">
-        <summary class="connect__summary">Other ways to connect</summary>
+      <details
+        class="connect__other"
+        :open="!connection.serialAvailable"
+        data-testid="other-connections"
+      >
+        <summary
+          class="connect__summary"
+          data-testid="other-connections-toggle"
+        >
+          Other ways to connect
+        </summary>
 
-        <form class="connect__form" @submit.prevent="connectUrl">
+        <form
+          class="connect__form"
+          data-testid="connect-form"
+          @submit.prevent="connectUrl"
+        >
           <label class="connect__label" for="connect-url">
             Emulator or WebSocket address
           </label>

@@ -108,6 +108,7 @@ pnpm run test:e2e       # Playwright e2e (starts its own emulator + app server)
 - An e2e run starts its own emulator on port 4455 and app server on 5174 (`e2e/ports.ts`), so it never shares state with an emulator or dev server you already have running on 4444 or 5173.
 - The emulator needs the submodule (`git submodule update --init`) and a C++ toolchain with `make`. See `emulator/README.md`.
 - Run lint, type-check, and unit tests after every change.
+- In tests, find elements by `data-testid`. Add one to the component when a test needs it; use a class or tag only when the target is generic (any row, any button).
 
 ## Design and product context
 

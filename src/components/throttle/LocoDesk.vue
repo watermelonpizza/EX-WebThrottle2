@@ -342,7 +342,7 @@ function placeIn(berthId: string): void {
         :aria-label="`Functions for ${throttle.name}`"
       >
         <div class="desk__functions-head">
-          <h3 class="desk__functions-title">
+          <h3 class="desk__functions-title" data-testid="functions-title">
             Functions · {{ functions.length }}
           </h3>
           <button
@@ -358,6 +358,7 @@ function placeIn(berthId: string): void {
 
         <FunctionKeys
           class="desk__keys"
+          data-testid="desk-keys"
           :class="{ 'desk__keys--tight': tight }"
           :functions="functions"
           :limit="limit"

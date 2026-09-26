@@ -40,7 +40,7 @@ describe('connection and shell components', () => {
       'username or password',
     );
     await url.setValue('ws://localhost:4444');
-    await wrapper.get('.connect__form').trigger('submit');
+    await wrapper.get('[data-testid="connect-form"]').trigger('submit');
     expect(connect).toHaveBeenCalledWith('ws://localhost:4444');
   });
 

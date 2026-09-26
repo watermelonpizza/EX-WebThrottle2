@@ -12,10 +12,10 @@ async function connect(page: Page, path = '/'): Promise<void> {
 
   // The emulator lives under "Other ways to connect"; it is already open in
   // browsers without Web Serial.
-  const other = page.locator('.connect__other');
+  const other = page.getByTestId('other-connections');
 
   if (!(await other.evaluate((element) => (element as HTMLDetailsElement).open))) {
-    await other.locator('summary').click();
+    await page.getByTestId('other-connections-toggle').click();
   }
 
   await page.getByTestId('emulator-url').fill(EMULATOR_URL);

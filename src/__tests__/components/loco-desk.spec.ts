@@ -134,10 +134,12 @@ describe('loco desk', () => {
       global: { plugins: [app.pinia, app.router] },
     });
 
-    expect(wrapper.get('.desk__functions-title').text()).toBe('Functions · 2');
+    expect(wrapper.get('[data-testid="functions-title"]').text()).toBe(
+      'Functions · 2',
+    );
     expect(
       wrapper
-        .findAll('.desk__keys [data-testid="fun"]')
+        .findAll('[data-testid="desk-keys"] [data-testid="fun"]')
         .map((key) => key.text()),
     ).toEqual(['Lights', 'Sound']);
   });
