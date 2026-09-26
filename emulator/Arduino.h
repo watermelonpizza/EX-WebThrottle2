@@ -126,8 +126,8 @@ public:
 /*
  * Host serial: stdin carries inbound `<...>` commands, stdout carries
  * everything the CS emits (diagnostics and protocol replies - the real CS
- * mixes these on USB serial exactly this way). The bridge separates them by
- * content later (stage 2).
+ * mixes these on USB serial exactly this way). The bridge forwards both
+ * unchanged, as USB would.
  */
 class HardwareSerial : public Stream {
 public:

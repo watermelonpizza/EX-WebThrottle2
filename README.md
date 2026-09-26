@@ -12,15 +12,18 @@ It is the next generation of the original [WebThrottle-EX](https://dcc-ex.com/We
 ## What you can do
 
 - Drive your locos: speed, direction, stop, emergency stop, and functions F0–F31
+- Stop every loco at once with **STOP ALL**, which is on every screen
 - Save your locos, name their functions, and set each one as latching or momentary
 - Throw and close turnouts/points
 - Switch outputs on and off
 - Watch sensors change live
 - Turn power on and off for every track at once, or one track at a time
-- Arrange the console to suit you, in a light or dark theme
-- Watch the commands going to and from your Command Station, and send your own
+- See what just changed on the layout, including changes made by other Throttles
+- Pick the console for your job: Drive, Points, Control or Diagnostics. Each one has its own link, so you can hand an operator the page they need
+- Choose a dark, light or high-contrast theme
+- Watch the commands going to and from your Command Station, with a plain explanation of each, look up any DCC-EX command, and send your own
 
-Coming later: routes and automations (EXRAIL), a network connection so you can drive from a Smart Phone, and installing EX-WebThrottle as an app.
+Coming later: routes and automations (EXRAIL), a diagram of your own layout (only the emulator has a sample diagram today), arranging the panels yourself, a network connection so you can drive from a Smart Phone, and installing EX-WebThrottle as an app.
 
 ## What you need
 
@@ -49,7 +52,7 @@ pnpm run emulator   # terminal 1: emulated Command Station on ws://127.0.0.1:444
 pnpm run dev        # terminal 2: open the address it prints
 ```
 
-Then select **Connect to emulator**. If you cloned without `--recurse-submodules`, run `git submodule update --init` first.
+Then open **Other ways to connect** and select **Connect**; the emulator's address is already filled in. If you cloned without `--recurse-submodules`, run `git submodule update --init` first.
 
 ### Commands
 
@@ -60,7 +63,7 @@ pnpm run preview        # preview the production build
 pnpm run type-check     # type-check only
 pnpm run lint           # ESLint; lint:fix to fix what it can
 pnpm run format:check   # Prettier check; format to rewrite
-pnpm run test:unit      # Vitest unit and component tests, with coverage
+pnpm run test:unit      # Vitest unit and component tests; fails below 90% coverage
 pnpm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests
 pnpm run test:e2e       # Playwright tests (starts its own emulator on port 4455 and app on 5174)
@@ -80,6 +83,7 @@ src/core/protocol → src/core/transport → src/stores → src/components, src/
 
 - `src/core/protocol` reads and writes the DCC-EX Native Protocol. It is plain TypeScript with no Vue.
 - `src/core/transport` moves the bytes: Web Serial, a WebSocket for the emulator, and a mock for tests.
+- `src/core/loco`, `src/core/diagram` and `src/core/workspace` are small plain helpers: function states, the layout diagram, and how panels are laid out.
 - `src/stores` holds the connection and all the state the screens show.
 - `src/components` and `src/views` are the console you see.
 

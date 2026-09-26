@@ -2,7 +2,7 @@
 
 A native build of the **real DCC-EX CommandStation firmware**, compiled as a
 normal desktop program instead of running on Arduino hardware. It speaks the
-same DCC-EX wire protocol over stdin/stdout, so you can develop EX-WebThrottle2
+same DCC-EX wire protocol over stdin/stdout, so you can develop EX-WebThrottle
 (and debug layouts) without a physical command station.
 
 The point is fidelity: this is not a re-implementation of the protocol in
@@ -15,6 +15,7 @@ DCC-EX commands a physical command station runs on boot.
 
 ```
 emulator/Arduino.h          host shim: Print/Stream/HardwareSerial, time, pins
+emulator/wiring_private.h   empty stand-in for the Arduino header the firmware includes
 emulator/config.h           host board config (emulated motor shield, no EEPROM/wifi)
 emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin levels
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
@@ -32,8 +33,8 @@ serial terminal.
 
 - Boot banner + system/status responses (`<s>`, `<iDCC-EX ...>`)
 - Track power on/off (`<1>`, `<0>`) with power broadcasts
-- Throttle: speed, direction, e-stop (`<t ...>`, `<e>`), function keys `<F>`
-  with `<l>` state broadcasts
+- Throttle: speed, direction, emergency stop (`<t ...>`, `<!>`), function keys
+  `<F>` with `<l>` state broadcasts
 - Native-command turnout/output/sensor setup (see `layout.txt`)
 - Sensors that fire: a pin idles high, as a sensor input's pull-up holds it,
   and `<z -22>` pulls pin 22 low the way a detector would (`<z 22>` lets it
@@ -140,7 +141,8 @@ no-hardware hooks). The default config:
 
 ## Files are the building blocks
 
-For people extending this — the four host files under `emulator/` plus
+For people extending this — the host files under `emulator/` (`Arduino.h`,
+`wiring_private.h`, `config.h`, `host.cpp`, `main.cpp`), the bridge and
 `layout.txt` are the entire footprint; the large `CommandStation-EX/` tree in
 the build is upstream firmware fetched as a git submodule. Keep it that way:
 patch from the shim side via the Makefile, never edit inside the submodule.

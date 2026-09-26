@@ -47,14 +47,18 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 **Working now:**
 
 - Connect over Web Serial or the emulator
-- Master power plus power for each track output
+- STOP ALL on every screen
+- Track power: one switch for every track at once, plus one for each track output the Command Station reports
 - Saved locos, stored per browser: acquire and release, speed, direction, stop, emergency stop, and functions F0–F31
 - Function maps: labels, latching or momentary, visibility
 - Turnouts/points: throw and close
 - Outputs: switch on and off
 - Sensors: live state, read-only
-- Raw diagnostics console: sent/received traffic and a command box
-- Panel workspace with arrangement presets, a light theme and a dark theme, and a Settings page
+- Event log: what changed on the layout, including changes made by other Throttles, with a count of new changes
+- Layout diagram: a sample diagram for the emulator's demo layout; any other Command Station gets a list of its turnouts/points and sensors instead
+- Diagnostics: sent/received traffic with a plain explanation of each line, a searchable list of every native command, and a command box
+- Panel workspace with role presets (Drive, Points, Control, Diagnostics), each with its own link
+- Dark, light and high-contrast themes, and a Settings page
 
 **Planned:**
 
@@ -63,7 +67,8 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - Installable web app (PWA)
 - Hub network connection
 - Multiple operators
-- A visual track-layout overview
+- A track-layout diagram for your own layout
+- Arranging the panels yourself
 
 **Retired on purpose:** the CV programmer and the WiFi setup screen. **Out of scope:** turntables.
 
@@ -98,9 +103,9 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
   - lead with the plain explanation; technical detail comes after it and is never required reading
 - **Personality:** a model-railway hobby project. It should not look or read like a generic scaffolded web app or stock Material.
 - **Assets:**
-  - `src/assets/WebThrottle.png`: the wordmark, 778×200, also the home button
-  - `src/assets/favicon.ico`
-  - Other images in `src/assets/` are unreferenced leftovers from the legacy app and are not binding
+  - The in-app wordmark is set in text ("WebThrottle" with a "DCC-EX" tag), not an image; it is also the home button
+  - `public/favicon.ico`: the favicon
+  - `src/assets/WebThrottle.png` (a 778×200 wordmark image), `cover.jpg` and `full-logo.png` are not used by the app and are not binding
 
 ## Evidence on Hand
 

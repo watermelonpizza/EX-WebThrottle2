@@ -68,12 +68,15 @@ src/core/protocol     pure: DCC-EX Native Protocol encode/decode, speed bytes, o
 src/core/transport    Transport interface + frame extractor; adapters/ = Web Serial,
                       WebSocket (emulator bridge), MockTransport (offline test double)
 src/core/loco         pure loco helpers (function-state reconciliation)
+src/core/diagram      pure layout-diagram types and drawing, plus the emulator's sample
+src/core/workspace    pure panel layout tree and the role presets
 src/core/logging      console warn/error, tagged with dotted event identifiers
 src/stores            Pinia stores, the only view-facing state: connection (lifecycle,
                       decode routing, raw traffic log), power, locos, maps, inventory,
-                      panels, settings
-src/components        ui/ (our component layer), layout/, panels/, connection/,
-                      settings/, throttle/
+                      events, diagram, workspace, settings; saved.ts reads localStorage
+src/composables       small Vue helpers (the clock)
+src/components        shell/ (top bar, safety strip, connect screen), workspace/ (panel
+                      layout), panels/, schematic/, throttle/, settings/
 src/views             ConsoleView (connect page, then the panel workspace), SettingsView
 src/router · src/styles (design tokens as CSS custom properties; themes via [data-theme])
 emulator/             real CommandStation-EX built for the host + WebSocket bridge
@@ -109,6 +112,7 @@ pnpm run test:e2e       # Playwright e2e (starts its own emulator + app server)
 - An e2e run starts its own emulator on port 4455 and app server on 5174 (`e2e/ports.ts`), so it never shares state with an emulator or dev server you already have running on 4444 or 5173.
 - The emulator needs the submodule (`git submodule update --init`) and a C++ toolchain with `make`. See `emulator/README.md`.
 - Run lint, type-check, and unit tests after every change.
+- `test:unit` fails if statement, branch, function or line coverage drops below 90% (`vite.config.ts`). Add meaningful tests to stay above it; do not lower the bar or exclude files to get past it.
 - In tests, find elements by `data-testid`. Add one to the component when a test needs it; use a class or tag only when the target is generic (any row, any button).
 
 ## Design and product context
