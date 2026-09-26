@@ -196,7 +196,9 @@ function placeIn(berthId: string): void {
         title="Add loco"
         data-testid="desk-add"
       >
-        <i class="mdi mdi-plus" aria-hidden="true" />
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+        </svg>
       </button>
 
       <div

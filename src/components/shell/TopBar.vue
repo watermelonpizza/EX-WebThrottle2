@@ -142,7 +142,9 @@ async function disconnect(stopFirst: boolean): Promise<void> {
       title="Menu"
       data-testid="app-menu-button"
     >
-      <i class="mdi mdi-menu" aria-hidden="true" />
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+      </svg>
     </button>
 
     <div
@@ -301,10 +303,6 @@ async function disconnect(stopFirst: boolean): Promise<void> {
   &:hover {
     color: var(--ink);
     border-color: var(--edge);
-  }
-
-  .mdi {
-    line-height: 1;
   }
 }
 

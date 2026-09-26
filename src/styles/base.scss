@@ -111,6 +111,15 @@ a {
   white-space: nowrap;
 }
 
+// An inline SVG glyph (Material Design Icons paths, from @mdi/js). It is
+// sized by the surrounding font size and drawn in the text colour.
+.icon {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
 // Shared control language: flat keys with a thin edge, one height.
 .key {
   display: inline-flex;
