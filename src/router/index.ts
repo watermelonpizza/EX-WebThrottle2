@@ -23,11 +23,6 @@ export const routes: RouteRecordRaw[] = [
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),
   },
-  // Older builds had a page per feature; send those bookmarks home.
-  ...['throttles', 'locos', 'functions', 'communications'].map((path) => ({
-    path: `/${path}`,
-    redirect: '/',
-  })),
 ];
 
 // Hash history so the app runs on any static host (GitHub Pages, etc.).
