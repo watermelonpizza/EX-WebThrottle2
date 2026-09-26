@@ -1,9 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { decodeFrame } from '../index';
 import { PowerState, TurnoutState } from '../index';
 import { extractFrames } from '../../transport';
-import { addLogSink, LogEntry } from '../../logging';
 
 describe('decodeFrame', () => {
   it('ignores empty brackets', () => {
@@ -156,20 +155,16 @@ describe('decodeFrame', () => {
   });
 
   it('logs a warning when system info is announced but cannot be decoded', () => {
-    const captured: LogEntry[] = [];
-    const unsubscribe = addLogSink((entry) => captured.push(entry));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     decodeFrame('<iSOMETHING>');
 
-    unsubscribe();
-
-    expect(captured).toContainEqual(
-      expect.objectContaining({
-        level: 'warn',
-        event: 'protocol.decode.decodeSystemInfo.invalid_frame',
-        context: { params: 'SOMETHING' },
-      }),
+    expect(warn).toHaveBeenCalledWith(
+      'protocol.decode.decodeSystemInfo.invalid_frame',
+      { params: 'SOMETHING' },
     );
+
+    warn.mockRestore();
   });
 
   it('ignores frames the app does not act on', () => {
@@ -182,60 +177,49 @@ describe('decodeFrame', () => {
 });
 
 describe('warn logging for malformed frames', () => {
-  let captured: LogEntry[] = [];
-  let unsubscribe: () => void;
+  let warn: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    captured = [];
-
-    unsubscribe = addLogSink((entry) => captured.push(entry));
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    unsubscribe();
+    warn.mockRestore();
   });
 
   it('logs when a power broadcast lacks a state', () => {
     decodeFrame('<p>');
 
-    expect(captured).toContainEqual(
-      expect.objectContaining({
-        level: 'warn',
-        event: 'protocol.decode.decodeFrame.invalid_power',
-      }),
+    expect(warn).toHaveBeenCalledWith(
+      'protocol.decode.decodeFrame.invalid_power',
+      expect.anything(),
     );
   });
 
   it('logs when a loco update is incomplete', () => {
     decodeFrame('<l 3 0>');
 
-    expect(captured).toContainEqual(
-      expect.objectContaining({
-        level: 'warn',
-        event: 'protocol.decode.decodeFrame.invalid_loco_update',
-      }),
+    expect(warn).toHaveBeenCalledWith(
+      'protocol.decode.decodeFrame.invalid_loco_update',
+      expect.anything(),
     );
   });
 
   it('logs when a turnout broadcast is incomplete', () => {
     decodeFrame('<H 1>');
 
-    expect(captured).toContainEqual(
-      expect.objectContaining({
-        level: 'warn',
-        event: 'protocol.decode.decodeFrame.invalid_turnout',
-      }),
+    expect(warn).toHaveBeenCalledWith(
+      'protocol.decode.decodeFrame.invalid_turnout',
+      expect.anything(),
     );
   });
 
   it('logs when a track assignment lacks a letter or mode', () => {
     decodeFrame('<= 9>');
 
-    expect(captured).toContainEqual(
-      expect.objectContaining({
-        level: 'warn',
-        event: 'protocol.decode.decodeFrame.invalid_track',
-      }),
+    expect(warn).toHaveBeenCalledWith(
+      'protocol.decode.decodeFrame.invalid_track',
+      expect.anything(),
     );
   });
 });

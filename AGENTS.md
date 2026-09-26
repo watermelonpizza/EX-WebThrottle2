@@ -65,7 +65,7 @@ src/core/protocol     pure: DCC-EX Native Protocol encode/decode, speed bytes, o
 src/core/transport    Transport interface + frame extractor; adapters/ = Web Serial,
                       WebSocket (emulator bridge), MockTransport (offline test double)
 src/core/loco         pure loco helpers (function-state reconciliation)
-src/core/logging      structured logging (event identifiers + sinks)
+src/core/logging      console warn/error, tagged with dotted event identifiers
 src/stores            Pinia stores, the only view-facing state: connection (lifecycle,
                       decode routing, raw traffic log), power, locos, maps, inventory,
                       panels, settings

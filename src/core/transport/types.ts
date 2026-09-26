@@ -16,7 +16,7 @@ export interface Transport {
   send(text: string): void;
 
   // Called with whatever text arrived since the last call. Returns an
-  // unsubscribe function, like the logging sinks.
+  // unsubscribe function.
   onData(callback: DataListener): () => void;
   onDisconnect?(callback: DisconnectListener): () => void;
 }
