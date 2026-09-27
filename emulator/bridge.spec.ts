@@ -159,6 +159,23 @@ describe('emulator binary', () => {
     ask(emulator, '<z -22>');
     await expect(stopped).resolves.toMatch(/<jB 201 0>/);
   });
+
+  // The DCC timer sends queued packets to the track, so a packet's queue slot
+  // is reused afterwards instead of a new one being made for every packet.
+  test('reuses DCC queue slots once their packets have gone to the track', async () => {
+    const closed = waitForOutput(emulator, /<H 4 0>/);
+
+    ask(emulator, '<T 4 C>');
+    await closed;
+
+    // Long enough for the accessory's on and off packets to go out.
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const thrown = waitForOutput(emulator, /<H 4 1>/);
+
+    ask(emulator, '<T 4 T>');
+    await expect(thrown).resolves.not.toContain('New DCC queue slot');
+  });
 });
 
 describe('WebSocket bridge', () => {

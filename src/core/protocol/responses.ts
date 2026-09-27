@@ -549,7 +549,7 @@ const CATALOG: ResponseDefinition[] = [
     pattern: '<* New DCC queue slot type= length= loco= q1= q2= created= *>',
     summary: 'New DCC queue slot',
     detail:
-      'A diagnostic, not a reply: the station made a new slot to queue a DCC packet for the track. Slots are reused once their packet is sent, so this normally shows only a few times after start-up. The host emulator sends nothing to a track, so it shows this for every packet.',
+      'A diagnostic, not a reply: the station made a new slot to queue a DCC packet for the track. Slots are reused once their packet is sent, so this normally shows only a few times, when the station gets busy.',
     match(frame) {
       const match
         = /^<\*\s*New DCC queue slot type=(\d+) length=(\d+) loco=(\d+) q1=(\d+) q2=(\d+) created=(\d+)\s*\*>$/.exec(

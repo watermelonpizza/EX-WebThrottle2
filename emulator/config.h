@@ -15,7 +15,7 @@
 // One emulated MAIN track driver so throttle commands have a live track to
 // act on. NO_SHIELD (no MotorDriver lines) turns the firmware into an
 // accessory-only CS with null tracks - power can never come on. Pins are fake:
-// nothing drives them on the host (v1 has no 58us waveform tick).
+// the DCC signal the timer drives onto them goes nowhere.
 #define MOTOR_SHIELD_TYPE F("HOST_SHIELD"), \
   new MotorDriver(2, 3, UNUSED_PIN, UNUSED_PIN, A0, 1.0, 1500, UNUSED_PIN), \
   new MotorDriver(4, 5, UNUSED_PIN, UNUSED_PIN, A1, 1.0, 1500, UNUSED_PIN)

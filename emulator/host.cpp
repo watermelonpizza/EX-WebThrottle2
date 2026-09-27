@@ -1,13 +1,18 @@
 /*
  * Host implementations of the Arduino runtime pieces CommandStation-EX needs
  * that the excluded per-arch DCCTimer*.cpp files would normally provide.
- *
- * ponytail: DCCTimer::begin no-ops on a single-threaded host, so nothing
- * ticks the DCC waveform and `isReminderWindowOpen()` stays false: momentum
- * stepping and DCC packet pacing never advance. Add a DCCTimerSim (pthread at
- * 58uS) in v2 if speed-ramping fidelity is needed - immediate <t>/<l> replies
- * and broadcasts are unaffected.
  */
+
+// Arduino.h, force-included ahead of this file with FSH.h, defines min, max
+// and abs as macros, which break the C++ standard headers. Nothing here uses
+// them.
+#undef min
+#undef max
+#undef abs
+#include <atomic>
+#include <chrono>
+#include <thread>
+
 #include "Arduino.h"
 #include "DCCTimer.h"
 
@@ -23,8 +28,20 @@ unsigned long micros() { return monotonic(1000000UL); }
 void delay(unsigned long ms) { usleep(ms * 1000UL); }
 void delayMicroseconds(unsigned int us) { usleep(us); }
 
-void noInterrupts() {}
-void interrupts() {}
+// The DCC timer interrupt runs on its own thread (see DCCTimer::begin), so
+// noInterrupts() has to keep it out the way cli does on the board: once it
+// returns, no tick is running and none starts until interrupts().
+static std::atomic<bool> interruptsOff{false};
+static std::atomic<bool> inTick{false};
+static thread_local bool onTimerThread = false;
+
+void noInterrupts() {
+  interruptsOff = true;
+
+  // Inside a tick there is nothing to wait for.
+  while (inTick && !onTimerThread) {}
+}
+void interrupts() { interruptsOff = false; }
 
 // Which pins are held low, as a meter on the real board would read them. A
 // pin idles high, the way a sensor input's pull-up holds it, until something
@@ -55,8 +72,11 @@ void analogWrite(byte, int) {}
 
 uint8_t digitalPinToPort(byte) { return 0; }
 uint8_t digitalPinToBitMask(byte) { return 1; }
-uint8_t *portInputRegister(uint8_t) { return NULL; }
-uint8_t *portOutputRegister(uint8_t) { return NULL; }
+// One stand-in port register for every pin, so the motor driver's fast pin
+// writes (the DCC signal on every tick) have somewhere to go. Nothing reads it.
+static uint8_t portRegister;
+uint8_t *portInputRegister(uint8_t) { return &portRegister; }
+uint8_t *portOutputRegister(uint8_t) { return &portRegister; }
 
 // AVR fast-IO "shadow port" externs declared unconditionally in MotorDriver.h.
 // A-C ship in MotorDriver.cpp; the rest are STM32-only so the host defines them.
@@ -70,7 +90,31 @@ void myFilter(Print *, byte &, byte &, int16_t[]) {}
 
 HardwareSerial Serial(0, 1);
 
-void DCCTimer::begin(INTERRUPT_CALLBACK) {}
+// The board's timer interrupt fires every 58uS, and each one moves the DCC
+// waveform on by half a bit. That is what opens the window in which DCC::loop
+// hands the next packet to the track, so queued packets get sent, their queue
+// slots are reused, and speed reminders and momentum move on.
+//
+// ponytail: a sleep between ticks, so the OS can stretch 58uS and the waveform
+// runs a little slow. Nothing on the host depends on its exact pace; count
+// ticks against the clock if something ever does. A tick that falls while
+// interrupts are off is skipped rather than held back until interrupts().
+void DCCTimer::begin(INTERRUPT_CALLBACK interrupt) {
+  std::thread([interrupt] {
+    onTimerThread = true;
+
+    while (true) {
+      inTick = true;
+
+      if (!interruptsOff)
+        interrupt();
+
+      inTick = false;
+      std::this_thread::sleep_for(std::chrono::microseconds(58));
+    }
+  }).detach();
+}
+
 bool DCCTimer::isPWMPin(byte) { return false; }
 void DCCTimer::setPWM(byte, bool) {}
 void DCCTimer::clearPWM() {}

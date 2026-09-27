@@ -17,7 +17,7 @@ commands in `mySetup.h` and an EXRAIL script in `myAutomation.h`, compiled in.
 emulator/Arduino.h          host shim: Print/Stream/HardwareSerial, time, pins
 emulator/wiring_private.h   empty stand-in for the Arduino header the firmware includes
 emulator/config.h           host board config (emulated motor shield, no EEPROM/wifi)
-emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin levels
+emulator/host.cpp           stdin/stdout serial, DCC timer thread, pin levels
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
 emulator/bridge.mjs         Node WebSocket bridge (pnpm run emulator)
 emulator/Makefile           cross-platform host build
@@ -41,6 +41,10 @@ serial terminal.
   and `<z -22>` pulls pin 22 low the way a detector would (`<z 22>` lets it
   go). The firmware's own sensor polling then reports `<Q 20>` / `<q 20>`
 - Startup commands from `mySetup.h` run through the real parser at boot
+- The DCC waveform: a thread stands in for the board's 58 uS timer
+  interrupt, so queued DCC packets go out to the (imaginary) track, their
+  queue slots are reused, and speed reminders and momentum move on. The OS
+  can stretch each tick a little, so the waveform runs slightly slow
 - EXRAIL, from `myAutomation.h`: `<JA>` lists five routes and one
   automation, `</ START 101>` runs a route (it sets the points), and
   `</ START 3 201>` sends loco 3 off until sensor 20 fires, showing the
@@ -48,8 +52,6 @@ serial terminal.
 
 Deliberately not implemented yet:
 
-- The 58 uS DCC waveform tick, so momentum/dcc-accel effects do not advance;
-  immediate replies and broadcasts are unaffected
 - EXRAIL text commands (`PRINT`, `BROADCAST`, `LCD`, …): they crash the
   emulator, see `myAutomation.h`. Signals, block events and a Command Station
   roster are left out of the script until the throttle needs them

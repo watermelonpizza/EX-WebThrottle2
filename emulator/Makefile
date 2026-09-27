@@ -26,6 +26,8 @@ ifneq ($(filter MINGW% MSYS%,$(UNAME_S)),)
 EXEEXT = .exe
 endif
 CXXFLAGS += -I. -ICommandStation-EX -std=gnu++17
+# The DCC timer interrupt runs on a thread of its own (host.cpp).
+CXXFLAGS += -pthread
 CS = CommandStation-EX
 BUILD = build
 
