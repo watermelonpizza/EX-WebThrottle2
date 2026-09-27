@@ -168,7 +168,7 @@ describe('diagram drawing', () => {
   });
 });
 
-// emulator/layout.txt: turnouts 1-5, sensors 20-22.
+// emulator/mySetup.h: turnouts 1-5, sensors 20-22.
 describe('the emulator sample diagram', () => {
   const lines = diagramLines(EMULATOR_DEMO_DIAGRAM);
   const berths = EMULATOR_DEMO_DIAGRAM.berths;

@@ -1,8 +1,8 @@
 import type { LayoutDiagram } from './types';
 
-// Hand-drawn diagram of the host emulator's demo layout (emulator/layout.txt):
+// Hand-drawn diagram of the host emulator's demo layout (emulator/mySetup.h):
 // a main line with a passing loop and a small yard. Turnout and sensor ids
-// match the ones that layout script defines, so the drawing lights up from
+// match the ones those startup commands define, so the drawing lights up from
 // the emulator's real replies. Units are the drawing's own, sized to suit a
 // landscape panel.
 export const EMULATOR_DEMO_DIAGRAM: LayoutDiagram = {

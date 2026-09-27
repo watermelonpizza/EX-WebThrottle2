@@ -3,7 +3,7 @@
  *
  * Activates the firmware's own no-hardware switches (see defines.h): no motor
  * shield, no EEPROM persistence, no programming track, no IO HAL driver
- * expansion. `layout.txt` recreates all state in RAM on every boot.
+ * expansion. `mySetup.h` recreates all state in RAM on every boot.
  */
 #pragma once
 

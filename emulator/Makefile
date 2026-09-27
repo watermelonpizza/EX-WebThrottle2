@@ -37,17 +37,35 @@ EXCLUDE = DCCTimerAVR.cpp DCCTimerMEGAAVR.cpp DCCTimerESP.cpp DCCTimerSAMD.cpp \
           EthernetInterface.cpp EXmDNS.cpp Ztest.cpp I2CManager.cpp EEStore.cpp \
           IO_TM1638.cpp IO_EncoderThrottle.cpp IO_Servo.cpp IO_PCA9685.cpp \
           IO_DS1307.cpp IO_I2CRailcom.cpp LiquidCrystal_I2C.cpp SSD1306Ascii.cpp \
-          EXRAIL2.cpp EXRAIL2Parser.cpp EXRAILSensor.cpp IO_DCCAccessory.cpp
+          IO_DCCAccessory.cpp
 
 SRCS = $(filter-out $(addprefix $(CS)/,$(EXCLUDE)), $(wildcard $(CS)/*.cpp))
 OBJS = $(patsubst $(CS)/%.cpp,$(BUILD)/%.o,$(SRCS))
 OBJS += $(addprefix $(BUILD)/,main.o host.o)
 TARGET = $(BUILD)/emulator$(EXEEXT)
 
+# FSH.h turns flash addresses into uint32_t, which cannot hold a 64-bit host
+# address; EXRAIL reads its whole compiled script through it. A sed-patched
+# copy is force-included into every file first, and its include guard turns the
+# firmware's own #include "FSH.h" into a no-op, so the submodule stays pristine.
+FSH = $(BUILD)/FSH.h
+CXXFLAGS += -include $(FSH)
+
+# The compiler writes down every header each file reads (build/*.d), so make
+# rebuilds whatever an edit touches: mySetup.h, myAutomation.h, config.h or a
+# firmware header. -MP keeps the build working if a header is later removed.
+CXXFLAGS += -MMD -MP
+
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS)
+
+# Every file is built against the patched FSH.h, so it has to exist first.
+$(OBJS): $(FSH)
+
+$(FSH): $(CS)/FSH.h | $(BUILD)
+	sed 's/((uint32_t)(data))/((uintptr_t)(data))/' $< > $@
 
 # StringFormatter '%P' casts a void* to uint32_t - ill-formed on 64-bit hosts
 # (works on the real 32-bit MCUs; only the low half of the address is printed).
@@ -61,10 +79,10 @@ $(BUILD)/StringFormatter.o: $(BUILD)/StringFormatter.cpp
 $(BUILD)/%.o: $(CS)/%.cpp | $(BUILD)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(BUILD)/main.o: main.cpp config.h Arduino.h | $(BUILD)
+$(BUILD)/main.o: main.cpp | $(BUILD)
 	$(CXX) $(CXXFLAGS) $(WARNFLAGS) -c -o $@ main.cpp
 
-$(BUILD)/host.o: host.cpp config.h Arduino.h | $(BUILD)
+$(BUILD)/host.o: host.cpp | $(BUILD)
 	$(CXX) $(CXXFLAGS) $(WARNFLAGS) -c -o $@ host.cpp
 
 $(BUILD):
@@ -72,5 +90,7 @@ $(BUILD):
 
 clean:
 	rm -rf $(BUILD)
+
+-include $(OBJS:.o=.d)
 
 .PHONY: all clean

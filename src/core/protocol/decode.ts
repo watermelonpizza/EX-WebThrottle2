@@ -52,7 +52,7 @@ function decodeSystemInfo(params: string): SystemInfo | undefined {
 
 function decodeTurnoutInfo(params: string): ProtocolMessage {
   // <jT id T|C "description"> describes one turnout. The description is only
-  // filled in by EX-RAIL layouts, so it is optional.
+  // filled in by EXRAIL layouts, so it is optional.
   const detail = /^(\d+) ([TC])(?: "(.*)")?$/.exec(params.trim());
 
   if (detail) {

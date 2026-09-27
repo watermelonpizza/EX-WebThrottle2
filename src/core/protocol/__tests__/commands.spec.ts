@@ -80,8 +80,8 @@ describe('command list', () => {
   });
 
   it.each([
-    { pattern: '</ PAUSE>', needs: 'EX-RAIL', from: 'its group' },
-    { pattern: '<L>', needs: 'EX-RAIL with LCC', from: 'the command itself' },
+    { pattern: '</ PAUSE>', needs: 'EXRAIL', from: 'its group' },
+    { pattern: '<L>', needs: 'EXRAIL with LCC', from: 'the command itself' },
     { pattern: '<y vpin STOP>', needs: 'DFPlayer', from: 'its group' },
     { pattern: '<s>', needs: '', from: 'nowhere, as it needs nothing' },
   ])('takes what $pattern needs from $from', ({ pattern, needs }) => {

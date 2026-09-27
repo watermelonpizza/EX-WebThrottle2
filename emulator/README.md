@@ -8,8 +8,8 @@ same DCC-EX wire protocol over stdin/stdout, so you can develop EX-WebThrottle
 The point is fidelity: this is not a re-implementation of the protocol in
 JavaScript or Python. It is the actual `CommandStation-EX` sources (pinned git
 submodule) running against a small host shim that replaces Arduino hardware
-APIs. A `layout.txt` file lets you configure the emulated layout with the same
-DCC-EX commands a physical command station runs on boot.
+APIs. It is configured the way a physical command station is: startup
+commands in `mySetup.h` and an EXRAIL script in `myAutomation.h`, compiled in.
 
 ## How it works
 
@@ -21,7 +21,8 @@ emulator/host.cpp           stdin/stdout serial, DCCTimer/ADCee stubs, pin level
 emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
 emulator/bridge.mjs         Node WebSocket bridge (pnpm run emulator)
 emulator/Makefile           cross-platform host build
-emulator/layout.txt         boot command script (edit without rebuilding)
+emulator/mySetup.h          startup commands: turnouts, outputs, sensors
+emulator/myAutomation.h     EXRAIL script: routes and an automation
 emulator/CommandStation-EX/ git submodule: the real firmware (do not edit)
 ```
 
@@ -29,28 +30,34 @@ Protocol replies (`<...>`) and diagnostics (`<* ...>`) both go to stdout.
 Feeding it DCC-EX commands on stdin makes it behave like a command station on a
 serial terminal.
 
-## What works (v1)
+## What works
 
 - Boot banner + system/status responses (`<s>`, `<iDCC-EX ...>`)
 - Track power on/off (`<1>`, `<0>`) with power broadcasts
 - Throttle: speed, direction, emergency stop (`<t ...>`, `<!>`), function keys
   `<F>` with `<l>` state broadcasts
-- Native-command turnout/output/sensor setup (see `layout.txt`)
+- Native-command turnout/output/sensor setup (see `mySetup.h`)
 - Sensors that fire: a pin idles high, as a sensor input's pull-up holds it,
   and `<z -22>` pulls pin 22 low the way a detector would (`<z 22>` lets it
   go). The firmware's own sensor polling then reports `<Q 20>` / `<q 20>`
-- Commands from `layout.txt` replayed through the real parser at boot
+- Startup commands from `mySetup.h` run through the real parser at boot
+- EXRAIL, from `myAutomation.h`: `<JA>` lists five routes and one
+  automation, `</ START 101>` runs a route (it sets the points), and
+  `</ START 3 201>` sends loco 3 off until sensor 20 fires, showing the
+  automation as active (`<jB 201 1>`) while it runs
 
 Deliberately not implemented yet:
 
 - The 58 uS DCC waveform tick, so momentum/dcc-accel effects do not advance;
   immediate replies and broadcasts are unaffected
-- EX-RAIL layout scripting (automations, routes, signals, roster-backed names)
+- EXRAIL text commands (`PRINT`, `BROADCAST`, `LCD`, …): they crash the
+  emulator, see `myAutomation.h`. Signals, block events and a Command Station
+  roster are left out of the script until the throttle needs them
 
 ## Build
 
-Requires a C++17 compiler and `make` (plus `sed`, used by a small one-line
-source patch during build). No Arduino toolchain needed.
+Requires a C++17 compiler and `make` (plus `sed`, used by two one-line
+source patches during build). No Arduino toolchain needed.
 
 ```bash
 make
@@ -73,8 +80,7 @@ stdio.
 ## Run
 
 ```bash
-./build/emulator         # reads layout.txt, waits for commands on stdin
-./build/emulator mylayout.txt
+./build/emulator         # waits for commands on stdin
 ```
 
 Then type DCC-EX commands, e.g.:
@@ -86,6 +92,8 @@ Then type DCC-EX commands, e.g.:
 <s>                 status / system info
 <z -22>             pull pin 22 low: sensor 20 reports <Q 20> (occupied)
 <z 22>              release pin 22: sensor 20 reports <q 20> (clear)
+<JA>                list EXRAIL routes and automations (<jA 101 102 ...>)
+</ START 102>       run route 102, Passing loop: throws turnouts 1 and 2
 <0>                 track power OFF
 ```
 
@@ -117,18 +125,21 @@ WSPORT=4445 pnpm run emulator
 Try it from any WebSocket client; connect, then send a command and read the
 reply, e.g. `<s>` answers with the `<iDCC-EX ...>` banner plus power state.
 
-## Layout (layout.txt)
+## Layout (mySetup.h and myAutomation.h)
 
-One DCC-EX command per line. The file is read from disk at boot and every line
-is replayed through the real parser, exactly like a physical command station's
-setup commands. Replies to setup commands are not echoed to any client — the
-real command station does not echo its own setup either. Changes need no
-rebuild; restart the emulator to apply them.
+Both files are the firmware's own, used exactly as on a physical command
+station:
 
-`layout.local.txt` is your personal overlay: it is gitignored, run after the
-default layout on every boot, and is the intended place for your own test
-turnouts, outputs, and sensors — so your local setup never shows up in a
-commit.
+- `mySetup.h` holds startup commands, one `SETUP("<...>");` per line (see
+  [Startup Configuration](https://dcc-ex.com/ex-commandstation/advanced-setup/startup-config.html)).
+  They run through the real parser at boot. Their replies are not sent to any
+  client, as a real command station does not echo its own setup either.
+- `myAutomation.h` is the EXRAIL script. Having the file is what turns EXRAIL
+  on.
+
+Both are compiled in. After an edit, run `make` (or restart
+`pnpm run emulator`, which runs it): it rebuilds whatever the change touches,
+because the compiler records every header each file reads in `build/*.d`.
 
 ## Config (config.h)
 
@@ -142,7 +153,8 @@ no-hardware hooks). The default config:
 ## Files are the building blocks
 
 For people extending this — the host files under `emulator/` (`Arduino.h`,
-`wiring_private.h`, `config.h`, `host.cpp`, `main.cpp`), the bridge and
-`layout.txt` are the entire footprint; the large `CommandStation-EX/` tree in
-the build is upstream firmware fetched as a git submodule. Keep it that way:
+`wiring_private.h`, `config.h`, `host.cpp`, `main.cpp`), the bridge,
+`mySetup.h` and `myAutomation.h` are the entire footprint; the large
+`CommandStation-EX/` tree in the build is upstream firmware fetched as a git
+submodule. Keep it that way:
 patch from the shim side via the Makefile, never edit inside the submodule.

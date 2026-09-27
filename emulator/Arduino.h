@@ -53,6 +53,13 @@ typedef bool boolean;
 
 #define lowByte(x) ((byte)((x) & 0xFF))
 #define highByte(x) ((byte)(((x) >> 8) & 0xFF))
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+
+// Arduino's own map(): EXRAIL pulls in every IO driver header, and the servo
+// driver uses it.
+inline long map(long x, long inMin, long inMax, long outMin, long outMax) {
+  return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
 
 #define strcpy_P strcpy
 #define strcmp_P strcmp
@@ -123,6 +130,9 @@ public:
   virtual int peek() = 0;
 };
 
+// Arduino's value for 8 data bits, no parity, 1 stop bit.
+#define SERIAL_8N1 0x06
+
 /*
  * Host serial: stdin carries inbound `<...>` commands, stdout carries
  * everything the CS emits (diagnostics and protocol replies - the real CS
@@ -132,7 +142,9 @@ public:
 class HardwareSerial : public Stream {
 public:
   HardwareSerial(int inFile = 0, int outFile = 1) : in(inFile), out(outFile) {}
-  void begin(long) {}
+  // The frame format is ignored: stdin/stdout have none.
+  void begin(long, int = SERIAL_8N1) {}
+  using Print::write;
   operator bool() { return true; }
 
   int available() override {

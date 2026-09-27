@@ -114,6 +114,60 @@ describe('response catalog', () => {
     expect(pick(describeResponse(frame))).toEqual(expected);
   });
 
+  it('describes route details', () => {
+    expect(describeResponse('<jA 101 R "Main line">')).toMatchObject({
+      summary: 'Route details',
+      parameters: [
+        { name: 'Route id', value: '101' },
+        { name: 'Type', value: 'R', meaning: expect.stringContaining('A route') },
+        { name: 'Description', value: 'Main line' },
+      ],
+    });
+  });
+
+  it('describes a route state broadcast', () => {
+    expect(describeResponse('<jB 201 1>')).toMatchObject({
+      summary: 'Route state',
+      parameters: [
+        { name: 'Route id', value: '201' },
+        { name: 'State', value: '1', meaning: expect.stringContaining('Active') },
+      ],
+    });
+  });
+
+  it('describes a new DCC queue slot diagnostic', () => {
+    expect(
+      describeResponse('<* New DCC queue slot type=7 length=2 loco=0 q1=0 q2=5 created=5 *>'),
+    ).toMatchObject({
+      summary: 'New DCC queue slot',
+      parameters: [
+        { name: 'Type', value: '7', meaning: expect.stringContaining('Accessory switched on') },
+        { name: 'Length', value: '2' },
+        { name: 'Loco', value: '0', meaning: 'Not for one loco.' },
+        { name: 'High-priority queue', value: '0' },
+        { name: 'Low-priority queue', value: '5' },
+        { name: 'Slots made', value: '5' },
+      ],
+    });
+  });
+
+  it.each<{ frame: string; what: string; pick: (response: ReturnType<typeof describeResponse>) => unknown; expected: unknown }>([
+    { frame: '<jA 101 102 201>', what: 'a route list', pick: r => r?.parameters[0]?.value, expected: '101 102 201' },
+    { frame: '<jA>', what: 'an empty route list', pick: r => r?.parameters[0]?.value, expected: '(none)' },
+    { frame: '<jA 201 A "Stop at Platform 1">', what: 'an automation', pick: r => r?.parameters[1]?.meaning, expected: expect.stringContaining('An automation') },
+    { frame: '<jA 999 X "">', what: 'a route that is not there', pick: r => r?.summary, expected: 'Route not available' },
+    { frame: '<jB 201 0>', what: 'an inactive route', pick: r => r?.parameters[1]?.meaning, expected: expect.stringContaining('Inactive') },
+    { frame: '<jB 201 2>', what: 'a hidden route', pick: r => r?.parameters[1]?.meaning, expected: expect.stringContaining('Hidden') },
+    { frame: '<jB 201 4>', what: 'a disabled route', pick: r => r?.parameters[1]?.meaning, expected: expect.stringContaining('Disabled') },
+    { frame: '<jB 201 3>', what: 'a route state it does not know', pick: r => r?.parameters[1]?.meaning, expected: expect.stringContaining('does not know') },
+    { frame: '<jB 201 "Running">', what: 'a route caption', pick: r => r?.parameters[1], expected: expect.objectContaining({ name: 'Caption', value: 'Running' }) },
+    { frame: '<* New DCC queue slot type=6 length=3 loco=3 q1=0 q2=7 created=7 *>', what: 'a queued loco packet', pick: r => r?.parameters[2]?.meaning, expected: 'DCC address the packet is for.' },
+    { frame: '<* New DCC queue slot type=12 length=2 loco=0 q1=0 q2=0 created=0 *>', what: 'a packet type it does not know', pick: r => r?.parameters[0]?.meaning, expected: expect.stringContaining('does not know') },
+    { frame: '<* License GPLv3 fsf.org (c) dcc-ex.com *>', what: 'any other diagnostic', pick: r => r?.parameters[0]?.value, expected: 'License GPLv3 fsf.org (c) dcc-ex.com' },
+  ])('explains $what in $frame', ({ frame, pick, expected }) => {
+    expect(pick(describeResponse(frame))).toEqual(expected);
+  });
+
   it('leaves unlisted frames to the caller', () => {
     expect(describeResponse('<unlisted response>')).toBeUndefined();
   });

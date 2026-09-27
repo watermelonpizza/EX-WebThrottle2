@@ -31,9 +31,6 @@ AGENTS.local.md
 # CommandStation host emulator build artifacts
 /emulator/build/
 
-# Personal per-developer layout overlay (never commit)
-/emulator/layout.local.txt
-
 # TypeScript incremental build info
 *.tsbuildinfo
 

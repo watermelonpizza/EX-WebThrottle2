@@ -23,6 +23,29 @@ function parameter(
   return { name, value, meaning };
 }
 
+// Route button states EXRAIL sends in <jB id state>, from manageRouteState in
+// CommandStation-EX EXRAIL2.cpp. 3 is not used.
+const ROUTE_STATES: Record<string, string> = {
+  0: 'Inactive: shown as normal.',
+  1: 'Active: throttles show it as set or running.',
+  2: 'Hidden: throttles leave the button out.',
+  4: 'Disabled: shown, but cannot be started.',
+};
+
+// DCC packet kinds, in the order of PendingType in CommandStation-EX DCCQueue.h.
+const PACKET_TYPES = [
+  'Other packet, such as an accessory or a CV write on the main track.',
+  'Loco functions, group 1.',
+  'Loco functions, group 2.',
+  'Loco functions, group 3.',
+  'Loco functions, group 4.',
+  'Loco functions, group 5.',
+  'Loco speed or emergency stop.',
+  'Accessory switched on, then off again after a short delay.',
+  'Accessory switched off.',
+  'Unused slot.',
+];
+
 const CATALOG: ResponseDefinition[] = [
   {
     pattern: '<iDCC-EX version / processor / motor driver / build>',
@@ -253,7 +276,7 @@ const CATALOG: ResponseDefinition[] = [
               parameter(
                 'Description',
                 match[3],
-                'Optional EX-RAIL label for the turnout.',
+                'Optional EXRAIL label for the turnout.',
               ),
             ]
           : []),
@@ -276,6 +299,103 @@ const CATALOG: ResponseDefinition[] = [
             ),
           ]
         : undefined;
+    },
+  },
+  {
+    pattern: '<jA route-id ...>',
+    summary: 'Route list',
+    detail:
+      'Lists the routes and automations EXRAIL has, usually in response to <JA>. Empty without EXRAIL.',
+    match(frame) {
+      const match = /^<jA(?:\s+([\d\s]+))?>$/.exec(frame);
+
+      if (!match) {
+        return undefined;
+      }
+
+      return [
+        parameter(
+          'Route ids',
+          match[1]?.trim() || '(none)',
+          'Each number identifies a route or automation.',
+        ),
+      ];
+    },
+  },
+  {
+    pattern: '<jA route-id R|A "description">',
+    summary: 'Route details',
+    detail: 'Describes one route or automation, usually in response to <JA id>.',
+    match(frame) {
+      const match = /^<jA\s+(\d+)\s+([RA])\s+"(.*)">$/.exec(frame);
+
+      if (!match) {
+        return undefined;
+      }
+
+      return [
+        parameter('Route id', match[1], 'Identifier assigned to the route.'),
+        parameter(
+          'Type',
+          match[2],
+          match[2] === 'R'
+            ? 'A route: it sets turnouts/points for a driver.'
+            : 'An automation: it drives the loco it is started with.',
+        ),
+        parameter('Description', match[3], 'The name EXRAIL gives it.'),
+      ];
+    },
+  },
+  {
+    pattern: '<jA route-id X "">',
+    summary: 'Route not available',
+    detail: 'EXRAIL has no route or automation with the requested id.',
+    match(frame) {
+      const match = /^<jA\s+(\d+)\s+X(?:\s+"")?>$/.exec(frame);
+
+      return match
+        ? [parameter('Route id', match[1], 'The id that could not be found.')]
+        : undefined;
+    },
+  },
+  {
+    pattern: '<jB route-id state>',
+    summary: 'Route state',
+    detail:
+      'EXRAIL changed how throttles should show a route button. It is sent to every throttle.',
+    match(frame) {
+      const match = /^<jB\s+(\d+)\s+(\d+)>$/.exec(frame);
+
+      if (!match) {
+        return undefined;
+      }
+
+      return [
+        parameter('Route id', match[1], 'Identifier assigned to the route.'),
+        parameter(
+          'State',
+          match[2],
+          ROUTE_STATES[match[2]] ?? 'A state WebThrottle does not know.',
+        ),
+      ];
+    },
+  },
+  {
+    pattern: '<jB route-id "caption">',
+    summary: 'Route caption',
+    detail:
+      'EXRAIL changed the text on a route button. It is sent to every throttle.',
+    match(frame) {
+      const match = /^<jB\s+(\d+)\s+"(.*)">$/.exec(frame);
+
+      if (!match) {
+        return undefined;
+      }
+
+      return [
+        parameter('Route id', match[1], 'Identifier assigned to the route.'),
+        parameter('Caption', match[2], 'Text to show on the button.'),
+      ];
     },
   },
   {
@@ -422,6 +542,62 @@ const CATALOG: ResponseDefinition[] = [
                 : 'The layout is running.',
             ),
           ]
+        : undefined;
+    },
+  },
+  {
+    pattern: '<* New DCC queue slot type= length= loco= q1= q2= created= *>',
+    summary: 'New DCC queue slot',
+    detail:
+      'A diagnostic, not a reply: the station made a new slot to queue a DCC packet for the track. Slots are reused once their packet is sent, so this normally shows only a few times after start-up. The host emulator sends nothing to a track, so it shows this for every packet.',
+    match(frame) {
+      const match
+        = /^<\*\s*New DCC queue slot type=(\d+) length=(\d+) loco=(\d+) q1=(\d+) q2=(\d+) created=(\d+)\s*\*>$/.exec(
+          frame,
+        );
+
+      if (!match) {
+        return undefined;
+      }
+
+      return [
+        parameter(
+          'Type',
+          match[1],
+          PACKET_TYPES[Number(match[1])] ?? 'A packet type WebThrottle does not know.',
+        ),
+        parameter('Length', match[2], 'Bytes in the DCC packet.'),
+        parameter(
+          'Loco',
+          match[3],
+          match[3] === '0'
+            ? 'Not for one loco.'
+            : 'DCC address the packet is for.',
+        ),
+        parameter(
+          'High-priority queue',
+          match[4],
+          'Packets already waiting there: speeds and stops.',
+        ),
+        parameter(
+          'Low-priority queue',
+          match[5],
+          'Packets already waiting there: functions, accessories and others.',
+        ),
+        parameter('Slots made', match[6], 'Slots made before this one.'),
+      ];
+    },
+  },
+  {
+    pattern: '<* text *>',
+    summary: 'Diagnostic message',
+    detail:
+      'Text the station writes for people reading its log. Throttles do not act on it.',
+    match(frame) {
+      const match = /^<\*\s*([\s\S]*?)\s*\*>$/.exec(frame);
+
+      return match
+        ? [parameter('Text', match[1], 'What the station wrote.')]
         : undefined;
     },
   },

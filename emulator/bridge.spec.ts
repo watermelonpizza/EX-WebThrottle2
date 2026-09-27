@@ -109,7 +109,7 @@ describe('emulator binary', () => {
     expect(out).toContain('HOST');
   });
 
-  // layout.txt puts sensor 20 on pin 22; pulling that pin low is what a
+  // mySetup.h puts sensor 20 on pin 22; pulling that pin low is what a
   // detector does, and the firmware's own sensor polling reports it.
   test('reports a sensor when its pin is pulled low, and clear when released', async () => {
     const active = waitForOutput(emulator, /<Q 20>/);
@@ -121,6 +121,43 @@ describe('emulator binary', () => {
 
     ask(emulator, '<z 22>');
     await expect(clear).resolves.toMatch(/<q 20>/);
+  });
+
+  // myAutomation.h turns EXRAIL on, with five routes and one automation.
+  test('lists the EXRAIL routes and automation', async () => {
+    const listed = waitForOutput(emulator, /<jA 101 102 103 104 105 201>/);
+
+    ask(emulator, '<JA>');
+    await expect(listed).resolves.toMatch(/<jA 101 102 103 104 105 201>/);
+  });
+
+  test('describes a route', async () => {
+    const described = waitForOutput(emulator, /<jA 101 R "Main line">/);
+
+    ask(emulator, '<JA 101>');
+    await expect(described).resolves.toMatch(/<jA 101 R "Main line">/);
+  });
+
+  // Turnouts start thrown, so each point the Main line route closes reports.
+  test('sets the points when a route runs', async () => {
+    const set = waitForOutput(emulator, /<H 2 0>/);
+
+    ask(emulator, '</ START 101>');
+    await expect(set).resolves.toMatch(/<H 1 0>[\s\S]*<H 3 0>[\s\S]*<H 2 0>/);
+  });
+
+  // The automation drives loco 3 until pin 22 (sensor 20, Platform 1) goes
+  // low, and shows itself active on throttles while it runs.
+  test('shows an automation active while it runs, and inactive once it stops', async () => {
+    const running = waitForOutput(emulator, /<jB 201 1>/);
+
+    ask(emulator, '</ START 3 201>');
+    await expect(running).resolves.toMatch(/<jB 201 1>/);
+
+    const stopped = waitForOutput(emulator, /<jB 201 0>/);
+
+    ask(emulator, '<z -22>');
+    await expect(stopped).resolves.toMatch(/<jB 201 0>/);
   });
 });
 

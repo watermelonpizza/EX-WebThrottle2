@@ -15,13 +15,11 @@ import { WebSocket, WebSocketServer } from 'ws';
 // Overridable local port; the browser side connects here.
 const PORT = Number(process.env.WSPORT ?? 4444);
 
-// Paths resolve from this file so the script runs from any CWD; the binary
-// itself reads layout.txt/layout.local.txt relative to the emulator dir.
+// Paths resolve from this file so the script runs from any CWD.
 const emulatorDir = dirname(fileURLToPath(import.meta.url));
 const binary = join(emulatorDir, 'build', 'emulator');
 
 const emulator = spawn(binary, [], {
-  cwd: emulatorDir,
   stdio: ['pipe', 'pipe', 'pipe'],
 });
 

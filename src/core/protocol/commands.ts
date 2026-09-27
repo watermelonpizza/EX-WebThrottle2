@@ -536,22 +536,22 @@ const GROUPS: CommandGroup[] = [
       {
         pattern: '<JA>',
         summary: 'List routes and automations',
-        detail: 'empty unless the station runs EX-RAIL',
+        detail: 'empty unless the station runs EXRAIL',
       },
       {
         pattern: '<JA id>',
         summary: 'Report a route\'s type and description',
-        needs: 'EX-RAIL',
+        needs: 'EXRAIL',
       },
       {
         pattern: '<JR>',
         summary: 'List roster ids',
-        detail: 'empty unless the station runs EX-RAIL',
+        detail: 'empty unless the station runs EXRAIL',
       },
       {
         pattern: '<JR id>',
         summary: 'Report a roster loco\'s name and function names',
-        needs: 'EX-RAIL',
+        needs: 'EXRAIL',
       },
       { pattern: '<JC>', summary: 'Report the fast clock time' },
       {
@@ -571,10 +571,10 @@ const GROUPS: CommandGroup[] = [
     ],
   },
   {
-    title: 'EX-RAIL',
-    needs: 'EX-RAIL',
+    title: 'EXRAIL',
+    needs: 'EXRAIL',
     commands: [
-      { pattern: '</>', summary: 'Show EX-RAIL task status' },
+      { pattern: '</>', summary: 'Show EXRAIL task status' },
       {
         pattern: '</ PAUSE>',
         summary: 'Pause every task and stop every loco',
@@ -604,11 +604,13 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '</ LATCH sensor>',
-        summary: 'Latch a sensor on',
+        summary: 'Hold a sensor on for EXRAIL',
+        detail: 'sensor: the pin EXRAIL reads in AT and IF · only EXRAIL sees it: <Q> and <q> still report the pin',
       },
       {
         pattern: '</ UNLATCH sensor>',
-        summary: 'Release a latched sensor',
+        summary: 'Release a sensor held on for EXRAIL',
+        detail: 'sensor: the pin that was latched',
       },
       {
         pattern: '</ RED signal>',
@@ -624,21 +626,21 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<K block loco>',
-        summary: 'Tell EX-RAIL a loco has entered a block',
+        summary: 'Tell EXRAIL a loco has entered a block',
       },
       {
         pattern: '<k block loco>',
-        summary: 'Tell EX-RAIL a loco has left a block',
+        summary: 'Tell EXRAIL a loco has left a block',
       },
       {
         pattern: '<L>',
         summary: 'Introduce an LCC or CBUS adapter to the station',
-        needs: 'EX-RAIL with LCC',
+        needs: 'EXRAIL with LCC',
       },
       {
         pattern: '<L event>',
-        summary: 'Pass an incoming LCC event to EX-RAIL',
-        needs: 'EX-RAIL with LCC',
+        summary: 'Pass an incoming LCC event to EXRAIL',
+        needs: 'EXRAIL with LCC',
       },
     ],
   },
@@ -970,13 +972,13 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<D EXRAIL ON>',
-        summary: 'Log EX-RAIL activity',
-        needs: 'EX-RAIL',
+        summary: 'Log EXRAIL activity',
+        needs: 'EXRAIL',
       },
       {
         pattern: '<D EXRAIL OFF>',
-        summary: 'Stop logging EX-RAIL activity',
-        needs: 'EX-RAIL',
+        summary: 'Stop logging EXRAIL activity',
+        needs: 'EXRAIL',
       },
       {
         pattern: '<D EEPROM entries>',
