@@ -9,6 +9,8 @@ export type PanelKind =
   | 'points'
   | 'outputs'
   | 'sensors'
+  | 'routes'
+  | 'automations'
   | 'events'
   | 'throttles'
   | 'traffic'

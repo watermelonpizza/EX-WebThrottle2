@@ -9,6 +9,7 @@ import { useEventsStore } from '@/stores/events';
 import { useInventoryStore } from '@/stores/inventory';
 import { useLocosStore } from '@/stores/locos';
 import { usePowerStore } from '@/stores/power';
+import { useRoutesStore } from '@/stores/routes';
 
 // A fresh store set, a router on the given path, and a station that is
 // already connected; tests script what the station says next.
@@ -29,6 +30,7 @@ export async function connectedApp(path = '/') {
   useLocosStore();
   usePowerStore();
   useEventsStore();
+  useRoutesStore();
 
   await useConnectionStore().connect(station);
   await flushPromises();

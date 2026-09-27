@@ -73,7 +73,8 @@ src/core/workspace    pure panel layout tree and the role presets
 src/core/logging      console warn/error, tagged with dotted event identifiers
 src/stores            Pinia stores, the only view-facing state: connection (lifecycle,
                       decode routing, raw traffic log), power, locos, maps, inventory,
-                      events, diagram, workspace, settings; saved.ts reads localStorage
+                      routes, events, diagram, workspace, settings; saved.ts reads
+                      localStorage
 src/composables       small Vue helpers (the clock)
 src/components        shell/ (top bar, safety strip, connect screen), workspace/ (panel
                       layout), panels/, schematic/, throttle/, settings/

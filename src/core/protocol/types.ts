@@ -17,6 +17,21 @@ export enum TurnoutState {
   THROWN = 1,
 }
 
+// How EXRAIL lists an entry in <jA id R|A "description">.
+export enum RouteType {
+  ROUTE = 'R',
+  AUTOMATION = 'A',
+}
+
+// How throttles should show a route's button, as EXRAIL broadcasts it in
+// <jB id state> (manageRouteState in CommandStation-EX EXRAIL2.cpp).
+export enum RouteState {
+  INACTIVE = 0,
+  ACTIVE = 1,
+  HIDDEN = 2,
+  DISABLED = 4,
+}
+
 export interface SystemInfo {
   version: string;
   microprocessor: string;
@@ -51,6 +66,10 @@ export type ProtocolMessage =
   | { kind: 'turnout'; id: number; state: TurnoutState }
   | { kind: 'turnout-list'; ids: number[] }
   | { kind: 'turnout-detail'; id: number; state: TurnoutState; label: string }
+  | { kind: 'route-list'; ids: number[] }
+  | { kind: 'route-detail'; id: number; type: RouteType; label: string }
+  | { kind: 'route-state'; id: number; state: RouteState }
+  | { kind: 'route-caption'; id: number; caption: string }
   | { kind: 'output'; id: number; active: boolean }
   | { kind: 'sensor'; id: number; active: boolean }
   | { kind: 'ignored' };

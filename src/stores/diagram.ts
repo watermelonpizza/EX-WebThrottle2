@@ -21,7 +21,7 @@ function isPlacements(saved: unknown): saved is Placements {
 // The drawing of the layout, when there is one. The Command Station does not
 // know its own track plan, so a diagram comes from outside it: the bundled
 // sample for the host emulator today, a diagram editor saving to the browser
-// and the Hub later. With no diagram, panels fall back to route tiles.
+// and the Hub later. With no diagram, panels fall back to a list of points and sensors.
 export const useDiagramStore = defineStore('diagram', () => {
   const connection = useConnectionStore();
   const placements = ref(loadSaved(BERTHS_KEY, {}, isPlacements));

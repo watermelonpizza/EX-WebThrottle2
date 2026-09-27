@@ -5,10 +5,19 @@ import EventsPanel from '@/components/panels/EventsPanel.vue';
 import { useEventsStore } from '@/stores/events';
 import { useLocosStore } from '@/stores/locos';
 import { usePowerStore } from '@/stores/power';
+import { useRoutesStore } from '@/stores/routes';
 
 const events = useEventsStore();
 const locos = useLocosStore();
 const power = usePowerStore();
+const routes = useRoutesStore();
+
+// EXRAIL is paused first, so no automation sets a train going again and
+// EXRAIL notes the speeds to resume with; then every loco stops.
+function stopAll(): void {
+  routes.pauseAll();
+  locos.stopAll();
+}
 
 const newest = computed(() => events.events[0]?.text ?? '');
 
@@ -44,7 +53,7 @@ function onLogToggle(event: Event): void {
       type="button"
       class="safety__stop-all"
       data-testid="stop-all"
-      @click="locos.stopAll()"
+      @click="stopAll()"
     >
       STOP ALL
     </button>

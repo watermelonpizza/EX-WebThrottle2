@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DiagramKey from '@/components/schematic/DiagramKey.vue';
-import RouteList from '@/components/schematic/RouteList.vue';
+import PointsAndSensors from '@/components/schematic/PointsAndSensors.vue';
 import SchematicDiagram from '@/components/schematic/SchematicDiagram.vue';
 import { useDiagramStore } from '@/stores/diagram';
 
@@ -25,10 +25,10 @@ const diagrams = useDiagramStore();
         </div>
       </div>
       <!-- Too narrow to operate a drawing: the same turnouts as rows, each
-           still drawing its own route. -->
-      <RouteList class="schematic-panel__tiles" />
+           still drawing which way it is set. -->
+      <PointsAndSensors class="schematic-panel__tiles" />
     </template>
-    <RouteList v-else />
+    <PointsAndSensors v-else />
   </div>
 </template>
 

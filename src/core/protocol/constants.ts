@@ -35,6 +35,19 @@ export const OPCODE_INFO_REQUEST = 'J';
 export const OPCODE_INFO = 'j';
 export const INFO_TURNOUTS = 'T';
 
+// EXRAIL routes and automations are listed with <JA>. Their button states and
+// captions are broadcast as <jB …>, which has no matching question.
+export const INFO_ROUTES = 'A';
+export const INFO_ROUTE_STATE = 'B';
+
+// EXRAIL commands start with a slash: </ START id> sets a route going, and
+// </ START loco id> sends a loco off on an automation. </ PAUSE> freezes every
+// task and stops every loco; </ RESUME> sets them going again.
+export const OPCODE_EXRAIL = '/';
+export const EXRAIL_START = 'START';
+export const EXRAIL_PAUSE = 'PAUSE';
+export const EXRAIL_RESUME = 'RESUME';
+
 // Outputs: <Z> lists them, <Z id 1|0> switches one, and both answer with <Y …>.
 export const OPCODE_OUTPUT_SET = 'Z';
 export const OPCODE_OUTPUT = 'Y';

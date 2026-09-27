@@ -1,4 +1,10 @@
-export { Direction, PowerState, TurnoutState } from './types';
+export {
+  Direction,
+  PowerState,
+  RouteState,
+  RouteType,
+  TurnoutState,
+} from './types';
 export type {
   ProtocolMessage,
   SystemInfo,
@@ -24,6 +30,12 @@ export {
   requestOutputList,
   setOutput,
   requestSensorStates,
+  requestRouteList,
+  requestRoute,
+  startRoute,
+  startAutomation,
+  pauseTasks,
+  resumeTasks,
 } from './encode';
 export { decodeFrame } from './decode';
 export { decodeSpeedByte } from './speed';

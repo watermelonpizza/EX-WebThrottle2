@@ -251,9 +251,9 @@ The base control is `.key`: a flat, thin-edged key with one height.
 - **Role tabs:** text-only, Ink-muted, centred in the top bar; the active tab is full Ink with an inset teal underline (`inset 0 calc(-1 * var(--line)) 0 var(--accent)`) and `aria-current="page"`. On narrow screens they take a full-width scrollable row.
 - **Menus / popovers:** the shared `.popup` — Raised surface, `--edge` border, `4px` radius, the popup-float shadow, anchored to their trigger with CSS anchor positioning and a fixed-position fallback. Menu items are `--target`-tall rows that highlight to Raised-hover on hover.
 
-### List row (points / outputs / sensors) — signature
+### List row (points / outputs / sensors / routes / automations) — signature
 
-One compact grammar shared across the three list panels: a small self-drawing SVG state glyph, a tabular number, an ellipsised name, and the state as a word. The turnout row draws its own route — the set leg lit (Track-set), the other dimmed (Track-unset) with a break at the switch — and re-draws with a changeover flash when it moves. Full-width button, `--rule` bottom border, hover to Raised.
+One compact grammar shared across the list panels: a small self-drawing SVG state glyph, a tabular number, an ellipsised name, and the state as a word. The turnout row draws its own route — the set leg lit (Track-set), the other dimmed (Track-unset) with a break at the switch — and re-draws with a changeover flash when it moves. A route row draws a way through the points, lit Track-set when EXRAIL marks it active; an automation row draws a train on the move, lit teal while active. Idle, their word is what a press does (`Set`, `Start`); otherwise it is the state (`Active`, `Disabled`, or `Paused` after STOP ALL, with Resume beside the Automations title). An automation needs a loco from one of the operator's desks, picked beside the panel title. Full-width button, `--rule` bottom border, hover to Raised.
 
 ### Loco desk — signature
 

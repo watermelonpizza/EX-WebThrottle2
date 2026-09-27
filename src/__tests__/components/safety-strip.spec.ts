@@ -28,6 +28,14 @@ describe('safety strip', () => {
     expect(app.station.sent.at(-1)).toBe('<!>');
   });
 
+  // Pausing first means no automation sets a train going again, and EXRAIL
+  // notes the speeds to resume with before the stop takes them away.
+  it('pauses every EXRAIL task just before stopping the locos', async () => {
+    await wrapper.get('[data-testid="stop-all"]').trigger('click');
+
+    expect(app.station.sent.slice(-2)).toEqual(['</ PAUSE>', '<!>']);
+  });
+
   describe('with track A reported off', () => {
     function trackA(): ReturnType<VueWrapper['get']> {
       return wrapper.get('[data-testid="track-power-A"]');

@@ -1,7 +1,13 @@
 import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PowerState, TurnoutState, decodeFrame } from '../index';
+import {
+  PowerState,
+  RouteState,
+  RouteType,
+  TurnoutState,
+  decodeFrame,
+} from '../index';
 import { extractFrames } from '../../transport';
 
 const CAB_TABLE = '<* LocoSlots 2/120 size=56b\n Loco=14    s=23  f=0 t=23  mA=255 mD=255\n'
@@ -43,6 +49,21 @@ describe('decodeFrame', () => {
     },
     { frame: '<Y 10 1>', what: 'an output change', message: { kind: 'output', id: 10, active: true } },
     { frame: '<Y 11 101 0 0>', what: 'an output listing', message: { kind: 'output', id: 11, active: false } },
+    { frame: '<jA 101 102 201>', what: 'a list of routes and automations', message: { kind: 'route-list', ids: [101, 102, 201] } },
+    { frame: '<jA>', what: 'an empty route list, as without EXRAIL', message: { kind: 'route-list', ids: [] } },
+    {
+      frame: '<jA 101 R "Main line">',
+      what: 'a route and its description',
+      message: { kind: 'route-detail', id: 101, type: RouteType.ROUTE, label: 'Main line' },
+    },
+    {
+      frame: '<jA 201 A "Stop at Platform 1">',
+      what: 'an automation and its description',
+      message: { kind: 'route-detail', id: 201, type: RouteType.AUTOMATION, label: 'Stop at Platform 1' },
+    },
+    { frame: '<jB 201 1>', what: 'a route shown as active', message: { kind: 'route-state', id: 201, state: RouteState.ACTIVE } },
+    { frame: '<jB 201 4>', what: 'a route shown as disabled', message: { kind: 'route-state', id: 201, state: RouteState.DISABLED } },
+    { frame: '<jB 201 "Running">', what: 'a new caption for a route', message: { kind: 'route-caption', id: 201, caption: 'Running' } },
     { frame: '<Q 20>', what: 'an active sensor, from the capital letter', message: { kind: 'sensor', id: 20, active: true } },
     { frame: '<q 20>', what: 'a clear sensor, from the small letter', message: { kind: 'sensor', id: 20, active: false } },
   ])('decodes $frame as $what', ({ frame, message }) => {
@@ -53,6 +74,9 @@ describe('decodeFrame', () => {
     { frame: '<>', why: 'it is empty' },
     { frame: '<* Default momentum=0/0 *>', why: 'it is a diagnostic reply other than the loco table' },
     { frame: '<jT 9 X>', why: 'it is the station refusing to report a turnout id' },
+    { frame: '<jA 999 X "">', why: 'it is EXRAIL saying it has no such route' },
+    { frame: '<jB 201 3>', why: 'it is a route state the app does not know' },
+    { frame: '<jB x>', why: 'it is neither a route state nor a caption' },
     { frame: '<H 1 DCC 10 0>', why: 'it is a turnout definition rather than a state' },
     { frame: '<Q 20 200 1>', why: 'it is a sensor definition, which the app does not model' },
     { frame: '<X>', why: 'the app does not act on it' },

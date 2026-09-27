@@ -10,14 +10,14 @@ const diagrams = useDiagramStore();
 
 <template>
   <div
-    class="route-list"
-    data-testid="route-tiles"
+    class="points-sensors"
+    data-testid="points-sensors"
   >
-    <header class="route-list__head">
-      <h2 class="route-list__title">
+    <header class="points-sensors__head">
+      <h2 class="points-sensors__title">
         Points and sensors
       </h2>
-      <p class="route-list__lead">
+      <p class="points-sensors__lead">
         From your Command Station · {{ inventory.turnouts.length }}
         {{ inventory.turnouts.length === 1 ? 'turnout' : 'turnouts' }},
         {{ inventory.sensors.length }}
@@ -27,7 +27,7 @@ const diagrams = useDiagramStore();
 
     <p
       v-if="inventory.turnouts.length === 0"
-      class="route-list__muted"
+      class="points-sensors__muted"
     >
       Your Command Station has not reported any turnouts/points. Once they are
       set up on it, they appear here.
@@ -35,7 +35,7 @@ const diagrams = useDiagramStore();
 
     <ul
       v-else
-      class="row-list route-list__rows"
+      class="row-list points-sensors__rows"
     >
       <li
         v-for="turnout in inventory.turnouts"
@@ -51,7 +51,7 @@ const diagrams = useDiagramStore();
 
     <ul
       v-if="inventory.sensors.length > 0"
-      class="row-list route-list__rows"
+      class="row-list points-sensors__rows"
     >
       <li
         v-for="sensor in inventory.sensors"
@@ -65,17 +65,17 @@ const diagrams = useDiagramStore();
       </li>
     </ul>
 
-    <p class="route-list__muted">
-      A layout diagram editor is on the way. Until then, each turnout draws its
-      own route here.
+    <p class="points-sensors__muted">
+      A layout diagram editor is on the way. Until then, each turnout here
+      draws which way it is set.
     </p>
   </div>
 </template>
 
 <style scoped>
 /* Stands in for the diagram where there is none, or no room for one: the
-   same turnouts and sensors as rows, each turnout drawing its own route. */
-.route-list {
+   same turnouts and sensors as rows, each turnout drawing which way it is set. */
+.points-sensors {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -85,17 +85,17 @@ const diagrams = useDiagramStore();
   overflow: auto;
 }
 
-.route-list__title {
+.points-sensors__title {
   font-size: var(--text-md);
 }
 
-.route-list__lead,
-.route-list__muted {
+.points-sensors__lead,
+.points-sensors__muted {
   color: var(--ink-muted);
 }
 
 /* The whole list scrolls here, so the rows are never held to a height. */
-.route-list__rows {
+.points-sensors__rows {
   flex: none;
   max-block-size: none;
   column-gap: var(--space-5);

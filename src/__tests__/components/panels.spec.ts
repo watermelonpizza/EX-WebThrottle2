@@ -3,15 +3,18 @@ import { flushPromises, mount } from '@vue/test-utils';
 import type { Component } from 'vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import AutomationsPanel from '@/components/panels/AutomationsPanel.vue';
 import CommandsPanel from '@/components/panels/CommandsPanel.vue';
 import OutputsPanel from '@/components/panels/OutputsPanel.vue';
 import PointsPanel from '@/components/panels/PointsPanel.vue';
+import RoutesPanel from '@/components/panels/RoutesPanel.vue';
 import SensorsPanel from '@/components/panels/SensorsPanel.vue';
 import ThrottlesPanel from '@/components/panels/ThrottlesPanel.vue';
 import TrafficPanel from '@/components/panels/TrafficPanel.vue';
 import FunctionKeys from '@/components/throttle/FunctionKeys.vue';
 import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import { useLocosStore } from '@/stores/locos';
+import { useRoutesStore } from '@/stores/routes';
 
 import type { ConnectedApp } from './helpers';
 import { connectedApp } from './helpers';
@@ -78,6 +81,153 @@ describe('workspace panels', () => {
         await points.get('[data-testid="turnout-4"]').trigger('click');
 
         expect(app.station.sent).toContain('<T 4 T>');
+      });
+    });
+  });
+
+  describe('route panels', () => {
+    it.each([
+      { name: 'routes', panel: RoutesPanel, empty: 'No routes' },
+      { name: 'automations', panel: AutomationsPanel, empty: 'No automations' },
+    ])('say the $name panel is empty before EXRAIL lists any', ({ panel, empty }) => {
+      expect(mountPanel(panel).text()).toContain(empty);
+    });
+
+    describe('once EXRAIL lists them', () => {
+      beforeEach(async () => {
+        app.station.receives('<jA 101 102 201><jA 101 R "Main line"><jA 102 R "Loop"><jA 201 A "Stop at Platform 1">');
+        await flushPromises();
+      });
+
+      it('show a route by its description', () => {
+        const routes = mountPanel(RoutesPanel);
+
+        expect(routes.get('[data-testid="route-101"]').text()).toContain('Main line');
+      });
+
+      it('offer to set a route', () => {
+        const routes = mountPanel(RoutesPanel);
+
+        expect(routes.get('[data-testid="route-state-101"]').text()).toBe('Set');
+      });
+
+      it('set a route when it is clicked', async () => {
+        const routes = mountPanel(RoutesPanel);
+
+        await routes.get('[data-testid="route-101"]').trigger('click');
+
+        expect(app.station.sent).toContain('</ START 101>');
+      });
+
+      it.each([
+        { frame: '<jB 101 1>', state: 'Active' },
+        { frame: '<jB 101 4>', state: 'Disabled' },
+      ])('show a route as $state after $frame', async ({ frame, state }) => {
+        const routes = mountPanel(RoutesPanel);
+
+        app.station.receives(frame);
+        await flushPromises();
+
+        expect(routes.get('[data-testid="route-state-101"]').text()).toBe(state);
+      });
+
+      it('do not set a disabled route', async () => {
+        const routes = mountPanel(RoutesPanel);
+
+        app.station.receives('<jB 101 4>');
+        await flushPromises();
+
+        expect(routes.get('[data-testid="route-101"]').attributes('disabled')).toBeDefined();
+      });
+
+      describe('while STOP ALL has paused every task', () => {
+        beforeEach(() => {
+          useRoutesStore().pauseAll();
+        });
+
+        it('show a route as paused', () => {
+          const routes = mountPanel(RoutesPanel);
+
+          expect(routes.get('[data-testid="route-state-101"]').text()).toBe('Paused');
+        });
+
+        it('do not set a route while paused', () => {
+          const routes = mountPanel(RoutesPanel);
+
+          expect(routes.get('[data-testid="route-101"]').attributes('disabled')).toBeDefined();
+        });
+
+        it('tell a screen reader why a route cannot be set', () => {
+          const routes = mountPanel(RoutesPanel);
+
+          expect(routes.get('[data-testid="route-101"]').attributes('aria-label')).toContain('paused by STOP ALL');
+        });
+
+        it('say so beside the automations', () => {
+          expect(mountPanel(AutomationsPanel).text()).toContain('Paused by STOP ALL');
+        });
+
+        it('resume every task from the automations panel', async () => {
+          const automations = mountPanel(AutomationsPanel);
+
+          await automations.get('[data-testid="resume-automations"]').trigger('click');
+
+          expect(app.station.sent.at(-1)).toBe('</ RESUME>');
+        });
+      });
+
+      describe('with no loco on a desk', () => {
+        let automations: VueWrapper;
+
+        beforeEach(() => {
+          automations = mountPanel(AutomationsPanel);
+        });
+
+        it('say to drive a loco first', () => {
+          expect(automations.text()).toContain('Drive a loco to start one');
+        });
+
+        it('cannot start an automation', () => {
+          expect(automations.get('[data-testid="automation-201"]').attributes('disabled')).toBeDefined();
+        });
+
+        it('tell a screen reader why', () => {
+          expect(automations.get('[data-testid="automation-201"]').attributes('aria-label')).toContain('Drive a loco to start it');
+        });
+      });
+
+      describe('with locos 3 and 7 on desks', () => {
+        let automations: VueWrapper;
+
+        beforeEach(async () => {
+          useLocosStore().acquireAll([3, 7]);
+          automations = mountPanel(AutomationsPanel);
+          await flushPromises();
+        });
+
+        it('say which loco an automation will drive', () => {
+          expect(automations.get('[data-testid="automation-201"]').attributes('aria-label')).toContain('start it with Loco 3');
+        });
+
+        it('start an automation with the first desk\'s loco', async () => {
+          await automations.get('[data-testid="automation-201"]').trigger('click');
+
+          expect(app.station.sent).toContain('</ START 3 201>');
+        });
+
+        it('start an automation with the loco picked', async () => {
+          await automations.get('[data-testid="automation-loco"]').setValue('7');
+          await automations.get('[data-testid="automation-201"]').trigger('click');
+
+          expect(app.station.sent).toContain('</ START 7 201>');
+        });
+
+        it('show an automation EXRAIL marks active', async () => {
+          app.station.receives('<jB 201 1>');
+          await flushPromises();
+
+          expect(automations.get('[data-testid="automation-state-201"]').text()).toBe('Active');
+        });
       });
     });
   });

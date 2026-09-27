@@ -12,18 +12,19 @@ It is the next generation of the original [WebThrottle-EX](https://dcc-ex.com/We
 ## What you can do
 
 - Drive your locos: speed, direction, stop, emergency stop, and functions F0–F31
-- Stop every loco at once with **STOP ALL**, which is on every screen
+- Stop every loco at once with **STOP ALL**, which is on every screen. It pauses your Command Station's EXRAIL automations too, until you resume them
 - Save your locos, name their functions, and set each one as latching or momentary
 - Throw and close turnouts/points
 - Switch outputs on and off
 - Watch sensors change live
+- Set routes and start automations from your Command Station's EXRAIL script; an automation drives a loco you are driving
 - Turn power on and off for every track at once, or one track at a time
 - See what just changed on the layout, including changes made by other Throttles
 - Pick the console for your job: Drive, Points, Control or Diagnostics. Each one has its own link, so you can hand an operator the page they need
 - Choose a dark, light or high-contrast theme
 - Watch the commands going to and from your Command Station, with a plain explanation of each, look up any DCC-EX command, and send your own
 
-Coming later: routes and automations (EXRAIL), a diagram of your own layout (only the emulator has a sample diagram today), arranging the panels yourself, a network connection so you can drive from a Smart Phone, and installing EX-WebThrottle as an app.
+Coming later: a diagram of your own layout (only the emulator has a sample diagram today), arranging the panels yourself, a network connection so you can drive from a Smart Phone, and installing EX-WebThrottle as an app.
 
 ## What you need
 

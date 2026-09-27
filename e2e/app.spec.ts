@@ -25,8 +25,8 @@ async function connect(page: Page, path = '/'): Promise<void> {
   await expect(page.getByTestId('shell-status')).toContainText('Connected');
 }
 
-// A turnout control that is on screen: the diagram on a desktop, route tiles
-// on a phone.
+// A turnout control that is on screen: the diagram on a desktop, the points
+// and sensors list on a phone.
 function turnout(page: Page, id: number) {
   return page
     .locator(
@@ -148,6 +148,39 @@ test('shows a sensor going occupied and clear', async ({ page }) => {
   await expect(page.getByTestId('sensor-20')).toContainText('Clear');
 });
 
+test('sets a route, and starts an automation with the loco on a desk', async ({
+  page,
+}) => {
+  await connect(page, '/control');
+
+  // The emulator's Main line route closes turnout 2 and Passing loop throws
+  // it, so between them the points really move whatever they started as.
+  await page.getByTestId('route-101').click();
+  await expect(turnout(page, 2)).toHaveAttribute('aria-label', /closed/);
+
+  await page.getByTestId('route-102').click();
+  await expect(turnout(page, 2)).toHaveAttribute('aria-label', /thrown/);
+
+  // An automation drives a loco from one of your desks, and EXRAIL shows it
+  // active while it runs.
+  await page.getByTestId('drive-address').fill('5');
+  await page.getByTestId('drive').click();
+  await page.getByTestId('automation-201').click();
+  await expect(page.getByTestId('automation-state-201')).toHaveText('Active');
+
+  // It runs until the train reaches Platform 1: sensor 20, on pin 22.
+  await page.getByTestId('role-diagnostics').click();
+  await page.getByTestId('command-input').fill('<z -22>');
+  await page.getByTestId('send-command').click();
+  await expect(page.getByTestId('trace-list')).toContainText('<jB 201 0>');
+
+  await page.getByTestId('command-input').fill('<z 22>');
+  await page.getByTestId('send-command').click();
+
+  await page.getByTestId('role-control').click();
+  await expect(page.getByTestId('automation-state-201')).toHaveText('Start');
+});
+
 test('opens Settings from the menu, and the wordmark goes back home', async ({
   page,
 }) => {
@@ -191,6 +224,45 @@ test('switches track power and stops everything from the strip', async ({
 
   await page.getByTestId('role-diagnostics').click();
   await expect(page.getByTestId('trace-list')).toContainText('<!>');
+
+  // STOP ALL paused every EXRAIL task too. Resuming leaves the emulator
+  // running them for the tests that follow.
+  await page.getByTestId('role-control').click();
+  await page.getByTestId('resume-automations').click();
+  await expect(page.getByTestId('resume-automations')).toHaveCount(0);
+});
+
+test('STOP ALL pauses an automation, and Resume sets its train going again', async ({
+  page,
+}) => {
+  await connect(page, '/control');
+
+  await page.getByTestId('drive-address').fill('6');
+  await page.getByTestId('drive').click();
+  await page.getByTestId('automation-201').click();
+  await expect(page.getByTestId('automation-state-201')).toHaveText('Active');
+
+  const readout = page.getByTestId('speed-readout');
+
+  await expect(readout).not.toHaveText('0');
+
+  await page.getByTestId('stop-all').click();
+  await expect(readout).toHaveText('0');
+  await expect(page.getByTestId('automation-state-201')).toHaveText('Paused');
+
+  // EXRAIL puts the loco back to the speed it had when paused.
+  await page.getByTestId('resume-automations').click();
+  await expect(readout).not.toHaveText('0');
+  await expect(page.getByTestId('automation-state-201')).toHaveText('Active');
+
+  // Bring the train into Platform 1 so the automation ends.
+  await page.getByTestId('role-diagnostics').click();
+  await page.getByTestId('command-input').fill('<z -22>');
+  await page.getByTestId('send-command').click();
+  await expect(page.getByTestId('trace-list')).toContainText('<jB 201 0>');
+
+  await page.getByTestId('command-input').fill('<z 22>');
+  await page.getByTestId('send-command').click();
 });
 
 test('sends a raw command from Diagnostics and explains the reply', async ({

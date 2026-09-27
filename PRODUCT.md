@@ -47,22 +47,22 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 **Working now:**
 
 - Connect over Web Serial or the emulator
-- STOP ALL on every screen
+- STOP ALL on every screen; it also pauses every EXRAIL task until this Throttle resumes them
 - Track power: one switch for every track at once, plus one for each track output the Command Station reports
 - Saved locos, stored per browser: acquire and release, speed, direction, stop, emergency stop, and functions F0–F31
 - Function maps: labels, latching or momentary, visibility
 - Turnouts/points: throw and close
 - Outputs: switch on and off
 - Sensors: live state, read-only
+- Routes and automations from EXRAIL: set a route, start an automation with a loco on one of your desks, and see the state EXRAIL gives each one
 - Event log: what changed on the layout, including changes made by other Throttles, with a count of new changes
 - Layout diagram: a sample diagram for the emulator's demo layout; any other Command Station gets a list of its turnouts/points and sensors instead
 - Diagnostics: sent/received traffic with a plain explanation of each line, a searchable list of every native command, and a command box
-- Panel workspace with role presets (Drive, Points, Control, Diagnostics), each with its own link
+- Panel workspace with role presets (Drive, Points, Control, Diagnostics), each with its own link; Points and Control show the routes and automations under the diagram
 - Dark, light and high-contrast themes, and a Settings page
 
 **Planned:**
 
-- Routes and automations (need EXRAIL on the Command Station)
 - Keyboard and screen-reader parity
 - Installable web app (PWA)
 - Hub network connection

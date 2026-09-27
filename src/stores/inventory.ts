@@ -58,8 +58,8 @@ function upsert<T extends { id: number }>(
 
 // What the command station has configured: turnouts, outputs, and sensors. The
 // station is the only source — nothing is invented here, so an empty list means
-// it reported nothing rather than that nothing exists. Routes and automations
-// are absent on purpose: they need EXRAIL on the station side.
+// it reported nothing rather than that nothing exists. EXRAIL routes and
+// automations have a store of their own (routes.ts).
 export const useInventoryStore = defineStore('inventory', () => {
   const connection = useConnectionStore();
 

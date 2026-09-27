@@ -95,7 +95,7 @@ describe('schematic panel', () => {
   describe('on a Command Station with no diagram', () => {
     beforeEach(() => openOn('<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-test>'));
 
-    it('shows route tiles instead of a diagram', () => {
+    it('shows the points and sensors list instead of a diagram', () => {
       expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(false);
     });
 

@@ -242,6 +242,17 @@ a {
   font-size: var(--text-md);
 }
 
+/* A title line with a control beside it, a control's height whether the
+   control is there or not, so panels side by side start their rows level. */
+.list-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  min-height: var(--target);
+}
+
 .list-panel__count {
   color: var(--ink-muted);
   font-size: var(--text-sm);

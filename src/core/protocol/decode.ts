@@ -1,7 +1,9 @@
 import type { ProtocolMessage, SystemInfo, TrackState } from './types';
-import { PowerState, TurnoutState } from './types';
+import { PowerState, RouteState, RouteType, TurnoutState } from './types';
 import {
   CAB_LIST_TITLE,
+  INFO_ROUTES,
+  INFO_ROUTE_STATE,
   INFO_TURNOUTS,
   OPCODE_DIAGNOSTIC_REPLY,
   OPCODE_INFO,
@@ -76,6 +78,65 @@ function decodeTurnoutInfo(params: string): ProtocolMessage {
   return { kind: 'ignored' };
 }
 
+function decodeRouteInfo(params: string): ProtocolMessage {
+  // <jA id R|A "description"> describes one route or automation. <jA id X "">
+  // answers an id EXRAIL does not have, and is left in the traffic log only.
+  const detail = /^(\d+) ([RA]) "(.*)"$/.exec(params.trim());
+
+  if (detail) {
+    return {
+      kind: 'route-detail',
+      id: Number(detail[1]),
+      type: detail[2] === 'A' ? RouteType.AUTOMATION : RouteType.ROUTE,
+      label: detail[3],
+    };
+  }
+
+  // <jA id id id> lists them, and a bare <jA> means there are none, which is
+  // what a Command Station without EXRAIL always says.
+  const ids = params.trim().split(/\s+/).filter(Boolean).map(Number);
+
+  if (ids.every(id => Number.isInteger(id))) {
+    return { kind: 'route-list', ids };
+  }
+
+  return { kind: 'ignored' };
+}
+
+const ROUTE_STATES = new Set<number>([
+  RouteState.INACTIVE,
+  RouteState.ACTIVE,
+  RouteState.HIDDEN,
+  RouteState.DISABLED,
+]);
+
+function decodeRouteState(params: string): ProtocolMessage {
+  // <jB id "caption"> gives a route's button new text.
+  const caption = /^(\d+) "(.*)"$/.exec(params.trim());
+
+  if (caption) {
+    return {
+      kind: 'route-caption',
+      id: Number(caption[1]),
+      caption: caption[2],
+    };
+  }
+
+  // <jB id state> sets how the button shows. A state this app does not know
+  // is left alone rather than guessed at.
+  const state = /^(\d+) (\d+)$/.exec(params.trim());
+
+  if (state && ROUTE_STATES.has(Number(state[2]))) {
+    return {
+      kind: 'route-state',
+      id: Number(state[1]),
+      state: Number(state[2]) as RouteState,
+    };
+  }
+
+  return { kind: 'ignored' };
+}
+
 // Takes a whole bracketed frame as it arrived, for example "<p1>".
 export function decodeFrame(frame: string): ProtocolMessage {
   const body = frame.slice(1, -1);
@@ -96,6 +157,14 @@ export function decodeFrame(frame: string): ProtocolMessage {
 
   if (opcode === OPCODE_INFO && body[1] === INFO_TURNOUTS) {
     return decodeTurnoutInfo(body.slice(2));
+  }
+
+  if (opcode === OPCODE_INFO && body[1] === INFO_ROUTES) {
+    return decodeRouteInfo(body.slice(2));
+  }
+
+  if (opcode === OPCODE_INFO && body[1] === INFO_ROUTE_STATE) {
+    return decodeRouteState(body.slice(2));
   }
 
   // <* LocoSlots n/max …\n Loco=3 s=… \n*>: the answer to <D CABS>. It is a

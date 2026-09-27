@@ -1,9 +1,14 @@
 import { Direction, TurnoutState } from './types';
 import {
   DIAGNOSTIC_CABS,
+  EXRAIL_PAUSE,
+  EXRAIL_RESUME,
+  EXRAIL_START,
+  INFO_ROUTES,
   INFO_TURNOUTS,
   OPCODE_DIAGNOSTIC,
   OPCODE_EMERGENCY_STOP_ALL,
+  OPCODE_EXRAIL,
   OPCODE_FORGET,
   OPCODE_FUNCTION,
   OPCODE_INFO_REQUEST,
@@ -139,6 +144,42 @@ export function setOutput(id: number, active: boolean): string {
 
 export function requestSensorStates(): string {
   return `<${OPCODE_SENSOR}>`;
+}
+
+export function requestRouteList(): string {
+  return `<${OPCODE_INFO_REQUEST}${INFO_ROUTES}>`;
+}
+
+// Asking about one route gives its type and description, plus its button
+// state and caption when EXRAIL has changed them.
+export function requestRoute(id: number): string {
+  assertObjectId(id);
+
+  return `<${OPCODE_INFO_REQUEST}${INFO_ROUTES} ${id}>`;
+}
+
+export function startRoute(id: number): string {
+  assertObjectId(id);
+
+  return `<${OPCODE_EXRAIL} ${EXRAIL_START} ${id}>`;
+}
+
+// Freezes every EXRAIL task and emergency-stops every loco. EXRAIL notes the
+// speed each task's loco had first, and puts it back on resume.
+export function pauseTasks(): string {
+  return `<${OPCODE_EXRAIL} ${EXRAIL_PAUSE}>`;
+}
+
+export function resumeTasks(): string {
+  return `<${OPCODE_EXRAIL} ${EXRAIL_RESUME}>`;
+}
+
+// An automation drives the loco it is started with.
+export function startAutomation(id: number, cab: number): string {
+  assertObjectId(id);
+  assertCab(cab);
+
+  return `<${OPCODE_EXRAIL} ${EXRAIL_START} ${cab} ${id}>`;
 }
 
 export function setLocoFunction(

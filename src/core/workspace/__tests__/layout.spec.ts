@@ -50,6 +50,12 @@ describe('workspace layout', () => {
     });
   });
 
+  it.each(['points', 'control'])('shows the routes and automations under the diagram on %s', (id) => {
+    const kinds = panelsIn(findPreset(id).layout).map(node => node.kind);
+
+    expect(kinds.slice(0, 3)).toEqual(['schematic', 'routes', 'automations']);
+  });
+
   it('finds a preset by id', () => {
     expect(findPreset('points').id).toBe('points');
   });

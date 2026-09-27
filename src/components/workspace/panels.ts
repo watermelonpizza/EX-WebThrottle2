@@ -2,9 +2,11 @@ import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 
 import type { PanelKind } from '@/core/workspace';
+import AutomationsPanel from '@/components/panels/AutomationsPanel.vue';
 import EventsPanel from '@/components/panels/EventsPanel.vue';
 import OutputsPanel from '@/components/panels/OutputsPanel.vue';
 import PointsPanel from '@/components/panels/PointsPanel.vue';
+import RoutesPanel from '@/components/panels/RoutesPanel.vue';
 import SchematicPanel from '@/components/panels/SchematicPanel.vue';
 import SensorsPanel from '@/components/panels/SensorsPanel.vue';
 import ThrottlesPanel from '@/components/panels/ThrottlesPanel.vue';
@@ -50,6 +52,18 @@ export const PANEL_TYPES: Record<PanelKind, PanelType> = {
   sensors: {
     title: 'Sensors',
     component: SensorsPanel,
+    minWidth: '16rem',
+    minHeight: '8rem',
+  },
+  routes: {
+    title: 'Routes',
+    component: RoutesPanel,
+    minWidth: '16rem',
+    minHeight: '8rem',
+  },
+  automations: {
+    title: 'Automations',
+    component: AutomationsPanel,
     minWidth: '16rem',
     minHeight: '8rem',
   },

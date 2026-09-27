@@ -1,6 +1,13 @@
 import { column, panel, row } from './layout';
 import type { Preset } from './types';
 
+// The diagram with the EXRAIL routes and automations under it, so they sit in
+// the same place on every preset that shows the layout.
+const diagram = column(
+  [panel('schematic'), 3],
+  [row([panel('routes'), 1], [panel('automations'), 1]), 1],
+);
+
 // One preset per operating job. Weights are relative shares; each panel picks
 // its own size variant from the room it is given.
 export const PRESETS: Preset[] = [
@@ -15,7 +22,7 @@ export const PRESETS: Preset[] = [
     // The diagram, then a column of lists: points first as the ones worked
     // most, then the outputs and sensors a layout usually has fewer of.
     layout: row(
-      [panel('schematic'), 2],
+      [diagram, 2],
       [
         column(
           [panel('points'), 3],
@@ -29,8 +36,8 @@ export const PRESETS: Preset[] = [
   {
     id: 'control',
     label: 'Control',
-    // The schematic takes about two thirds, the loco desk the rest.
-    layout: row([panel('schematic'), 65], [panel('throttles'), 35]),
+    // The diagram takes about two thirds, the loco desk the rest.
+    layout: row([diagram, 65], [panel('throttles'), 35]),
   },
   {
     id: 'diagnostics',

@@ -5,21 +5,27 @@ import {
   TurnoutState,
   emergencyStopAll,
   forgetLoco,
+  pauseTasks,
   powerOff,
   powerOn,
   powerTrack,
   requestCabList,
   requestLocoUpdate,
   requestOutputList,
+  requestRoute,
+  requestRouteList,
   requestSensorStates,
   requestSystemInfo,
   requestTrackState,
   requestTurnout,
   requestTurnoutList,
+  resumeTasks,
   setLocoFunction,
   setLocoSpeed,
   setOutput,
   setTurnout,
+  startAutomation,
+  startRoute,
 } from '../index';
 
 describe('encode', () => {
@@ -47,6 +53,12 @@ describe('encode', () => {
     { command: 'turn an output on', encode: () => setOutput(10, true), expected: '<Z 10 1>' },
     { command: 'turn an output off', encode: () => setOutput(10, false), expected: '<Z 10 0>' },
     { command: 'request sensor states', encode: () => requestSensorStates(), expected: '<Q>' },
+    { command: 'request the route list', encode: () => requestRouteList(), expected: '<JA>' },
+    { command: 'request one route', encode: () => requestRoute(101), expected: '<JA 101>' },
+    { command: 'set a route', encode: () => startRoute(101), expected: '</ START 101>' },
+    { command: 'start an automation with a loco', encode: () => startAutomation(201, 3), expected: '</ START 3 201>' },
+    { command: 'pause every EXRAIL task', encode: () => pauseTasks(), expected: '</ PAUSE>' },
+    { command: 'resume every EXRAIL task', encode: () => resumeTasks(), expected: '</ RESUME>' },
   ])('encodes $command as $expected', ({ encode, expected }) => {
     expect(encode()).toBe(expected);
   });
@@ -63,6 +75,8 @@ describe('encode', () => {
     { input: 'function -1', encode: () => setLocoFunction(3, -1, true) },
     { input: 'turnout id -1', encode: () => requestTurnout(-1) },
     { input: 'turnout id 32768', encode: () => setTurnout(32768, TurnoutState.THROWN) },
+    { input: 'route id -1', encode: () => startRoute(-1) },
+    { input: 'loco address 0 for an automation', encode: () => startAutomation(201, 0) },
     { input: 'output id 1.5', encode: () => setOutput(1.5, true) },
   ])('rejects $input', ({ encode }) => {
     expect(encode).toThrow();

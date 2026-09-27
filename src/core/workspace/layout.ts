@@ -5,6 +5,8 @@ const PANEL_KINDS: PanelKind[] = [
   'points',
   'outputs',
   'sensors',
+  'routes',
+  'automations',
   'events',
   'throttles',
   'traffic',
