@@ -3,6 +3,28 @@ import { vueTsConfigs, withVueTs } from '@vue/eslint-config-typescript';
 import pluginVue from 'eslint-plugin-vue';
 import stylistic from '@stylistic/eslint-plugin';
 
+// Shared with the unit-test block below, because a later block's options for
+// a rule replace an earlier block's rather than adding to them.
+const restrictedSyntax = [
+  {
+    selector: 'ImportSpecifier[importKind="type"]',
+    message: 'Import types on their own `import type { … }` line.',
+  },
+  {
+    selector: 'ForStatement[init=null][test=null][update=null]',
+    message: 'Write an endless loop as `while (true)`.',
+  },
+];
+
+// The body of an it()/test() callback, including it.each()(), it.skip() and
+// it.only().
+const TEST_BODY = ':matches('
+  + 'CallExpression[callee.name=/^(it|test)$/], '
+  + 'CallExpression[callee.object.name=/^(it|test)$/], '
+  + 'CallExpression[callee.callee.object.name=/^(it|test)$/]'
+  + ') > :function > BlockStatement';
+const EXPECTS = ':has(CallExpression[callee.name="expect"])';
+
 const config = [
   globalIgnores([
     '**/dist/**',
@@ -72,17 +94,7 @@ const config = [
       'no-else-return': 'error',
       'prefer-template': 'error',
       'logical-assignment-operators': 'error',
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'ImportSpecifier[importKind="type"]',
-          message: 'Import types on their own `import type { … }` line.',
-        },
-        {
-          selector: 'ForStatement[init=null][test=null][update=null]',
-          message: 'Write an endless loop as `while (true)`.',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...restrictedSyntax],
     },
   },
   {
@@ -92,6 +104,23 @@ const config = [
     ignores: ['src/core/logging/**'],
     rules: {
       'no-console': 'error',
+    },
+  },
+  {
+    // One action per unit test: once a test starts checking results, it only
+    // checks. The next action and what it causes belong in a test of their
+    // own. End-to-end journeys in e2e/ are exempt.
+    name: 'app/unit-tests',
+    files: ['src/**/*.spec.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...restrictedSyntax,
+        {
+          selector: `${TEST_BODY} > ${EXPECTS} ~ :not(${EXPECTS})`,
+          message: 'Only expect() may follow an expect() in a unit test: give this next step a test of its own, or set it up in beforeEach.',
+        },
+      ],
     },
   },
   {

@@ -36,6 +36,8 @@ export async function connectedApp(path = '/') {
   return { pinia, router, station };
 }
 
+export type ConnectedApp = Awaited<ReturnType<typeof connectedApp>>;
+
 // The emulator introduces itself as a HOST board, which brings in the sample
 // layout diagram drawn for its demo layout.
 export const EMULATOR_BANNER = '<iDCC-EX V-5.6.6 / HOST / HOST_SHIELD G-test>';

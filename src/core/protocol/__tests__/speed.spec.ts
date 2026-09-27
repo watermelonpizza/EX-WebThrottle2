@@ -2,66 +2,24 @@ import { describe, expect, it } from 'vitest';
 
 import { Direction, decodeSpeedByte } from '../index';
 
+// Bit 7 is the direction; the low seven bits are 0 for stop, 1 for an
+// emergency stop, and speed + 1 above that.
 describe('speed byte decoding', () => {
-  it('decodes a stop in either direction', () => {
-    expect(decodeSpeedByte(128)).toEqual({
-      direction: Direction.FORWARD,
-      speed: 0,
-      estop: false,
-    });
-    expect(decodeSpeedByte(0)).toEqual({
-      direction: Direction.REVERSE,
-      speed: 0,
-      estop: false,
-    });
+  it.each([
+    { byte: 128, reads: 'stopped forward', direction: Direction.FORWARD, speed: 0, estop: false },
+    { byte: 0, reads: 'stopped in reverse', direction: Direction.REVERSE, speed: 0, estop: false },
+    { byte: 2, reads: 'speed 1 in reverse', direction: Direction.REVERSE, speed: 1, estop: false },
+    { byte: 127, reads: 'speed 126 in reverse', direction: Direction.REVERSE, speed: 126, estop: false },
+    { byte: 130, reads: 'speed 1 forward', direction: Direction.FORWARD, speed: 1, estop: false },
+    { byte: 179, reads: 'speed 50 forward', direction: Direction.FORWARD, speed: 50, estop: false },
+    { byte: 255, reads: 'speed 126 forward', direction: Direction.FORWARD, speed: 126, estop: false },
+    { byte: 129, reads: 'an emergency stop forward', direction: Direction.FORWARD, speed: 0, estop: true },
+    { byte: 1, reads: 'an emergency stop in reverse', direction: Direction.REVERSE, speed: 0, estop: true },
+  ])('reads $byte as $reads', ({ byte, direction, speed, estop }) => {
+    expect(decodeSpeedByte(byte)).toEqual({ direction, speed, estop });
   });
 
-  it('decodes speeds with the reverse range', () => {
-    expect(decodeSpeedByte(2)).toEqual({
-      direction: Direction.REVERSE,
-      speed: 1,
-      estop: false,
-    });
-    expect(decodeSpeedByte(127)).toEqual({
-      direction: Direction.REVERSE,
-      speed: 126,
-      estop: false,
-    });
-  });
-
-  it('decodes a forward speed byte', () => {
-    expect(decodeSpeedByte(130)).toEqual({
-      direction: Direction.FORWARD,
-      speed: 1,
-      estop: false,
-    });
-    expect(decodeSpeedByte(179)).toEqual({
-      direction: Direction.FORWARD,
-      speed: 50,
-      estop: false,
-    });
-    expect(decodeSpeedByte(255)).toEqual({
-      direction: Direction.FORWARD,
-      speed: 126,
-      estop: false,
-    });
-  });
-
-  it('decodes an emergency stop byte', () => {
-    expect(decodeSpeedByte(129)).toEqual({
-      direction: Direction.FORWARD,
-      speed: 0,
-      estop: true,
-    });
-    expect(decodeSpeedByte(1)).toEqual({
-      direction: Direction.REVERSE,
-      speed: 0,
-      estop: true,
-    });
-  });
-
-  it('rejects bytes outside a single octet', () => {
-    expect(() => decodeSpeedByte(-1)).toThrow();
-    expect(() => decodeSpeedByte(256)).toThrow();
+  it.each([-1, 256])('rejects %i, outside a single octet', (byte) => {
+    expect(() => decodeSpeedByte(byte)).toThrow();
   });
 });

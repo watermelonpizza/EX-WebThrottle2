@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { THEME_KEY, useSettingsStore } from '@/stores/settings';
 
@@ -9,51 +9,41 @@ describe('settings store', () => {
     localStorage.clear();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('starts on a known theme', () => {
-    const store = useSettingsStore();
-
-    expect(['light', 'dark']).toContain(store.theme);
+    expect(['light', 'dark']).toContain(useSettingsStore().theme);
   });
 
-  it('chooses contrast or light from the system preference', () => {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      query =>
-        ({
-          matches: query.includes('contrast'),
-        }) as MediaQueryList,
-    );
-    expect(useSettingsStore().theme).toBe('contrast');
+  it.each<{ theme: string; preference: string; matches: (query: string) => boolean }>([
+    { theme: 'contrast', preference: 'more contrast', matches: query => query.includes('contrast') },
+    { theme: 'light', preference: 'a light colour scheme', matches: query => query.includes('color-scheme') },
+    { theme: 'dark', preference: 'nothing in particular', matches: () => false },
+  ])('starts on $theme when the system asks for $preference', ({ theme, matches }) => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ matches: matches(query) }) as MediaQueryList);
 
-    localStorage.clear();
-    setActivePinia(createPinia());
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      query =>
-        ({
-          matches: query.includes('color-scheme'),
-        }) as MediaQueryList,
-    );
-    expect(useSettingsStore().theme).toBe('light');
-
-    localStorage.clear();
-    setActivePinia(createPinia());
-    vi.spyOn(window, 'matchMedia').mockReturnValue({
-      matches: false,
-    } as MediaQueryList);
-    expect(useSettingsStore().theme).toBe('dark');
-  });
-
-  it('sets the theme and persists it', () => {
-    const store = useSettingsStore();
-
-    store.setTheme('dark');
-
-    expect(store.theme).toBe('dark');
-    expect(localStorage.getItem(THEME_KEY)).toBe('"dark"');
+    expect(useSettingsStore().theme).toBe(theme);
   });
 
   it('starts on the saved theme', () => {
     localStorage.setItem(THEME_KEY, '"contrast"');
 
     expect(useSettingsStore().theme).toBe('contrast');
+  });
+
+  describe('setting the theme', () => {
+    beforeEach(() => {
+      useSettingsStore().setTheme('dark');
+    });
+
+    it('uses it', () => {
+      expect(useSettingsStore().theme).toBe('dark');
+    });
+
+    it('saves it for next time', () => {
+      expect(localStorage.getItem(THEME_KEY)).toBe('"dark"');
+    });
   });
 });

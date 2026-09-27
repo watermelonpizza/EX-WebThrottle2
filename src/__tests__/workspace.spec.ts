@@ -13,27 +13,31 @@ describe('workspace store', () => {
     expect(useWorkspaceStore().presetId).toBe('control');
   });
 
-  it('switches role and remembers it for next time', () => {
-    useWorkspaceStore().setPreset('points');
-
-    expect(JSON.parse(localStorage.getItem(WORKSPACE_KEY) ?? '{}')).toEqual({
-      preset: 'points',
-    });
-
-    setActivePinia(createPinia());
-
-    expect(useWorkspaceStore().preset.label).toBe('Points');
-  });
-
-  it('ignores an unknown role and unreadable storage', () => {
+  it('starts on the Control preset when its storage is unreadable', () => {
     localStorage.setItem(WORKSPACE_KEY, '{not json');
 
-    const workspace = useWorkspaceStore();
+    expect(useWorkspaceStore().presetId).toBe('control');
+  });
 
-    expect(workspace.presetId).toBe('control');
+  it('ignores an unknown role', () => {
+    useWorkspaceStore().setPreset('teapot');
 
-    workspace.setPreset('teapot');
+    expect(useWorkspaceStore().presetId).toBe('control');
+  });
 
-    expect(workspace.presetId).toBe('control');
+  describe('switching to the Points role', () => {
+    beforeEach(() => {
+      useWorkspaceStore().setPreset('points');
+    });
+
+    it('saves it', () => {
+      expect(JSON.parse(localStorage.getItem(WORKSPACE_KEY) ?? '{}')).toEqual({ preset: 'points' });
+    });
+
+    it('starts on it next time', () => {
+      setActivePinia(createPinia());
+
+      expect(useWorkspaceStore().preset.label).toBe('Points');
+    });
   });
 });

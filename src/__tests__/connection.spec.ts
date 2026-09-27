@@ -7,62 +7,105 @@ import type { ProtocolMessage } from '@/core/protocol';
 import { PowerState, TurnoutState } from '@/core/protocol';
 import { useConnectionStore } from '@/stores/connection';
 
-// Subscribes before connecting, the way a store's setup does, so the handshake
-// replies are seen too.
-function collectMessages(store: ReturnType<typeof useConnectionStore>) {
-  const seen: ProtocolMessage[] = [];
-
-  store.onMessage(message => seen.push(message));
-
-  return seen;
-}
-
 describe('connection store', () => {
+  let store: ReturnType<typeof useConnectionStore>;
+  let emulator: MockTransport;
+  let seen: ProtocolMessage[];
+
+  async function receive(...chunks: string[]): Promise<void> {
+    for (const chunk of chunks) {
+      emulator.receives(chunk);
+    }
+
+    await flushPromises();
+  }
+
   beforeEach(() => {
     setActivePinia(createPinia());
+    store = useConnectionStore();
+    emulator = new MockTransport();
+    seen = [];
+    // Subscribed before connecting, the way a store's setup does, so the
+    // handshake replies are seen too.
+    store.onMessage(message => seen.push(message));
   });
 
-  it('starts disconnected with no traffic', () => {
-    const store = useConnectionStore();
+  describe('before connecting', () => {
+    it.each([
+      { field: 'status', value: 'disconnected' },
+      { field: 'transportName', value: '' },
+      { field: 'trace', value: [] },
+      { field: 'connectionError', value: '' },
+    ] as const)('starts with $field as $value', ({ field, value }) => {
+      expect(store[field]).toEqual(value);
+    });
 
-    expect(store.status).toBe('disconnected');
-    expect(store.transportName).toBe('');
-    expect(store.trace).toEqual([]);
-    expect(store.connectionError).toBe('');
+    it('can disconnect while idle', async () => {
+      await store.disconnect();
+
+      expect(store.status).toBe('disconnected');
+    });
+
+    it('sends nothing', () => {
+      store.send('<1>');
+
+      expect(store.trace).toEqual([]);
+    });
+
+    it('rejects a serial connection when Web Serial is unavailable', () => {
+      expect(() => store.connectToSerial()).toThrow('Web Serial is not available');
+    });
+
+    it('accepts a ws:// address typed on an http:// page', () => {
+      expect(store.urlProblem('ws://127.0.0.1:4444', 'http:')).toBe('');
+    });
+
+    it('asks for wss:// on an https:// page', () => {
+      expect(store.urlProblem('ws://127.0.0.1:4444', 'https:')).toContain('wss://');
+    });
   });
 
-  it('ignores duplicate connects and can disconnect while idle', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
+  describe('connecting', () => {
+    let statuses: string[];
 
-    await store.disconnect();
-    await store.connect(emulator);
-    await store.connect(emulator);
+    beforeEach(async () => {
+      statuses = [];
+      store.$subscribe(() => {
+        statuses.push(store.status);
+      });
+      await store.connect(emulator);
+    });
 
-    expect(emulator.sent.filter(command => command === '<s>')).toHaveLength(
-      1,
-    );
-  });
+    it('reports connecting, then connected', () => {
+      expect(statuses).toEqual(expect.arrayContaining(['connecting', 'connected']));
+    });
 
-  it('checks an address typed on the connect page against the page it is on', () => {
-    const store = useConnectionStore();
+    it('is connected', () => {
+      expect(store.status).toBe('connected');
+    });
 
-    expect(store.urlProblem('ws://127.0.0.1:4444', 'http:')).toBe('');
-    expect(store.urlProblem('ws://127.0.0.1:4444', 'https:')).toContain(
-      'wss://',
-    );
-  });
+    it('names the transport', () => {
+      expect(store.transportName).toBe('Emulator');
+    });
 
-  it('rejects serial connection when Web Serial is unavailable', () => {
-    const store = useConnectionStore();
+    it.each(['<s>', '<=>'])('sends %s to start the handshake', (command) => {
+      expect(emulator.sent).toContain(command);
+    });
 
-    expect(() => store.connectToSerial()).toThrow(
-      'Web Serial is not available',
-    );
+    it('ignores a second connect', async () => {
+      await store.connect(emulator);
+
+      expect(emulator.sent.filter(command => command === '<s>')).toHaveLength(1);
+    });
+
+    it('sends a command', () => {
+      store.send('<t 3 0 1>');
+
+      expect(emulator.sent).toContain('<t 3 0 1>');
+    });
   });
 
   it('keeps the connection usable when a transport send fails', async () => {
-    const store = useConnectionStore();
     const transport = {
       name: 'Broken',
       connected: true,
@@ -79,182 +122,88 @@ describe('connection store', () => {
     expect(store.status).toBe('connected');
   });
 
-  it('connects, reports status and sends the bootstrap command', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-    const events: string[] = [];
+  describe('once connected', () => {
+    beforeEach(() => store.connect(emulator));
 
-    store.$subscribe(() => {
-      events.push(store.status);
+    it('joins a frame that arrives split across data chunks', async () => {
+      await receive('<iDCCEX V-4.2.2', '0 / MEGA / Pololu / 5><p1>');
+
+      expect(seen).toContainEqual(expect.objectContaining({ kind: 'system-info', info: expect.objectContaining({ version: '4.2.20' }) }));
     });
 
-    await store.connect(emulator);
+    it('logs one trace entry for a frame that arrives split', async () => {
+      const handshake = store.trace.filter(entry => entry.direction === 'received').length;
 
-    expect(events).toContain('connecting');
-    expect(events).toContain('connected');
-    expect(emulator.sent).toContain('<s>');
-    expect(emulator.sent).toContain('<=>');
-    expect(store.status).toBe('connected');
-    expect(store.transportName).toBe('Emulator');
-  });
+      await receive('<l 4 0 158 9', '>');
 
-  it('joins a frame that arrives split across data chunks', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-    const seen = collectMessages(store);
+      expect(store.trace.filter(entry => entry.direction === 'received').slice(handshake).map(entry => entry.text)).toEqual(['<l 4 0 158 9>']);
+    });
 
-    await store.connect(emulator);
+    it('caps the trace log', async () => {
+      await receive(...Array.from({ length: 600 }, (_, i) => `<p${i % 2}>`));
 
-    emulator.receives('<iDCCEX V-4.2.2');
-    emulator.receives('0 / MEGA / Pololu / 5><p1>');
+      expect(store.trace.length).toBeLessThanOrEqual(500);
+    });
 
-    await flushPromises();
+    describe('when broadcasts arrive', () => {
+      beforeEach(() => receive('<= A MAIN><= B PROG><p0>', '<p1><z 1><l 3 0 143 1><H 2 1><>'));
 
-    expect(
-      seen.some(
-        message =>
-          message.kind === 'system-info' && message.info.version === '4.2.20',
-      ),
-    ).toBe(true);
-  });
+      it('delivers every frame to listeners, decoded, in order', () => {
+        expect(seen.map(message => message.kind)).toEqual([
+          'track',
+          'track',
+          'power',
+          'power',
+          'ignored',
+          'loco',
+          'turnout',
+          'ignored',
+        ]);
+      });
 
-  it('delivers decoded broadcasts to listeners', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-    const seen = collectMessages(store);
+      it.each([
+        { kind: 'track', message: { kind: 'track', track: { letter: 'A', mode: 'MAIN' } } },
+        { kind: 'power', message: { kind: 'power', state: PowerState.ON } },
+        { kind: 'turnout', message: { kind: 'turnout', state: TurnoutState.THROWN } },
+      ])('decodes a $kind broadcast', ({ message }) => {
+        expect(seen).toContainEqual(expect.objectContaining(message));
+      });
 
-    await store.connect(emulator);
+      it.each([
+        { direction: 'sent', text: '<s>' },
+        { direction: 'received', text: '<p1>' },
+      ])('records $direction text such as $text in the trace log', (entry) => {
+        expect(store.trace).toContainEqual(expect.objectContaining(entry));
+      });
+    });
 
-    emulator.receives('<= A MAIN><= B PROG><p0>');
-    emulator.receives('<p1><z 1><l 3 0 143 1><H 2 1><>');
+    describe('after disconnecting', () => {
+      beforeEach(async () => {
+        await receive('<p1>');
+        await store.disconnect();
+      });
 
-    await flushPromises();
+      it.each([
+        { field: 'status', value: 'disconnected' },
+        { field: 'transportName', value: '' },
+        { field: 'trace', value: [] },
+      ] as const)('resets $field to $value', ({ field, value }) => {
+        expect(store[field]).toEqual(value);
+      });
 
-    expect(seen.map(message => message.kind)).toEqual([
-      'track',
-      'track',
-      'power',
-      'power',
-      'ignored',
-      'loco',
-      'turnout',
-      'ignored',
-    ]);
+      it('sends nothing more', () => {
+        store.send('<1>');
 
-    expect(seen).toContainEqual(
-      expect.objectContaining({
-        kind: 'track',
-        track: { letter: 'A', mode: 'MAIN' },
-      }),
-    );
-    expect(seen).toContainEqual(
-      expect.objectContaining({ kind: 'power', state: PowerState.ON }),
-    );
-    expect(seen).toContainEqual(
-      expect.objectContaining({ kind: 'turnout', state: TurnoutState.THROWN }),
-    );
-  });
+        expect(emulator.sent).not.toContain('<1>');
+      });
 
-  it('logs one trace entry per frame, even when a frame arrives split', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
+      it('stops listening to the transport', async () => {
+        const delivered = seen.length;
 
-    await store.connect(emulator);
+        await receive('<p0>');
 
-    const handshake = store.trace.filter(
-      entry => entry.direction === 'received',
-    ).length;
-
-    emulator.receives('<l 4 0 158 9');
-    emulator.receives('>');
-
-    await flushPromises();
-
-    const received = store.trace
-      .filter(entry => entry.direction === 'received')
-      .slice(handshake);
-
-    expect(received.map(entry => entry.text)).toEqual(['<l 4 0 158 9>']);
-  });
-
-  it('records sent and received text in the trace log', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-
-    await store.connect(emulator);
-    emulator.receives('<p1>');
-
-    await flushPromises();
-
-    expect(store.trace).toContainEqual(
-      expect.objectContaining({ direction: 'sent', text: '<s>' }),
-    );
-    expect(store.trace).toContainEqual(
-      expect.objectContaining({ direction: 'received', text: '<p1>' }),
-    );
-  });
-
-  it('sends commands only while connected', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-
-    store.send('<1>');
-
-    expect(emulator.sent).toEqual([]);
-
-    await store.connect(emulator);
-    store.send('<t 3 0 1>');
-
-    expect(emulator.sent).toContain('<t 3 0 1>');
-  });
-
-  it('clears all state on disconnect', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-
-    await store.connect(emulator);
-    emulator.receives('<p1>');
-    await store.disconnect();
-
-    store.send('<1>');
-    emulator.receives('<p0>');
-
-    await flushPromises();
-
-    expect(store.status).toBe('disconnected');
-    expect(store.transportName).toBe('');
-    expect(store.trace).toEqual([]);
-  });
-
-  it('stops listening after disconnect', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-    const seen = collectMessages(store);
-
-    await store.connect(emulator);
-    await store.disconnect();
-
-    const delivered = seen.length;
-
-    emulator.receives('<p1>');
-
-    await flushPromises();
-
-    expect(seen).toHaveLength(delivered);
-  });
-
-  it('caps the trace log', async () => {
-    const store = useConnectionStore();
-    const emulator = new MockTransport();
-
-    await store.connect(emulator);
-
-    for (let i = 0; i < 600; i++) {
-      emulator.receives(`<p${i % 2}>`);
-    }
-
-    await flushPromises();
-
-    expect(store.trace.length).toBeLessThanOrEqual(500);
+        expect(seen).toHaveLength(delivered);
+      });
+    });
   });
 });

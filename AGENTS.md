@@ -112,6 +112,7 @@ pnpm run test:e2e       # Playwright e2e (starts its own emulator + app server)
 - The emulator needs the submodule (`git submodule update --init`) and a C++ toolchain with `make`. See `emulator/README.md`.
 - Run lint, type-check, and unit tests after every change.
 - `test:unit` fails if statement, branch, function or line coverage drops below 90% (`vite.config.ts`). Add meaningful tests to stay above it; do not lower the bar or exclude files to get past it.
+- One action per unit test: set the scene in `beforeEach`, do one thing, then only `expect` what it caused, so the test's name says exactly what it checks. Several expects about that one result are fine; a second action gets its own test, and a table of inputs becomes `it.each`. ESLint enforces the "only expects after the first expect" part for `src/**/*.spec.ts`; e2e journeys are exempt.
 - In tests, find elements by `data-testid`. Add one to the component when a test needs it; use a class or tag only when the target is generic (any row, any button).
 
 ## Design and product context

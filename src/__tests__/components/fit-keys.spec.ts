@@ -15,16 +15,17 @@ describe('fitting function keys to a desk', () => {
     expect(fitKeys(ROOM, 20)).toEqual({ tight: true, limit: undefined });
   });
 
-  it('shows whole rows only when some functions have to be left out', () => {
-    expect(fitKeys(ROOM, 32)).toEqual({ tight: true, limit: 20 });
-    expect(fitKeys({ ...ROOM, available: 0 }, 32)).toEqual({
-      tight: true,
-      limit: 0,
-    });
+  it.each([
+    { room: ROOM, limit: 20, when: 'five compact rows fit' },
+    { room: { ...ROOM, available: 0 }, limit: 0, when: 'no row fits' },
+  ])('shows only whole rows, $limit keys, when $when', ({ room, limit }) => {
+    expect(fitKeys(room, 32)).toEqual({ tight: true, limit });
   });
 
-  it('waits until the grid can be measured', () => {
-    expect(fitKeys({ ...ROOM, columns: 0 }, 32)).toBeUndefined();
-    expect(fitKeys({ ...ROOM, compact: 0 }, 32)).toBeUndefined();
+  it.each([
+    { room: { ...ROOM, columns: 0 }, missing: 'the column count' },
+    { room: { ...ROOM, compact: 0 }, missing: 'the compact key height' },
+  ])('waits until it can measure $missing', ({ room }) => {
+    expect(fitKeys(room, 32)).toBeUndefined();
   });
 });

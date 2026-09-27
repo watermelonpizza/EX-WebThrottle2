@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { CommandDef } from '../commands';
 import {
   COMMANDS,
   buildCommand,
@@ -8,7 +9,7 @@ import {
   searchCommands,
 } from '../commands';
 
-function command(pattern: string) {
+function command(pattern: string): CommandDef {
   const found = COMMANDS.find(entry => entry.pattern === pattern);
 
   if (!found) {
@@ -23,42 +24,53 @@ function patterns(query: string): string[] {
 }
 
 describe('command list', () => {
-  it('gives every command a unique, framed pattern', () => {
-    const all = COMMANDS.map(entry => entry.pattern);
+  const all = COMMANDS.map(entry => entry.pattern);
 
+  it('gives every command a unique pattern', () => {
     expect(new Set(all).size).toBe(all.length);
+  });
+
+  it('frames every pattern in < >', () => {
     expect(all.every(pattern => /^<.+>$/.test(pattern))).toBe(true);
   });
 
-  it('splits a pattern into keywords and inputs by case', () => {
+  describe('the pattern <T id DCC address subaddress>', () => {
     const create = command('<T id DCC address subaddress>');
 
-    expect(create.opcode).toBe('T');
-    expect(create.parts).toEqual([
-      { kind: 'input', name: 'id', quoted: false, optional: false },
-      { kind: 'keyword', text: 'DCC' },
-      { kind: 'input', name: 'address', quoted: false, optional: false },
-      { kind: 'input', name: 'subaddress', quoted: false, optional: false },
-    ]);
-    expect(create.inputs.map(input => input.name)).toEqual([
-      'id',
-      'address',
-      'subaddress',
-    ]);
+    it('takes T as its opcode', () => {
+      expect(create.opcode).toBe('T');
+    });
+
+    it('splits the rest into keywords and inputs by case', () => {
+      expect(create.parts).toEqual([
+        { kind: 'input', name: 'id', quoted: false, optional: false },
+        { kind: 'keyword', text: 'DCC' },
+        { kind: 'input', name: 'address', quoted: false, optional: false },
+        { kind: 'input', name: 'subaddress', quoted: false, optional: false },
+      ]);
+    });
+
+    it('lists its inputs in order', () => {
+      expect(create.inputs.map(input => input.name)).toEqual(['id', 'address', 'subaddress']);
+    });
   });
 
   it('keeps a lower case opcode literal', () => {
-    const speed = command('<t loco speed direction>');
-
-    expect(speed.opcode).toBe('t');
-    expect(speed.inputs).toHaveLength(3);
+    expect(command('<t loco speed direction>').opcode).toBe('t');
   });
 
-  it('marks quoted and optional inputs', () => {
+  it('reads every input after a lower case opcode', () => {
+    expect(command('<t loco speed direction>').inputs).toHaveLength(3);
+  });
+
+  it('marks quoted inputs', () => {
     expect(command('<C WIFI "ssid" "password">').inputs).toEqual([
       { kind: 'input', name: 'ssid', quoted: true, optional: false },
       { kind: 'input', name: 'password', quoted: true, optional: false },
     ]);
+  });
+
+  it('marks an optional input', () => {
     expect(command('<M register byte [moreBytes]>').inputs.at(-1)).toEqual({
       kind: 'input',
       name: 'moreBytes',
@@ -67,22 +79,29 @@ describe('command list', () => {
     });
   });
 
-  it('takes a group need unless the command has its own', () => {
-    expect(command('</ PAUSE>').needs).toBe('EX-RAIL');
-    expect(command('<L>').needs).toBe('EX-RAIL with LCC');
-    expect(command('<y vpin STOP>').needs).toBe('DFPlayer');
-    expect(command('<s>').needs).toBe('');
+  it.each([
+    { pattern: '</ PAUSE>', needs: 'EX-RAIL', from: 'its group' },
+    { pattern: '<L>', needs: 'EX-RAIL with LCC', from: 'the command itself' },
+    { pattern: '<y vpin STOP>', needs: 'DFPlayer', from: 'its group' },
+    { pattern: '<s>', needs: '', from: 'nowhere, as it needs nothing' },
+  ])('takes what $pattern needs from $from', ({ pattern, needs }) => {
+    expect(command(pattern).needs).toBe(needs);
   });
 
   it('asks for a confirm only on the commands that are hard to undo', () => {
-    expect(
-      COMMANDS.filter(entry => entry.risky).map(entry => entry.pattern),
-    ).toEqual(['<->', '<e>', '<C RESET>', '<D RESET>', '<+>', '<D HAL RESET>']);
+    expect(COMMANDS.filter(entry => entry.risky).map(entry => entry.pattern)).toEqual([
+      '<->',
+      '<e>',
+      '<C RESET>',
+      '<D RESET>',
+      '<+>',
+      '<D HAL RESET>',
+    ]);
   });
 });
 
 describe('matchCommand', () => {
-  it('matches a sent frame to its most specific command and input values', () => {
+  it('matches a sent frame to its command and input values', () => {
     expect(matchCommand('<T 7 DCC 12 0>')).toMatchObject({
       command: { pattern: '<T id DCC address subaddress>' },
       parameters: [
@@ -91,22 +110,29 @@ describe('matchCommand', () => {
         { input: { name: 'subaddress' }, value: '0' },
       ],
     });
+  });
+
+  it('prefers the most specific command', () => {
     expect(matchCommand('<1 MAIN>')?.command.pattern).toBe('<1 MAIN>');
   });
 
-  it('matches quoted and optional values', () => {
+  describe('a frame with quoted values', () => {
     const wifi = matchCommand('<C WIFI "Yard WiFi" "secret">');
 
-    expect(wifi?.command.pattern).toBe('<C WIFI "ssid" "password">');
-    expect(
-      wifi?.parameters.map(({ input, value }) => [input.name, value]),
-    ).toEqual([
-      ['ssid', 'Yard WiFi'],
-      ['password', 'secret'],
-    ]);
-    expect(matchCommand('<M 0 FF 00 01>')?.parameters.at(-1)?.value).toBe(
-      '00 01',
-    );
+    it('matches its command', () => {
+      expect(wifi?.command.pattern).toBe('<C WIFI "ssid" "password">');
+    });
+
+    it('reads the values without their quotes', () => {
+      expect(wifi?.parameters.map(({ input, value }) => [input.name, value])).toEqual([
+        ['ssid', 'Yard WiFi'],
+        ['password', 'secret'],
+      ]);
+    });
+  });
+
+  it('reads an optional value to the end of the frame', () => {
+    expect(matchCommand('<M 0 FF 00 01>')?.parameters.at(-1)?.value).toBe('00 01');
   });
 
   it('does not match an unknown frame', () => {
@@ -115,49 +141,42 @@ describe('matchCommand', () => {
 });
 
 describe('buildCommand', () => {
-  it('frames a command with no inputs', () => {
-    expect(buildCommand(command('<s>'), [])).toBe('<s>');
-    expect(buildCommand(command('<D CABS>'), [])).toBe('<D CABS>');
+  it.each(['<s>', '<D CABS>'])('frames %s, which has no inputs', (pattern) => {
+    expect(buildCommand(command(pattern), [])).toBe(pattern);
   });
 
   it('fills inputs in order between the keywords', () => {
-    expect(
-      buildCommand(command('<T id DCC address subaddress>'), ['5', '10', '0']),
-    ).toBe('<T 5 DCC 10 0>');
+    expect(buildCommand(command('<T id DCC address subaddress>'), ['5', '10', '0'])).toBe('<T 5 DCC 10 0>');
   });
 
-  it('keeps words that touch the opcode together', () => {
-    expect(buildCommand(command('<JT id>'), ['3'])).toBe('<JT 3>');
-    expect(buildCommand(command('<+atCommand>'), ['CIFSR'])).toBe('<+CIFSR>');
+  it.each([
+    { pattern: '<JT id>', values: ['3'], built: '<JT 3>' },
+    { pattern: '<+atCommand>', values: ['CIFSR'], built: '<+CIFSR>' },
+  ])('keeps the words of $pattern that touch the opcode together', ({ pattern, values, built }) => {
+    expect(buildCommand(command(pattern), values)).toBe(built);
   });
 
   it('quotes text values once', () => {
-    expect(
-      buildCommand(command('<C WIFI "ssid" "password">'), [
-        'Layout',
-        '"secret"',
-      ]),
-    ).toBe('<C WIFI "Layout" "secret">');
+    expect(buildCommand(command('<C WIFI "ssid" "password">'), ['Layout', '"secret"'])).toBe('<C WIFI "Layout" "secret">');
   });
 
-  it('leaves out a blank optional input and trims the rest', () => {
-    const packet = command('<M register byte [moreBytes]>');
-
-    expect(buildCommand(packet, [' 0 ', 'FF', ''])).toBe('<M 0 FF>');
-    expect(buildCommand(packet, ['0', 'FF', '00 01'])).toBe('<M 0 FF 00 01>');
+  it.each([
+    { values: [' 0 ', 'FF', ''], built: '<M 0 FF>', what: 'leaves out a blank optional input and trims the rest' },
+    { values: ['0', 'FF', '00 01'], built: '<M 0 FF 00 01>', what: 'includes an optional input that is filled in' },
+  ])('$what', ({ values, built }) => {
+    expect(buildCommand(command('<M register byte [moreBytes]>'), values)).toBe(built);
   });
 });
 
 describe('isComplete', () => {
-  it('needs every required input filled', () => {
-    const throwTurnout = command('<T id T>');
-    const packet = command('<M register byte [moreBytes]>');
-
-    expect(isComplete(throwTurnout, [''])).toBe(false);
-    expect(isComplete(throwTurnout, ['  '])).toBe(false);
-    expect(isComplete(throwTurnout, ['4'])).toBe(true);
-    expect(isComplete(packet, ['0', 'FF'])).toBe(true);
-    expect(isComplete(command('<s>'), [])).toBe(true);
+  it.each([
+    { pattern: '<T id T>', values: [''], complete: false, when: 'a required input is empty' },
+    { pattern: '<T id T>', values: ['  '], complete: false, when: 'a required input is blank' },
+    { pattern: '<T id T>', values: ['4'], complete: true, when: 'every required input is filled' },
+    { pattern: '<M register byte [moreBytes]>', values: ['0', 'FF'], complete: true, when: 'only an optional input is missing' },
+    { pattern: '<s>', values: [], complete: true, when: 'there are no inputs' },
+  ])('is $complete for $pattern when $when', ({ pattern, values, complete }) => {
+    expect(isComplete(command(pattern), values)).toBe(complete);
   });
 });
 
@@ -169,21 +188,27 @@ describe('searchCommands', () => {
   it('matches every word, in any order, across summary and group', () => {
     const found = patterns('main power');
 
-    expect(found).toContain('<1 MAIN>');
-    expect(found).toContain('<0 MAIN>');
+    expect(found).toEqual(expect.arrayContaining(['<1 MAIN>', '<0 MAIN>']));
     expect(found).not.toContain('<1 PROG>');
   });
 
-  it('finds commands by a common word', () => {
-    expect(patterns('turnout')).toContain('<T id T>');
-    expect(patterns('TRACK')).toContain('<=>');
+  it.each([
+    { query: 'turnout', pattern: '<T id T>' },
+    { query: 'TRACK', pattern: '<=>' },
+  ])('finds $pattern by the word "$query"', ({ query, pattern }) => {
+    expect(patterns(query)).toContain(pattern);
   });
 
-  it('finds a command typed the way it is sent', () => {
+  it('finds commands by their opcode', () => {
     expect(patterns('JT')).toEqual(['<JT>', '<JT id>']);
-    expect(patterns('<JT>')).toContain('<JT>');
-    expect(patterns('<J T>')).toContain('<JT>');
-    expect(patterns('<1 main>')).toContain('<1 MAIN>');
+  });
+
+  it.each([
+    { query: '<JT>', pattern: '<JT>' },
+    { query: '<J T>', pattern: '<JT>' },
+    { query: '<1 main>', pattern: '<1 MAIN>' },
+  ])('finds $pattern typed as $query', ({ query, pattern }) => {
+    expect(patterns(query)).toContain(pattern);
   });
 
   it('finds nothing for an unknown word', () => {

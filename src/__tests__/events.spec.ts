@@ -7,116 +7,122 @@ import { useConnectionStore } from '@/stores/connection';
 import { useEventsStore } from '@/stores/events';
 import { useLocosStore } from '@/stores/locos';
 
-async function connect() {
-  const connection = useConnectionStore();
-  const events = useEventsStore();
-  const locos = useLocosStore();
-  const station = new MockTransport();
-
-  await connection.connect(station);
-  await flushPromises();
-
-  return { connection, events, locos, station };
-}
-
-function texts(events: ReturnType<typeof useEventsStore>): string[] {
-  return events.events.map(event => event.text);
-}
-
 describe('events store', () => {
-  beforeEach(() => {
+  let connection: ReturnType<typeof useConnectionStore>;
+  let events: ReturnType<typeof useEventsStore>;
+  let locos: ReturnType<typeof useLocosStore>;
+  let station: MockTransport;
+
+  function texts(): string[] {
+    return events.events.map(event => event.text);
+  }
+
+  async function receive(frames: string): Promise<void> {
+    station.receives(frames);
+    await flushPromises();
+  }
+
+  beforeEach(async () => {
     setActivePinia(createPinia());
+    connection = useConnectionStore();
+    events = useEventsStore();
+    locos = useLocosStore();
+    station = new MockTransport();
+    await connection.connect(station);
+    await flushPromises();
   });
 
-  it('puts turnout and sensor changes into plain words, newest first', async () => {
-    const { events, station } = await connect();
-
+  describe('turnout and sensor changes', () => {
     // The first reports after connecting only say how things are.
-    station.receives('<H 2 0>');
-    station.receives('<q 20>');
-    await flushPromises();
+    beforeEach(() => receive('<H 2 0><q 20>'));
 
-    expect(events.events).toEqual([]);
+    it('does not report the state on connecting', () => {
+      expect(events.events).toEqual([]);
+    });
 
-    station.receives('<H 2 1>');
-    station.receives('<Q 20>');
-    // Repeating a state is not a change.
-    station.receives('<Q 20>');
-    await flushPromises();
+    it('puts later changes into plain words, newest first', async () => {
+      await receive('<H 2 1><Q 20>');
 
-    expect(texts(events)).toEqual(['Sensor 20 occupied', 'Turnout 2 thrown']);
+      expect(texts()).toEqual(['Sensor 20 occupied', 'Turnout 2 thrown']);
+    });
+
+    it('does not report a repeated state as a change', async () => {
+      await receive('<Q 20><Q 20>');
+
+      expect(texts()).toEqual(['Sensor 20 occupied']);
+    });
   });
 
-  it('credits a speed change to another Throttle only when this browser did not ask for it', async () => {
-    const { events, locos, station } = await connect();
+  describe('driving loco 3 at speed 20', () => {
+    beforeEach(async () => {
+      locos.acquire(3);
+      locos.setSpeed(3, 20);
+      // The station echoes our own command. Forward speed n is sent as
+      // 129 + n (see core/protocol/speed.ts).
+      await receive('<l 3 0 149 0>');
+    });
 
-    locos.acquire(3);
-    locos.setSpeed(3, 20);
-    // The station echoes our own command: not news.
-    // Forward speed n is sent as 129 + n (see core/protocol/speed.ts).
-    station.receives('<l 3 0 149 0>');
-    await flushPromises();
+    it('does not credit the echo of its own command to another Throttle', () => {
+      expect(texts()).not.toContain('Loco 3 set to 20 by another Throttle');
+    });
 
-    expect(texts(events)).not.toContain('Loco 3 set to 20 by another Throttle');
+    it('credits a change it did not ask for to another Throttle', async () => {
+      await receive('<l 3 0 169 0>');
 
-    // Someone else then moves the same loco.
-    station.receives('<l 3 0 169 0>');
-    await flushPromises();
-
-    expect(texts(events)[0]).toBe('Loco 3 set to 40 by another Throttle');
+      expect(texts()[0]).toBe('Loco 3 set to 40 by another Throttle');
+    });
   });
 
-  it('does not report the answer to asking after a loco', async () => {
-    const { events, locos, station } = await connect();
+  describe('picking up a loco another Throttle has running', () => {
+    // Picking it up asks the station for its state.
+    beforeEach(async () => {
+      locos.acquire(12);
+      await receive('<l 12 0 169 0>');
+    });
 
-    // Picking up a loco another Throttle has running asks for its state.
-    locos.acquire(12);
-    station.receives('<l 12 0 169 0>');
-    await flushPromises();
+    it('does not report the answer', () => {
+      expect(events.events).toEqual([]);
+    });
 
-    expect(events.events).toEqual([]);
+    it('reports its next change', async () => {
+      await receive('<l 12 0 139 0>');
 
-    // Its next change is news.
-    station.receives('<l 12 0 139 0>');
-    await flushPromises();
-
-    expect(texts(events)[0]).toBe('Loco 12 set to 10 by another Throttle');
+      expect(texts()[0]).toBe('Loco 12 set to 10 by another Throttle');
+    });
   });
 
-  it('reports output, power, and turnout changes with their state', async () => {
-    const { events, station } = await connect();
+  describe('with turnout 4 closed, output 7 off and track A on', () => {
+    beforeEach(() => receive('<jT 4 C "Yard"><Y 7 100 0 0><pA>'));
 
-    station.receives('<jT 4 C "Yard"><Y 7 100 0 0><pA>');
-    station.receives('<Y 7 100 0 1><pa>');
-    await flushPromises();
+    it.each([
+      { frames: '<Y 7 100 0 1>', text: 'Output 7 on' },
+      { frames: '<Y 7 100 0 1><Y 7 100 0 0>', text: 'Output 7 off' },
+      { frames: '<pa>', text: 'Track A power off' },
+      { frames: '<H 4 1>', text: 'Turnout 4 thrown' },
+    ])('reports "$text"', async ({ frames, text }) => {
+      await receive(frames);
 
-    expect(texts(events)).toEqual(['Track A power off', 'Output 7 on']);
-
-    station.receives('<H 4 1><Y 7 100 0 0><pa>');
-    await flushPromises();
-    expect(texts(events)).toContain('Output 7 off');
-    expect(texts(events)).toContain('Turnout 4 thrown');
+      expect(texts()[0]).toBe(text);
+    });
   });
 
   it('ignores stopped and repeated loco broadcasts', async () => {
-    const { events, station } = await connect();
-
-    station.receives('<l 5 0 128 0><l 5 0 128 0>');
-    await flushPromises();
+    await receive('<l 5 0 128 0><l 5 0 128 0>');
 
     expect(events.events).toEqual([]);
   });
 
-  it('reports an emergency stop and forgets everything on disconnect', async () => {
-    const { connection, events, station } = await connect();
+  describe('after an emergency stop', () => {
+    beforeEach(() => receive('<l 5 0 129 0>'));
 
-    station.receives('<l 5 0 129 0>');
-    await flushPromises();
+    it('reports it', () => {
+      expect(texts()[0]).toBe('Loco 5 emergency stopped');
+    });
 
-    expect(texts(events)[0]).toBe('Loco 5 emergency stopped');
+    it('forgets everything on disconnect', async () => {
+      await connection.disconnect();
 
-    await connection.disconnect();
-
-    expect(events.events).toEqual([]);
+      expect(events.events).toEqual([]);
+    });
   });
 });

@@ -1,88 +1,112 @@
+import type { VueWrapper } from '@vue/test-utils';
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import SchematicPanel from '@/components/panels/SchematicPanel.vue';
 
+import type { ConnectedApp } from './helpers';
 import { EMULATOR_BANNER, connectedApp } from './helpers';
 
-async function panel(banner: string) {
-  const { pinia, station } = await connectedApp();
-
-  station.receives(banner);
-  station.receives('<jT 1 2>');
-  station.receives('<jT 1 C ""><jT 2 T "">');
-  station.receives('<Q 20>');
-  await flushPromises();
-
-  const wrapper = mount(SchematicPanel, { global: { plugins: [pinia] } });
-
-  return { station, wrapper };
-}
-
 describe('schematic panel', () => {
+  let app: ConnectedApp;
+  let wrapper: VueWrapper;
+
+  async function receive(frames: string): Promise<void> {
+    app.station.receives(frames);
+    await flushPromises();
+  }
+
+  // Turnout 1 closed, turnout 2 thrown and sensor 20 occupied, on a station
+  // that introduces itself with the given banner.
+  async function openOn(banner: string): Promise<void> {
+    app = await connectedApp();
+    await receive(`${banner}<jT 1 2><jT 1 C ""><jT 2 T ""><Q 20>`);
+    wrapper = mount(SchematicPanel, { global: { plugins: [app.pinia] } });
+  }
+
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('draws the emulator sample, lights the occupied section and throws a turnout', async () => {
-    const { station, wrapper } = await panel(EMULATOR_BANNER);
+  describe('on the emulator', () => {
+    function turnout1(): ReturnType<VueWrapper['get']> {
+      return wrapper.get('[data-testid="diagram-turnout-1"]');
+    }
 
-    expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(true);
-    expect(wrapper.get('[data-testid="section-20"]').text()).toBe(
-      'Platform 1 · Occupied',
-    );
+    beforeEach(() => openOn(EMULATOR_BANNER));
 
-    const turnout = wrapper.get('[data-testid="diagram-turnout-1"]');
+    it('draws the sample layout diagram', () => {
+      expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(true);
+    });
 
-    expect(turnout.attributes('aria-label')).toBe(
-      'Turnout 1, closed. Press to throw.',
-    );
+    it('lights the occupied section', () => {
+      expect(wrapper.get('[data-testid="section-20"]').text()).toBe('Platform 1 · Occupied');
+    });
 
-    await turnout.trigger('keydown', { key: 'Enter' });
+    it('offers to throw a closed turnout', () => {
+      expect(turnout1().attributes('aria-label')).toBe('Turnout 1, closed. Press to throw.');
+    });
 
-    expect(station.sent.at(-1)).toBe('<T 1 T>');
-    // Pending until the station confirms, never assumed.
-    expect(turnout.classes()).toContain('turnout--pending');
+    it('does not flash any route when opened', () => {
+      expect(wrapper.find('.changing-over').exists()).toBe(false);
+    });
 
-    station.receives('<H 1 1>');
-    await flushPromises();
+    describe('when Enter is pressed on a closed turnout', () => {
+      beforeEach(async () => {
+        await turnout1().trigger('keydown', { key: 'Enter' });
+      });
 
-    expect(turnout.classes()).not.toContain('turnout--pending');
-    expect(turnout.attributes('aria-label')).toBe(
-      'Turnout 1, thrown. Press to close.',
-    );
-  });
+      it('throws it', () => {
+        expect(app.station.sent.at(-1)).toBe('<T 1 T>');
+      });
 
-  it('flashes the new route into place whenever the station reports the points moving', async () => {
-    const { station, wrapper } = await panel(EMULATOR_BANNER);
+      // Pending until the station confirms, never assumed.
+      it('shows it pending', () => {
+        expect(turnout1().classes()).toContain('turnout--pending');
+      });
 
-    // Opening the diagram shows how things are, with nothing flashing.
-    expect(wrapper.find('.changing-over').exists()).toBe(false);
+      describe('once the station reports it thrown', () => {
+        beforeEach(() => receive('<H 1 1>'));
+
+        it('no longer shows it pending', () => {
+          expect(turnout1().classes()).not.toContain('turnout--pending');
+        });
+
+        it('offers to close it', () => {
+          expect(turnout1().attributes('aria-label')).toBe('Turnout 1, thrown. Press to close.');
+        });
+      });
+    });
 
     // Moved by another Throttle: no press here, just the station's report.
-    station.receives('<H 1 1>');
-    await flushPromises();
+    describe('when the station reports the points moving', () => {
+      beforeEach(() => receive('<H 1 1>'));
 
-    expect(
-      wrapper.get('[data-testid="leg-turnout-1-thrown"]').classes(),
-    ).toContain('changing-over');
-    expect(
-      wrapper.get('[data-testid="leg-turnout-1-closed"]').classes(),
-    ).not.toContain('changing-over');
+      it('flashes the new route into place', () => {
+        expect(wrapper.get('[data-testid="leg-turnout-1-thrown"]').classes()).toContain('changing-over');
+      });
+
+      it('does not flash the old route', () => {
+        expect(wrapper.get('[data-testid="leg-turnout-1-closed"]').classes()).not.toContain('changing-over');
+      });
+    });
   });
 
-  it('shows route tiles for a Command Station with no diagram', async () => {
-    const { station, wrapper } = await panel(
-      '<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-test>',
-    );
+  describe('on a Command Station with no diagram', () => {
+    beforeEach(() => openOn('<iDCC-EX V-5.6.6 / ESP32 / EX-CSB1 G-test>'));
 
-    expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="turnout-state-2"]').text()).toBe(
-      'Thrown',
-    );
+    it('shows route tiles instead of a diagram', () => {
+      expect(wrapper.find('[data-testid="schematic"]').exists()).toBe(false);
+    });
 
-    await wrapper.get('[data-testid="turnout-2"]').trigger('click');
+    it('shows each turnout\'s position on its tile', () => {
+      expect(wrapper.get('[data-testid="turnout-state-2"]').text()).toBe('Thrown');
+    });
 
-    expect(station.sent.at(-1)).toBe('<T 2 C>');
+    it('closes a thrown turnout when its tile is clicked', async () => {
+      await wrapper.get('[data-testid="turnout-2"]').trigger('click');
+
+      expect(app.station.sent.at(-1)).toBe('<T 2 C>');
+    });
   });
 });

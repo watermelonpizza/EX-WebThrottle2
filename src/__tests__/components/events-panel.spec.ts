@@ -1,3 +1,4 @@
+import type { VueWrapper } from '@vue/test-utils';
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -6,35 +7,50 @@ import SafetyStrip from '@/components/shell/SafetyStrip.vue';
 import { PANEL_TYPES } from '@/components/workspace/panels';
 import { isLayoutNode, panel } from '@/core/workspace';
 
+import type { ConnectedApp } from './helpers';
 import { connectedApp } from './helpers';
 
 describe('events panel', () => {
-  beforeEach(() => {
-    localStorage.clear();
+  it('is registered as a workspace panel type', () => {
+    expect(PANEL_TYPES.events.component).toBe(EventsPanel);
   });
 
-  it('is a workspace panel a layout can place', () => {
-    expect(PANEL_TYPES.events.component).toBe(EventsPanel);
+  it('is a panel a layout can place', () => {
     expect(isLayoutNode(panel('events'))).toBe(true);
   });
 
-  it('counts changes as read while it is on screen, so the strip shows none new', async () => {
-    const { pinia, station } = await connectedApp();
-    const strip = mount(SafetyStrip, { global: { plugins: [pinia] } });
-    const log = mount(EventsPanel, { global: { plugins: [pinia] } });
+  describe('while it is on screen', () => {
+    let app: ConnectedApp;
+    let strip: VueWrapper;
+    let log: VueWrapper;
 
-    station.receives('<H 4 0>');
-    station.receives('<H 4 1>');
-    await flushPromises();
+    async function receive(frames: string): Promise<void> {
+      app.station.receives(frames);
+      await flushPromises();
+    }
 
-    expect(log.text()).toContain('Turnout 4 thrown');
-    expect(strip.find('[data-testid="events-unread"]').exists()).toBe(false);
+    beforeEach(async () => {
+      localStorage.clear();
+      app = await connectedApp();
+      strip = mount(SafetyStrip, { global: { plugins: [app.pinia] } });
+      log = mount(EventsPanel, { global: { plugins: [app.pinia] } });
+      await receive('<H 4 0><H 4 1>');
+    });
+
+    it('lists a change', () => {
+      expect(log.text()).toContain('Turnout 4 thrown');
+    });
+
+    it('counts it as read, so the strip shows none new', () => {
+      expect(strip.find('[data-testid="events-unread"]').exists()).toBe(false);
+    });
 
     // With the panel gone, the next change waits for the operator.
-    log.unmount();
-    station.receives('<H 4 0>');
-    await flushPromises();
+    it('leaves the next change new once the panel is closed', async () => {
+      log.unmount();
+      await receive('<H 4 0>');
 
-    expect(strip.get('[data-testid="events-unread"]').text()).toBe('1');
+      expect(strip.get('[data-testid="events-unread"]').text()).toBe('1');
+    });
   });
 });

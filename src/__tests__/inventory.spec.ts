@@ -6,140 +6,139 @@ import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useInventoryStore } from '@/stores/inventory';
 
-async function connect() {
-  const connection = useConnectionStore();
-  const inventory = useInventoryStore();
-  const station = new MockTransport();
-
-  await connection.connect(station);
-  await flushPromises();
-
-  return { connection, inventory, station };
-}
+type InventoryStore = ReturnType<typeof useInventoryStore>;
 
 describe('inventory store', () => {
-  beforeEach(() => {
+  let connection: ReturnType<typeof useConnectionStore>;
+  let inventory: InventoryStore;
+  let station: MockTransport;
+
+  async function receive(frames: string): Promise<void> {
+    station.receives(frames);
+    await flushPromises();
+  }
+
+  beforeEach(async () => {
     setActivePinia(createPinia());
+    connection = useConnectionStore();
+    inventory = useInventoryStore();
+    station = new MockTransport();
+    await connection.connect(station);
+    await flushPromises();
   });
 
-  it('asks the station what it has as soon as it is connected', async () => {
-    const { station } = await connect();
-
-    expect(station.sent).toContain('<JT>');
-    expect(station.sent).toContain('<Z>');
-    expect(station.sent).toContain('<Q>');
+  it.each(['<JT>', '<Z>', '<Q>'])('asks the station for %s as soon as it is connected', (command) => {
+    expect(station.sent).toContain(command);
   });
 
-  it('builds the turnout list and asks each one for its description', async () => {
-    const { inventory, station } = await connect();
+  describe('when the station lists turnouts 1 and 2', () => {
+    beforeEach(() => receive('<jT 1 2>'));
 
-    station.receives('<jT 1 2>');
-    await flushPromises();
+    it('lists them', () => {
+      expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([1, 2]);
+    });
 
-    expect(station.sent).toContain('<JT 1>');
-    expect(station.sent).toContain('<JT 2>');
-    expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([1, 2]);
+    it.each(['<JT 1>', '<JT 2>'])('asks for each one\'s description with %s', (command) => {
+      expect(station.sent).toContain(command);
+    });
 
-    station.receives('<jT 1 C "Yard entry"><jT 2 T "">');
-    await flushPromises();
+    it('fills in their descriptions and positions from the replies', async () => {
+      await receive('<jT 1 C "Yard entry"><jT 2 T "">');
 
-    expect(inventory.turnouts).toEqual([
-      { id: 1, label: 'Yard entry', thrown: false },
-      { id: 2, label: '', thrown: true },
-    ]);
+      expect(inventory.turnouts).toEqual([
+        { id: 1, label: 'Yard entry', thrown: false },
+        { id: 2, label: '', thrown: true },
+      ]);
+    });
+
+    it('follows a turnout broadcast', async () => {
+      await receive('<H 1 1>');
+
+      expect(inventory.turnouts[0]?.thrown).toBe(true);
+    });
+
+    it('forgets a turnout the station drops from its list', async () => {
+      await receive('<jT 2>');
+
+      expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([2]);
+    });
   });
 
-  it('follows turnout broadcasts and forgets turnouts the station drops', async () => {
-    const { inventory, station } = await connect();
+  describe('with turnout 1 first reported thrown', () => {
+    beforeEach(() => receive('<jT 1><H 1 1>'));
 
-    station.receives('<jT 1 2>');
-    station.receives('<H 1 1>');
-    await flushPromises();
+    it('does not count the first report as a move', () => {
+      expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
+    });
 
-    expect(inventory.turnouts[0]?.thrown).toBe(true);
+    it('does not count the same position reported again as a move', async () => {
+      await receive('<H 1 1>');
 
-    station.receives('<jT 2>');
-    await flushPromises();
+      expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
+    });
 
-    expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([2]);
+    it('notes when the points move', async () => {
+      await receive('<H 1 0>');
+
+      expect(inventory.turnouts[0]?.movedAt).toEqual(expect.any(Number));
+    });
   });
 
-  it('notes when points move, but not when the station first reports them', async () => {
-    const { inventory, station } = await connect();
+  describe('with outputs and sensors reported', () => {
+    beforeEach(() => receive('<Y 11 101 0 0><Y 10 100 0 1><q 20><Q 21>'));
 
-    station.receives('<jT 1>');
-    station.receives('<H 1 1>');
-    await flushPromises();
+    it('lists the outputs in order with their state', () => {
+      expect(inventory.outputs).toEqual([
+        { id: 10, active: true },
+        { id: 11, active: false },
+      ]);
+    });
 
-    expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
+    it('lists the sensors in order with their state', () => {
+      expect(inventory.sensors).toEqual([
+        { id: 20, active: false },
+        { id: 21, active: true },
+      ]);
+    });
 
-    // Reporting the same position again is not a move either.
-    station.receives('<H 1 1>');
-    await flushPromises();
+    it('follows an output change', async () => {
+      await receive('<Y 10 0>');
 
-    expect(inventory.turnouts[0]?.movedAt).toBeUndefined();
-
-    station.receives('<H 1 0>');
-    await flushPromises();
-
-    expect(inventory.turnouts[0]?.movedAt).toEqual(expect.any(Number));
+      expect(inventory.outputs[0]?.active).toBe(false);
+    });
   });
 
-  it('reads output and sensor state from the station', async () => {
-    const { inventory, station } = await connect();
+  it.each<{ item: string; command: string; toggle: (store: InventoryStore) => void }>([
+    { item: 'a turnout', command: '<T 999 T>', toggle: store => store.toggleTurnout(999) },
+    { item: 'an output', command: '<Z 999 1>', toggle: store => store.toggleOutput(999) },
+  ])('does not switch $item the station has not reported', ({ command, toggle }) => {
+    toggle(inventory);
 
-    station.receives('<Y 11 101 0 0><Y 10 100 0 1><q 20><Q 21>');
-    await flushPromises();
-
-    expect(inventory.outputs).toEqual([
-      { id: 10, active: true },
-      { id: 11, active: false },
-    ]);
-    expect(inventory.sensors).toEqual([
-      { id: 20, active: false },
-      { id: 21, active: true },
-    ]);
-
-    station.receives('<Y 10 0>');
-    await flushPromises();
-
-    expect(inventory.outputs[0]?.active).toBe(false);
+    expect(station.sent).not.toContain(command);
   });
 
-  it('ignores switches for items the station has not reported', async () => {
-    const { inventory, station } = await connect();
+  describe('with turnout 1 closed and output 10 off', () => {
+    beforeEach(() => receive('<jT 1><jT 1 C ""><Y 10 100 0 0>'));
 
-    inventory.toggleTurnout(999);
-    inventory.toggleOutput(999);
+    it.each<{ action: string; command: string; toggle: (store: InventoryStore) => void }>([
+      { action: 'throws the turnout', command: '<T 1 T>', toggle: store => store.toggleTurnout(1) },
+      { action: 'turns the output on', command: '<Z 10 1>', toggle: store => store.toggleOutput(10) },
+    ])('$action with $command', ({ command, toggle }) => {
+      toggle(inventory);
 
-    expect(station.sent).not.toContain('<T 999 T>');
-    expect(station.sent).not.toContain('<Z 999 1>');
+      expect(station.sent).toContain(command);
+    });
   });
 
-  it('switches turnouts and outputs to the opposite of the state it knows', async () => {
-    const { inventory, station } = await connect();
+  describe('when the connection goes away', () => {
+    beforeEach(async () => {
+      await receive('<jT 1><jT 1 C ""><Y 10 100 0 0><q 20>');
+      await connection.disconnect();
+      await flushPromises();
+    });
 
-    station.receives('<jT 1><jT 1 C ""><Y 10 100 0 0>');
-    await flushPromises();
-
-    inventory.toggleTurnout(1);
-    inventory.toggleOutput(10);
-
-    expect(station.sent).toContain('<T 1 T>');
-    expect(station.sent).toContain('<Z 10 1>');
-  });
-
-  it('forgets everything when the connection goes away', async () => {
-    const { connection, inventory, station } = await connect();
-
-    station.receives('<jT 1><jT 1 C ""><Y 10 100 0 0><q 20>');
-    await flushPromises();
-
-    await connection.disconnect();
-    await flushPromises();
-
-    expect(inventory.turnouts).toEqual([]);
-    expect(inventory.outputs).toEqual([]);
-    expect(inventory.sensors).toEqual([]);
+    it.each(['turnouts', 'outputs', 'sensors'] as const)('forgets the %s', (list) => {
+      expect(inventory[list]).toEqual([]);
+    });
   });
 });

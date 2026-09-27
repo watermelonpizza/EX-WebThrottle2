@@ -1,3 +1,4 @@
+import type { VueWrapper } from '@vue/test-utils';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,14 +7,17 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import App from '@/App.vue';
 import { routes } from '@/router';
 
+import type { ConnectedApp } from './helpers';
 import { connectedApp } from './helpers';
 
-describe('console', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+beforeEach(() => {
+  localStorage.clear();
+});
 
-  it('shows only the connect screen until a Command Station is connected', async () => {
+describe('console before a Command Station is connected', () => {
+  let wrapper: VueWrapper;
+
+  beforeEach(async () => {
     const pinia = createPinia();
 
     setActivePinia(pinia);
@@ -21,40 +25,59 @@ describe('console', () => {
     const router = createRouter({ history: createMemoryHistory(), routes });
 
     await router.push('/');
-
-    const wrapper = mount(App, { global: { plugins: [pinia, router] } });
-
+    wrapper = mount(App, { global: { plugins: [pinia, router] } });
     await flushPromises();
-
-    expect(wrapper.get('[data-testid="page-title"]').text()).toBe(
-      'Connect to your Command Station',
-    );
-    expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(false);
   });
 
-  it('lays out the panels of the role in the link, with Stop all always present', async () => {
-    const { pinia, router } = await connectedApp('/points');
-    const wrapper = mount(App, { global: { plugins: [pinia, router] } });
+  it('shows only the connect screen', () => {
+    expect(wrapper.get('[data-testid="page-title"]').text()).toBe('Connect to your Command Station');
+  });
 
+  it('has no Stop all yet', () => {
+    expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(false);
+  });
+});
+
+describe('console on the Points role link', () => {
+  let app: ConnectedApp;
+  let wrapper: VueWrapper;
+
+  beforeEach(async () => {
+    app = await connectedApp('/points');
+    wrapper = mount(App, { global: { plugins: [app.pinia, app.router] } });
     await flushPromises();
+  });
 
-    expect(wrapper.find('[data-testid="panel-schematic"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="panel-points"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="panel-throttles"]').exists()).toBe(
-      false,
-    );
-    expect(
-      wrapper.get('[data-testid="role-points"]').attributes('aria-current'),
-    ).toBe('page');
+  it.each(['panel-schematic', 'panel-points'])('lays out the %s panel', (testId) => {
+    expect(wrapper.find(`[data-testid="${testId}"]`).exists()).toBe(true);
+  });
+
+  it('leaves out the throttles panel', () => {
+    expect(wrapper.find('[data-testid="panel-throttles"]').exists()).toBe(false);
+  });
+
+  it('marks the Points role as the current page', () => {
+    expect(wrapper.get('[data-testid="role-points"]').attributes('aria-current')).toBe('page');
+  });
+
+  it('keeps Stop all on screen', () => {
     expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
+  });
 
-    await router.push('/diagnostics');
-    // Diagnostics loads on demand; wait for its panels to arrive and render.
-    await vi.dynamicImportSettled();
-    await flushPromises();
+  describe('after moving to the Diagnostics role', () => {
+    beforeEach(async () => {
+      await app.router.push('/diagnostics');
+      // Diagnostics loads on demand; wait for its panels to arrive and render.
+      await vi.dynamicImportSettled();
+      await flushPromises();
+    });
 
-    expect(wrapper.find('[data-testid="trace-list"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="commands-panel"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
+    it.each(['trace-list', 'commands-panel'])('shows the %s', (testId) => {
+      expect(wrapper.find(`[data-testid="${testId}"]`).exists()).toBe(true);
+    });
+
+    it('keeps Stop all on screen', () => {
+      expect(wrapper.find('[data-testid="stop-all"]').exists()).toBe(true);
+    });
   });
 });

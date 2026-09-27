@@ -7,303 +7,342 @@ import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useLocosStore } from '@/stores/locos';
 
+type LocosStore = ReturnType<typeof useLocosStore>;
+
 describe('locos store', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorage.clear();
-  });
+  let connection: ReturnType<typeof useConnectionStore>;
+  let locos: LocosStore;
+  let station: MockTransport;
 
-  async function connectedSetup() {
-    const connection = useConnectionStore();
-    const emulator = new MockTransport();
-
-    await connection.connect(emulator);
-
-    return { connection, emulator };
-  }
-
-  async function broadcast(
-    emulator: MockTransport,
-    text: string,
-  ): Promise<void> {
-    emulator.receives(text);
+  async function broadcast(text: string): Promise<void> {
+    station.receives(text);
     await flushPromises();
     await nextTick();
   }
 
-  it('starts with an empty roster and no throttles', () => {
-    const locos = useLocosStore();
-
-    expect(locos.roster).toEqual([]);
-    expect(locos.throttles).toEqual([]);
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+    localStorage.clear();
+    connection = useConnectionStore();
+    station = new MockTransport();
+    await connection.connect(station);
+    locos = useLocosStore();
   });
 
-  it('acquires a cab and asks the command station for its state', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    locos.acquire(3);
-
-    expect(emulator.sent).toContain('<t 3>');
-    expect(locos.throttles).toEqual([
-      expect.objectContaining({
-        address: 3,
-        name: 'Loco 3',
-        speed: 0,
-        forward: true,
-        functions: new Array(32).fill(false),
-      }),
-    ]);
-  });
-
-  it('re-acquiring an active cab only refreshes its state', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    locos.acquire(3);
-    locos.acquire(4);
-    locos.acquire(3);
-
-    expect(locos.throttles).toHaveLength(2);
-    expect(emulator.sent).toEqual([
-      '<s>',
-      '<=>',
-      '<D CABS>',
-      '<t 3>',
-      '<t 4>',
-      '<t 3>',
-    ]);
-  });
-
-  it('reconciles repeated broadcasts and ignores commands for unknown cabs', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    await broadcast(emulator, '<l 9 0 2 0>');
-    locos.setSpeed(9, 10);
-    locos.setForward(9, false);
-    locos.emergencyStop(9);
-    locos.setFunction(9, 0, true);
-    locos.setMap(9, 'missing');
-
-    expect(locos.throttles).toEqual([]);
-  });
-
-  it('reconciles speed, direction and functions from broadcasts', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    locos.acquire(3);
-
-    await broadcast(emulator, '<l 3 0 134 5>\n');
-
-    expect(locos.throttles[0]).toEqual(
-      expect.objectContaining({
-        speed: 5,
-        forward: true,
-        estop: false,
-      }),
-    );
-    expect(locos.throttles[0].functions[0]).toBe(true);
-    expect(locos.throttles[0].functions[2]).toBe(true);
-
-    await broadcast(emulator, '<l 3 0 23 0>\n');
-    expect(locos.throttles[0]?.forward).toBe(false);
-    expect(locos.throttles[0]?.speed).toBe(22);
+  it.each(['roster', 'throttles'] as const)('starts with no %s', (list) => {
+    expect(locos[list]).toEqual([]);
   });
 
   it('ignores broadcasts for locos that are not being driven', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    await broadcast(emulator, '<l 9 0 2 0>\n');
+    await broadcast('<l 9 0 2 0>\n');
 
     expect(locos.throttles).toEqual([]);
   });
 
-  it('releases a cab and frees its command-station slot', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
+  it.each<{ command: string; send: (store: LocosStore) => void }>([
+    { command: 'a speed', send: store => store.setSpeed(9, 10) },
+    { command: 'a direction', send: store => store.setForward(9, false) },
+    { command: 'an emergency stop', send: store => store.emergencyStop(9) },
+    { command: 'a function', send: store => store.setFunction(9, 0, true) },
+    { command: 'a function map', send: store => store.setMap(9, 'missing') },
+  ])('ignores $command for a loco that is not being driven', ({ send }) => {
+    const before = station.sent.length;
 
-    locos.acquire(3);
-    locos.release(3);
+    send(locos);
 
-    expect(locos.throttles).toEqual([]);
-    expect(emulator.sent).toContain('<- 3>');
+    expect(station.sent).toHaveLength(before);
   });
 
-  it('sends speed and direction as native throttle commands', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
+  describe('acquiring loco 3', () => {
+    beforeEach(() => {
+      locos.acquire(3);
+    });
 
-    locos.acquire(3);
-    locos.setSpeed(3, 12);
-    locos.setForward(3, false);
-    locos.emergencyStop(3);
+    it('asks the station for its state', () => {
+      expect(station.sent).toContain('<t 3>');
+    });
 
-    expect(emulator.sent).toContain('<t 3 12 1>');
-    expect(emulator.sent).toContain('<t 3 12 0>');
-    expect(emulator.sent).toContain('<t 3 -1 0>');
+    it('opens a throttle, stopped and forward with every function off', () => {
+      expect(locos.throttles).toEqual([
+        expect.objectContaining({
+          address: 3,
+          name: 'Loco 3',
+          speed: 0,
+          forward: true,
+          functions: new Array(32).fill(false),
+        }),
+      ]);
+    });
 
-    const throttle = locos.throttles[0];
+    it('keeps one throttle for it when it is acquired again', () => {
+      locos.acquire(3);
 
-    expect(throttle.speed).toBe(0);
-    expect(throttle.estop).toBe(true);
-    expect(throttle.forward).toBe(false);
+      expect(locos.throttles).toHaveLength(1);
+    });
+
+    it('asks for its state again when it is acquired again', () => {
+      locos.acquire(3);
+
+      expect(station.sent.filter(command => command === '<t 3>')).toHaveLength(2);
+    });
+
+    it('closes its throttle when the connection drops', async () => {
+      await connection.disconnect();
+      await nextTick();
+
+      expect(locos.throttles).toEqual([]);
+    });
+
+    describe('after <l 3 0 134 5>', () => {
+      // Speed byte 134 is forward speed 5; function map 5 is F0 and F2.
+      beforeEach(() => broadcast('<l 3 0 134 5>\n'));
+
+      it('reads its speed as 5 forward, not stopped', () => {
+        expect(locos.throttles[0]).toMatchObject({ speed: 5, forward: true, estop: false });
+      });
+
+      it.each([0, 2])('reads F%i as on', (fn) => {
+        expect(locos.throttles[0]?.functions[fn]).toBe(true);
+      });
+    });
+
+    it('reads speed 22 in reverse from <l 3 0 23 0>', async () => {
+      await broadcast('<l 3 0 23 0>\n');
+
+      expect(locos.throttles[0]).toMatchObject({ speed: 22, forward: false });
+    });
+
+    describe('releasing it', () => {
+      beforeEach(() => {
+        locos.release(3);
+      });
+
+      it('closes its throttle', () => {
+        expect(locos.throttles).toEqual([]);
+      });
+
+      it('frees its slot on the station', () => {
+        expect(station.sent).toContain('<- 3>');
+      });
+    });
+
+    describe('at speed 12', () => {
+      beforeEach(() => {
+        locos.setSpeed(3, 12);
+      });
+
+      it('sends the speed as <t 3 12 1>', () => {
+        expect(station.sent).toContain('<t 3 12 1>');
+      });
+
+      it('reverses at the same speed with <t 3 12 0>', () => {
+        locos.setForward(3, false);
+
+        expect(station.sent).toContain('<t 3 12 0>');
+      });
+
+      describe('then stopped in an emergency while in reverse', () => {
+        beforeEach(() => {
+          locos.setForward(3, false);
+          locos.emergencyStop(3);
+        });
+
+        it('sends <t 3 -1 0>', () => {
+          expect(station.sent).toContain('<t 3 -1 0>');
+        });
+
+        it('shows the throttle stopped in an emergency, still in reverse', () => {
+          expect(locos.throttles[0]).toMatchObject({ speed: 0, estop: true, forward: false });
+        });
+      });
+    });
+
+    describe('turning F0 on', () => {
+      beforeEach(() => {
+        locos.setFunction(3, 0, true);
+      });
+
+      it('sends <F 3 0 1>', () => {
+        expect(station.sent).toContain('<F 3 0 1>');
+      });
+
+      it('shows F0 on', () => {
+        expect(locos.throttles[0]?.functions[0]).toBe(true);
+      });
+
+      describe('and off again', () => {
+        beforeEach(() => {
+          locos.setFunction(3, 0, false);
+        });
+
+        it('sends <F 3 0 0>', () => {
+          expect(station.sent).toContain('<F 3 0 0>');
+        });
+
+        it('shows F0 off', () => {
+          expect(locos.throttles[0]?.functions[0]).toBe(false);
+        });
+      });
+    });
   });
 
-  it('sets functions with native function commands', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
+  describe('with loco 42 saved, then saved again under a new name and map', () => {
+    beforeEach(() => {
+      locos.saveLoco(42, 'Flying Scotsman');
+      locos.saveLoco(42, 'Updated Scotsman', 'shunter');
+    });
 
-    locos.acquire(3);
-    locos.setFunction(3, 0, true);
+    it('keeps one saved entry for it, with the latest name', () => {
+      expect(JSON.parse(localStorage.getItem('exwt-roster') ?? '[]')).toEqual([
+        expect.objectContaining({ address: 42, name: 'Updated Scotsman' }),
+      ]);
+    });
 
-    expect(emulator.sent).toContain('<F 3 0 1>');
-    expect(locos.throttles[0].functions[0]).toBe(true);
+    it('names its throttle from the saved entry', () => {
+      locos.acquire(42);
 
-    locos.setFunction(3, 0, false);
+      expect(locos.throttles[0]?.name).toBe('Updated Scotsman');
+    });
 
-    expect(emulator.sent).toContain('<F 3 0 0>');
-    expect(locos.throttles[0].functions[0]).toBe(false);
+    it('saves a function map chosen on its throttle', () => {
+      locos.acquire(42);
+      locos.setMap(42, 'default');
+
+      expect(locos.roster[0]?.mapId).toBe('default');
+    });
+
+    it('forgets it when it is removed', () => {
+      locos.removeLoco(42);
+
+      expect(locos.roster).toEqual([]);
+    });
   });
 
-  it('clears all throttles when the connection drops', async () => {
-    const { connection } = await connectedSetup();
-    const locos = useLocosStore();
+  describe('driving by address, with loco 12 saved as Shunter', () => {
+    beforeEach(() => {
+      locos.saveLoco(12, 'Shunter');
+    });
 
-    locos.acquire(3);
-    await connection.disconnect();
+    it.each([
+      { address: 7, name: 'Yard pilot' },
+      { address: 12, name: 'Something else' },
+      { address: 9, name: undefined },
+    ])('acquires loco $address', ({ address, name }) => {
+      locos.drive(address, name);
 
-    await nextTick();
+      expect(station.sent).toContain(`<t ${address}>`);
+    });
 
-    expect(locos.throttles).toEqual([]);
+    it('saves a new loco under the name given, trimmed', () => {
+      locos.drive(7, '  Yard pilot ');
+
+      expect(locos.roster).toContainEqual({ address: 7, name: 'Yard pilot', mapId: 'default' });
+    });
+
+    it('never renames a saved loco', () => {
+      locos.drive(12, 'Something else');
+
+      expect(locos.roster[0]?.name).toBe('Shunter');
+    });
+
+    it('does not save a loco driven without a name', () => {
+      locos.drive(9);
+
+      expect(locos.roster.map(loco => loco.address)).toEqual([12]);
+    });
   });
 
-  it('persists saved locos and reuses their name and map', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
+  describe('with locos 3 and 8 saved, and 3 and 4 on desks with 4 moving', () => {
+    beforeEach(() => {
+      locos.saveLoco(3, 'Class 37');
+      locos.saveLoco(8, 'Shunter');
+      locos.acquire(3);
+      locos.acquire(4);
+      locos.setSpeed(4, 20);
+    });
 
-    locos.saveLoco(42, 'Flying Scotsman');
-    locos.saveLoco(42, 'Updated Scotsman', 'shunter');
+    it('lists the saved locos not yet on a desk', () => {
+      expect(locos.savedNotDriven.map(loco => loco.address)).toEqual([8]);
+    });
 
-    expect(JSON.parse(localStorage.getItem('exwt-roster') ?? '[]')).toEqual([
-      expect.objectContaining({ address: 42, name: 'Updated Scotsman' }),
-    ]);
-
-    locos.acquire(42);
-
-    expect(locos.throttles[0].name).toBe('Updated Scotsman');
-    locos.setMap(42, 'default');
-    expect(locos.roster[0]?.mapId).toBe('default');
-    expect(emulator.sent).toContain('<t 42>');
-
-    locos.removeLoco(42);
-    expect(locos.roster).toEqual([]);
-  });
-
-  it('drives by address, saving a named loco but never renaming a saved one', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
-    locos.saveLoco(12, 'Shunter');
-    locos.drive(7, '  Yard pilot ');
-    locos.drive(12, 'Something else');
-    locos.drive(9);
-
-    expect(emulator.sent).toEqual(
-      expect.arrayContaining(['<t 7>', '<t 12>', '<t 9>']),
-    );
-    expect(locos.roster).toEqual([
-      { address: 12, name: 'Shunter', mapId: 'default' },
-      { address: 7, name: 'Yard pilot', mapId: 'default' },
-    ]);
-  });
-
-  it('lists saved locos not yet on a desk, and the desks that are moving', async () => {
-    await connectedSetup();
-    const locos = useLocosStore();
-
-    locos.saveLoco(3, 'Class 37');
-    locos.saveLoco(8, 'Shunter');
-    locos.acquire(3);
-    locos.acquire(4);
-    locos.setSpeed(4, 20);
-
-    expect(locos.savedNotDriven.map(loco => loco.address)).toEqual([8]);
-    expect(locos.movingHere.map(throttle => throttle.address)).toEqual([4]);
+    it('lists the desks that are moving', () => {
+      expect(locos.movingHere.map(throttle => throttle.address)).toEqual([4]);
+    });
   });
 
   it('names locos moving on the layout from the saved list where it can', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
-
     locos.saveLoco(12, 'Shunter');
-    await broadcast(emulator, '<l 12 0 169 0><l 14 0 23 0>');
+    await broadcast('<l 12 0 169 0><l 14 0 23 0>');
 
-    expect(
-      locos.moving.map(({ address, name, forward }) => [
-        address,
-        name,
-        forward,
-      ]),
-    ).toEqual([
+    expect(locos.moving.map(({ address, name, forward }) => [address, name, forward])).toEqual([
       [12, 'Shunter', true],
       [14, 'Loco 14', false],
     ]);
   });
 
-  it('stops every loco on the layout with one command', async () => {
-    const connection = useConnectionStore();
-    const locos = useLocosStore();
-    const station = new MockTransport();
+  describe('stopping everything', () => {
+    beforeEach(() => {
+      locos.acquire(3);
+      locos.acquire(8);
+      locos.setSpeed(3, 40);
+      locos.stopAll();
+    });
 
-    await connection.connect(station);
-    locos.acquire(3);
-    locos.acquire(8);
-    locos.setSpeed(3, 40);
-    locos.stopAll();
+    it('sends one emergency stop for the whole layout', () => {
+      expect(station.sent.at(-1)).toBe('<!>');
+    });
 
-    expect(station.sent.at(-1)).toBe('<!>');
-    expect(
-      locos.throttles.every(
-        throttle => throttle.estop && throttle.speed === 0,
-      ),
-    ).toBe(true);
+    it('shows every throttle stopped in an emergency', () => {
+      expect(locos.throttles.every(throttle => throttle.estop && throttle.speed === 0)).toBe(true);
+    });
   });
 
-  it('finds the locos other Throttles are running and drives them all at once', async () => {
-    const { emulator } = await connectedSetup();
-    const locos = useLocosStore();
+  describe('locos other Throttles are running', () => {
+    it('asks the station which locos it drives on connecting', () => {
+      expect(station.sent).toContain('<D CABS>');
+    });
 
-    // Asked on connecting; the answer's addresses are then asked after.
-    expect(emulator.sent).toContain('<D CABS>');
+    describe('when the station lists locos 14 and 12', () => {
+      beforeEach(() => broadcast('<* LocoSlots 2/120 size=56b\n Loco=14 s=23 f=0\n Loco=12 s=169 f=0\n*>'));
 
-    await broadcast(
-      emulator,
-      '<* LocoSlots 2/120 size=56b\n Loco=14 s=23 f=0\n Loco=12 s=169 f=0\n*>',
-    );
+      it.each(['<t 14>', '<t 12>'])('asks after each with %s', (command) => {
+        expect(station.sent).toContain(command);
+      });
 
-    expect(emulator.sent).toContain('<t 14>');
-    expect(emulator.sent).toContain('<t 12>');
+      describe('and reports 12 and 14 moving and 5 stopped', () => {
+        // Loco 12 forward at 40 (129 + 40), loco 14 reverse at 22 (1 + 22),
+        // and loco 5 stopped.
+        beforeEach(() => broadcast('<l 12 0 169 0><l 14 0 23 0><l 5 0 128 0>'));
 
-    // Loco 12 forward at 40 (129 + 40), loco 14 reverse at 22 (1 + 22), and
-    // loco 5 stopped.
-    await broadcast(emulator, '<l 12 0 169 0><l 14 0 23 0><l 5 0 128 0>');
+        it('lists the moving ones', () => {
+          expect(locos.moving.map(loco => loco.address)).toEqual([12, 14]);
+        });
 
-    expect(locos.moving.map(loco => loco.address)).toEqual([12, 14]);
-    expect(locos.throttles).toEqual([]);
+        it('does not put them on desks here yet', () => {
+          expect(locos.throttles).toEqual([]);
+        });
 
-    locos.acquireAll(locos.moving.map(loco => loco.address));
+        describe('driving them all here at once', () => {
+          beforeEach(() => {
+            locos.acquireAll(locos.moving.map(loco => loco.address));
+          });
 
-    expect(
-      locos.throttles.map(throttle => [throttle.address, throttle.speed]),
-    ).toEqual([
-      [12, 40],
-      [14, 22],
-    ]);
-    expect(locos.throttles[1]?.forward).toBe(false);
-    // Driving them here takes them out of the list of locos to pick up.
-    expect(locos.moving).toEqual([]);
+          it('opens a throttle for each at its current speed', () => {
+            expect(locos.throttles.map(throttle => [throttle.address, throttle.speed])).toEqual([
+              [12, 40],
+              [14, 22],
+            ]);
+          });
+
+          it('keeps loco 14 in reverse', () => {
+            expect(locos.throttles[1]?.forward).toBe(false);
+          });
+
+          it('takes them out of the list of locos to pick up', () => {
+            expect(locos.moving).toEqual([]);
+          });
+        });
+      });
+    });
   });
 });
