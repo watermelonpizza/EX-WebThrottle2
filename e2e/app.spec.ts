@@ -15,7 +15,7 @@ async function connect(page: Page, path = '/'): Promise<void> {
   const other = page.getByTestId('other-connections');
 
   if (
-    !(await other.evaluate((element) => (element as HTMLDetailsElement).open))
+    !(await other.evaluate(element => (element as HTMLDetailsElement).open))
   ) {
     await page.getByTestId('other-connections-toggle').click();
   }
@@ -180,8 +180,8 @@ test('switches track power and stops everything from the strip', async ({
   // All tracks turns everything off while any track has power, and on only
   // when every track is off; either way the tracks then agree.
   const all = page.getByTestId('master-power');
-  const expected =
-    (await all.getAttribute('aria-pressed')) === 'false' ? 'true' : 'false';
+  const expected
+    = (await all.getAttribute('aria-pressed')) === 'false' ? 'true' : 'false';
 
   await all.click();
   await expect(all).toHaveAttribute('aria-pressed', expected);
@@ -211,9 +211,8 @@ test('sends a raw command from Diagnostics and explains the reply', async ({
   await expect
     .poll(() =>
       trace.evaluate(
-        (list) => list.scrollHeight - list.scrollTop - list.clientHeight,
-      ),
-    )
+        list => list.scrollHeight - list.scrollTop - list.clientHeight,
+      ))
     .toBeLessThan(2);
 
   await page

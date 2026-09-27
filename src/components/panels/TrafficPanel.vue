@@ -16,15 +16,13 @@ const traceList = useTemplateRef<HTMLElement>('trace-list');
 const rawTrace = computed(() =>
   store.trace
     .map(
-      (entry) =>
+      entry =>
         `${logTime(entry.at)} ${entry.direction.padEnd(8)} ${entry.text}`,
     )
-    .join('\n'),
-);
+    .join('\n'));
 
 const explanation = computed(() =>
-  expandedEntry.value ? diagnostics.explain(expandedEntry.value) : undefined,
-);
+  expandedEntry.value ? diagnostics.explain(expandedEntry.value) : undefined);
 
 function toggleEntry(entry: TraceEntry): void {
   expandedEntry.value = expandedEntry.value === entry ? null : entry;
@@ -79,8 +77,14 @@ function sendCommand(): void {
 <template>
   <div class="traffic">
     <header class="traffic__head">
-      <h2 class="traffic__title">Traffic</h2>
-      <div class="traffic__mode" role="group" aria-label="Show traffic as">
+      <h2 class="traffic__title">
+        Traffic
+      </h2>
+      <div
+        class="traffic__mode"
+        role="group"
+        aria-label="Show traffic as"
+      >
         <button
           type="button"
           class="traffic__mode-side"
@@ -114,8 +118,16 @@ function sendCommand(): void {
       spellcheck="false"
       wrap="off"
     />
-    <div v-else ref="trace-list" class="trace" data-testid="trace-list">
-      <p v-if="store.trace.length === 0" class="traffic__muted">
+    <div
+      v-else
+      ref="trace-list"
+      class="trace"
+      data-testid="trace-list"
+    >
+      <p
+        v-if="store.trace.length === 0"
+        class="traffic__muted"
+      >
         No traffic yet.
       </p>
       <div
@@ -143,11 +155,20 @@ function sendCommand(): void {
           data-testid="trace-details"
         >
           <template v-if="explanation">
-            <h3 class="trace__summary">{{ explanation.summary }}</h3>
+            <h3 class="trace__summary">
+              {{ explanation.summary }}
+            </h3>
             <code>{{ explanation.pattern }}</code>
-            <p v-if="explanation.detail">{{ explanation.detail }}</p>
-            <p v-if="explanation.needs">Needs: {{ explanation.needs }}</p>
-            <dl v-if="explanation.parameters.length > 0" class="trace__params">
+            <p v-if="explanation.detail">
+              {{ explanation.detail }}
+            </p>
+            <p v-if="explanation.needs">
+              Needs: {{ explanation.needs }}
+            </p>
+            <dl
+              v-if="explanation.parameters.length > 0"
+              class="trace__params"
+            >
               <div
                 v-for="parameter in explanation.parameters"
                 :key="parameter.name"
@@ -182,7 +203,7 @@ function sendCommand(): void {
         autocomplete="off"
         spellcheck="false"
         data-testid="command-input"
-      />
+      >
       <button
         type="submit"
         class="key"

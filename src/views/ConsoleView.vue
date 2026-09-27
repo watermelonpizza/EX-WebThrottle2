@@ -26,7 +26,11 @@ watch(
 </script>
 
 <template>
-  <div v-if="connected" class="console" :data-preset="workspace.presetId">
+  <div
+    v-if="connected"
+    class="console"
+    :data-preset="workspace.presetId"
+  >
     <WorkspaceLayout :node="workspace.preset.layout" />
   </div>
   <ConnectScreen v-else />

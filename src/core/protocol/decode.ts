@@ -1,10 +1,5 @@
-import {
-  PowerState,
-  ProtocolMessage,
-  SystemInfo,
-  TrackState,
-  TurnoutState,
-} from './types';
+import type { ProtocolMessage, SystemInfo, TrackState } from './types';
+import { PowerState, TurnoutState } from './types';
 import {
   CAB_LIST_TITLE,
   INFO_TURNOUTS,
@@ -35,7 +30,7 @@ function decodeSystemInfo(params: string): SystemInfo | undefined {
 
   const [version, microprocessor, motorDriver, build] = body
     .split('/')
-    .map((part) => part.trim());
+    .map(part => part.trim());
 
   if (!microprocessor || !motorDriver) {
     // The frame said "system info" but the microprocessor or motor driver was not found, so the raw frame is
@@ -74,7 +69,7 @@ function decodeTurnoutInfo(params: string): ProtocolMessage {
   // <jT id id id> lists the turnouts the station is willing to show, and a bare
   // <jT> means it has none. Anything else — <jT id X> for an id it will not
   // report — is left in the traffic log only.
-  if (ids.every((id) => Number.isInteger(id))) {
+  if (ids.every(id => Number.isInteger(id))) {
     return { kind: 'turnout-list', ids };
   }
 
@@ -106,12 +101,11 @@ export function decodeFrame(frame: string): ProtocolMessage {
   // <* LocoSlots n/max …\n Loco=3 s=… \n*>: the answer to <D CABS>. It is a
   // diagnostic dump written for people, so only the addresses are taken.
   if (
-    opcode === OPCODE_DIAGNOSTIC_REPLY &&
-    body.slice(1).trimStart().startsWith(CAB_LIST_TITLE)
+    opcode === OPCODE_DIAGNOSTIC_REPLY
+    && body.slice(1).trimStart().startsWith(CAB_LIST_TITLE)
   ) {
-    const addresses = [...body.matchAll(/Loco=\s*(\d+)/g)].map((match) =>
-      Number(match[1]),
-    );
+    const addresses = [...body.matchAll(/Loco=\s*(\d+)/g)].map(match =>
+      Number(match[1]));
 
     return { kind: 'cab-list', addresses };
   }
@@ -140,11 +134,11 @@ export function decodeFrame(frame: string): ProtocolMessage {
         state: state ? PowerState.ON : PowerState.OFF,
         track: params[1],
       };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_power', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_power', {
+      frame,
+    });
   }
 
   if (opcode === OPCODE_TRACK_LIST) {
@@ -155,11 +149,11 @@ export function decodeFrame(frame: string): ProtocolMessage {
       const track: TrackState = { letter, mode };
 
       return { kind: 'track', track };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_track', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_track', {
+      frame,
+    });
   }
 
   if (opcode === OPCODE_LOCO_UPDATE) {
@@ -170,16 +164,16 @@ export function decodeFrame(frame: string): ProtocolMessage {
     const functionMap = toNumber(params[3]);
 
     if (
-      address !== undefined &&
-      speedByte !== undefined &&
-      functionMap !== undefined
+      address !== undefined
+      && speedByte !== undefined
+      && functionMap !== undefined
     ) {
       return { kind: 'loco', loco: { address, speedByte, functionMap } };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_loco_update', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_loco_update', {
+      frame,
+    });
   }
 
   // <H id state> — turnout state broadcast; state 1 = thrown. Frames with more
@@ -195,46 +189,46 @@ export function decodeFrame(frame: string): ProtocolMessage {
         id,
         state: rawState === 1 ? TurnoutState.THROWN : TurnoutState.CLOSED,
       };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_turnout', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_turnout', {
+      frame,
+    });
   }
 
   // <Y id active> answers a change and <Y id pin flags active> lists a
   // configured output; the state is the last field either way.
   if (
-    opcode === OPCODE_OUTPUT &&
-    (params.length === 2 || params.length === 4)
+    opcode === OPCODE_OUTPUT
+    && (params.length === 2 || params.length === 4)
   ) {
     const id = toNumber(params[0]);
     const active = toNumber(params[params.length - 1]);
 
     if (id !== undefined && active !== undefined) {
       return { kind: 'output', id, active: active === 1 };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_output', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_output', {
+      frame,
+    });
   }
 
   // <Q id> for an active sensor and <q id> for an inactive one. Three-field
   // <Q id pin pullup> frames are sensor definitions, which are not modelled.
   if (
-    (opcode === OPCODE_SENSOR || opcode === OPCODE_SENSOR_INACTIVE) &&
-    params.length === 1
+    (opcode === OPCODE_SENSOR || opcode === OPCODE_SENSOR_INACTIVE)
+    && params.length === 1
   ) {
     const id = toNumber(params[0]);
 
     if (id !== undefined) {
       return { kind: 'sensor', id, active: opcode === OPCODE_SENSOR };
-    } else {
-      log.warn('protocol.decode.decodeFrame.invalid_sensor', {
-        frame,
-      });
     }
+
+    log.warn('protocol.decode.decodeFrame.invalid_sensor', {
+      frame,
+    });
   }
 
   return { kind: 'ignored' };

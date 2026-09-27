@@ -230,8 +230,8 @@ describe('locos store', () => {
     locos.acquire(4);
     locos.setSpeed(4, 20);
 
-    expect(locos.savedNotDriven.map((loco) => loco.address)).toEqual([8]);
-    expect(locos.movingHere.map((throttle) => throttle.address)).toEqual([4]);
+    expect(locos.savedNotDriven.map(loco => loco.address)).toEqual([8]);
+    expect(locos.movingHere.map(throttle => throttle.address)).toEqual([4]);
   });
 
   it('names locos moving on the layout from the saved list where it can', async () => {
@@ -267,7 +267,7 @@ describe('locos store', () => {
     expect(station.sent.at(-1)).toBe('<!>');
     expect(
       locos.throttles.every(
-        (throttle) => throttle.estop && throttle.speed === 0,
+        throttle => throttle.estop && throttle.speed === 0,
       ),
     ).toBe(true);
   });
@@ -291,13 +291,13 @@ describe('locos store', () => {
     // loco 5 stopped.
     await broadcast(emulator, '<l 12 0 169 0><l 14 0 23 0><l 5 0 128 0>');
 
-    expect(locos.moving.map((loco) => loco.address)).toEqual([12, 14]);
+    expect(locos.moving.map(loco => loco.address)).toEqual([12, 14]);
     expect(locos.throttles).toEqual([]);
 
-    locos.acquireAll(locos.moving.map((loco) => loco.address));
+    locos.acquireAll(locos.moving.map(loco => loco.address));
 
     expect(
-      locos.throttles.map((throttle) => [throttle.address, throttle.speed]),
+      locos.throttles.map(throttle => [throttle.address, throttle.speed]),
     ).toEqual([
       [12, 40],
       [14, 22],

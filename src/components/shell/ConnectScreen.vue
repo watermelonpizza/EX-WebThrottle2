@@ -9,8 +9,7 @@ const url = ref(EMULATOR_URL);
 const connecting = computed(() => connection.status === 'connecting');
 
 const urlError = computed(() =>
-  connection.urlProblem(url.value, window.location.protocol),
-);
+  connection.urlProblem(url.value, window.location.protocol));
 
 function connectUsb(): void {
   void connection.connectToSerial();
@@ -35,7 +34,11 @@ function connectUrl(): void {
         <span class="connect__tag">DCC-EX</span>
       </p>
 
-      <h1 id="connect-title" class="connect__title" data-testid="page-title">
+      <h1
+        id="connect-title"
+        class="connect__title"
+        data-testid="page-title"
+      >
         Connect to your Command Station
       </h1>
       <p class="connect__lead">
@@ -62,7 +65,10 @@ function connectUrl(): void {
         {{ connecting ? 'Connecting…' : 'Connect by USB' }}
       </button>
 
-      <p v-if="!connection.serialAvailable" class="connect__note">
+      <p
+        v-if="!connection.serialAvailable"
+        class="connect__note"
+      >
         This browser cannot reach USB devices. Open WebThrottle in Google Chrome
         or Microsoft Edge on a computer, or use another way to connect below.
       </p>
@@ -84,7 +90,10 @@ function connectUrl(): void {
           data-testid="connect-form"
           @submit.prevent="connectUrl"
         >
-          <label class="connect__label" for="connect-url">
+          <label
+            class="connect__label"
+            for="connect-url"
+          >
             Emulator or WebSocket address
           </label>
           <div class="connect__row">
@@ -100,7 +109,7 @@ function connectUrl(): void {
               :aria-invalid="Boolean(urlError)"
               aria-describedby="connect-url-help"
               data-testid="emulator-url"
-            />
+            >
             <button
               type="submit"
               class="key"
@@ -118,13 +127,16 @@ function connectUrl(): void {
           >
             {{
               urlError ||
-              'The emulator runs a real Command Station on your computer (pnpm run emulator).'
+                'The emulator runs a real Command Station on your computer (pnpm run emulator).'
             }}
           </p>
         </form>
       </details>
 
-      <router-link class="connect__settings" :to="{ name: 'settings' }">
+      <router-link
+        class="connect__settings"
+        :to="{ name: 'settings' }"
+      >
         Settings
       </router-link>
 
@@ -136,9 +148,27 @@ function connectUrl(): void {
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <line class="connect__rail" x1="2" y1="12" x2="598" y2="12" />
-        <line class="connect__stop" x1="2" y1="2" x2="2" y2="22" />
-        <line class="connect__stop" x1="598" y1="2" x2="598" y2="22" />
+        <line
+          class="connect__rail"
+          x1="2"
+          y1="12"
+          x2="598"
+          y2="12"
+        />
+        <line
+          class="connect__stop"
+          x1="2"
+          y1="2"
+          x2="2"
+          y2="22"
+        />
+        <line
+          class="connect__stop"
+          x1="598"
+          y1="2"
+          x2="598"
+          y2="22"
+        />
         <line
           class="connect__rail connect__rail--live"
           x1="2"

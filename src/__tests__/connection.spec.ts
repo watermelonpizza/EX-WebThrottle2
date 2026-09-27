@@ -12,7 +12,7 @@ import { useConnectionStore } from '@/stores/connection';
 function collectMessages(store: ReturnType<typeof useConnectionStore>) {
   const seen: ProtocolMessage[] = [];
 
-  store.onMessage((message) => seen.push(message));
+  store.onMessage(message => seen.push(message));
 
   return seen;
 }
@@ -39,7 +39,7 @@ describe('connection store', () => {
     await store.connect(emulator);
     await store.connect(emulator);
 
-    expect(emulator.sent.filter((command) => command === '<s>')).toHaveLength(
+    expect(emulator.sent.filter(command => command === '<s>')).toHaveLength(
       1,
     );
   });
@@ -112,7 +112,7 @@ describe('connection store', () => {
 
     expect(
       seen.some(
-        (message) =>
+        message =>
           message.kind === 'system-info' && message.info.version === '4.2.20',
       ),
     ).toBe(true);
@@ -130,7 +130,7 @@ describe('connection store', () => {
 
     await flushPromises();
 
-    expect(seen.map((message) => message.kind)).toEqual([
+    expect(seen.map(message => message.kind)).toEqual([
       'track',
       'track',
       'power',
@@ -162,7 +162,7 @@ describe('connection store', () => {
     await store.connect(emulator);
 
     const handshake = store.trace.filter(
-      (entry) => entry.direction === 'received',
+      entry => entry.direction === 'received',
     ).length;
 
     emulator.receives('<l 4 0 158 9');
@@ -171,10 +171,10 @@ describe('connection store', () => {
     await flushPromises();
 
     const received = store.trace
-      .filter((entry) => entry.direction === 'received')
+      .filter(entry => entry.direction === 'received')
       .slice(handshake);
 
-    expect(received.map((entry) => entry.text)).toEqual(['<l 4 0 158 9>']);
+    expect(received.map(entry => entry.text)).toEqual(['<l 4 0 158 9>']);
   });
 
   it('records sent and received text in the trace log', async () => {

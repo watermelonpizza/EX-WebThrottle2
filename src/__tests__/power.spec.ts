@@ -40,7 +40,7 @@ describe('power store', () => {
     await flushPromises();
 
     expect(power.master).toBe(PowerState.ON);
-    expect(power.tracks.map((track) => track.on)).toEqual([true, true]);
+    expect(power.tracks.map(track => track.on)).toEqual([true, true]);
 
     station.receives('<pb>');
     await flushPromises();

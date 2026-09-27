@@ -68,36 +68,33 @@ export const useLocosStore = defineStore('locos', () => {
   const onLayout = ref<LayoutLoco[]>([]);
 
   function driving(address: number): boolean {
-    return throttles.value.some((throttle) => throttle.address === address);
+    return throttles.value.some(throttle => throttle.address === address);
   }
 
   // Locos moving on the layout that this browser is not driving yet, such as
   // ones another Throttle started, so an operator can pick them all up.
   const moving = computed<MovingLoco[]>(() =>
     onLayout.value
-      .filter((loco) => loco.speed > 0 && !driving(loco.address))
-      .map((loco) => ({
+      .filter(loco => loco.speed > 0 && !driving(loco.address))
+      .map(loco => ({
         ...loco,
         name: rosterEntry(loco.address)?.name ?? `Loco ${loco.address}`,
-      })),
-  );
+      })));
 
   // Saved locos that are not on a desk yet, ready to drive.
   const savedNotDriven = computed(() =>
-    roster.value.filter((loco) => !driving(loco.address)),
-  );
+    roster.value.filter(loco => !driving(loco.address)));
 
   // Locos driven here that are moving, which disconnecting would leave running.
   const movingHere = computed(() =>
-    throttles.value.filter((throttle) => throttle.speed > 0),
-  );
+    throttles.value.filter(throttle => throttle.speed > 0));
 
   function persist(): void {
     localStorage.setItem(ROSTER_KEY, JSON.stringify(roster.value));
   }
 
   function rosterEntry(address: number): RosterLoco | undefined {
-    return roster.value.find((loco) => loco.address === address);
+    return roster.value.find(loco => loco.address === address);
   }
 
   // State is per-connection: a fresh connect starts from a clean throttle
@@ -143,7 +140,7 @@ export const useLocosStore = defineStore('locos', () => {
     const { speed, estop } = decoded;
     const forward = decoded.direction === Direction.FORWARD;
     const seen = onLayout.value.find(
-      (candidate) => candidate.address === loco.address,
+      candidate => candidate.address === loco.address,
     );
 
     if (seen) {
@@ -154,7 +151,7 @@ export const useLocosStore = defineStore('locos', () => {
     }
 
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === loco.address,
+      candidate => candidate.address === loco.address,
     );
 
     if (!throttle) {
@@ -169,7 +166,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function acquire(address: number, mapId = 'default'): void {
     const existing = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (existing) {
@@ -180,7 +177,7 @@ export const useLocosStore = defineStore('locos', () => {
     }
 
     const saved = rosterEntry(address);
-    const seen = onLayout.value.find((loco) => loco.address === address);
+    const seen = onLayout.value.find(loco => loco.address === address);
 
     // A loco already running shows its speed straight away; the reply to
     // the request below confirms it.
@@ -217,7 +214,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function release(address: number): void {
     throttles.value = throttles.value.filter(
-      (candidate) => candidate.address !== address,
+      candidate => candidate.address !== address,
     );
 
     // Free the command-station slot too, so the layout has one less throttle.
@@ -226,7 +223,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function setMap(address: number, mapId: string): void {
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (!throttle) {
@@ -246,7 +243,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function setSpeed(address: number, speed: number): void {
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (!throttle) {
@@ -260,7 +257,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function setForward(address: number, forward: boolean): void {
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (!throttle) {
@@ -273,7 +270,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function emergencyStop(address: number): void {
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (!throttle) {
@@ -302,7 +299,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function setFunction(address: number, fn: number, state: boolean): void {
     const throttle = throttles.value.find(
-      (candidate) => candidate.address === address,
+      candidate => candidate.address === address,
     );
 
     if (!throttle) {
@@ -330,7 +327,7 @@ export const useLocosStore = defineStore('locos', () => {
 
   function removeLoco(address: number): void {
     roster.value = roster.value.filter(
-      (candidate) => candidate.address !== address,
+      candidate => candidate.address !== address,
     );
     persist();
   }

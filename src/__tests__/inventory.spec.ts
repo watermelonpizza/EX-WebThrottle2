@@ -38,7 +38,7 @@ describe('inventory store', () => {
 
     expect(station.sent).toContain('<JT 1>');
     expect(station.sent).toContain('<JT 2>');
-    expect(inventory.turnouts.map((turnout) => turnout.id)).toEqual([1, 2]);
+    expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([1, 2]);
 
     station.receives('<jT 1 C "Yard entry"><jT 2 T "">');
     await flushPromises();
@@ -61,7 +61,7 @@ describe('inventory store', () => {
     station.receives('<jT 2>');
     await flushPromises();
 
-    expect(inventory.turnouts.map((turnout) => turnout.id)).toEqual([2]);
+    expect(inventory.turnouts.map(turnout => turnout.id)).toEqual([2]);
   });
 
   it('notes when points move, but not when the station first reports them', async () => {

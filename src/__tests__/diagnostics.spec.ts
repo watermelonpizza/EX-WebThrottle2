@@ -16,7 +16,7 @@ async function setup() {
   // Looks a command up the way the search box does, by its pattern.
   function command(pattern: string): CommandDef {
     for (const commands of diagnostics.search(pattern).values()) {
-      const found = commands.find((candidate) => candidate.pattern === pattern);
+      const found = commands.find(candidate => candidate.pattern === pattern);
 
       if (found) {
         return found;
@@ -41,7 +41,7 @@ describe('diagnostics store', () => {
     expect(groups.size).toBeGreaterThan(0);
 
     for (const [group, commands] of groups) {
-      expect(commands.every((command) => command.group === group)).toBe(true);
+      expect(commands.every(command => command.group === group)).toBe(true);
     }
   });
 

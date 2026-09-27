@@ -14,7 +14,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 
 ## Engineering principles
 
-1. **Modern, current, mainstream.** Use the latest stable tooling and best practices as defined by the Vue, Node, and TypeScript teams (Vue 3.5 + Vite 8 + Pinia 4 + vue-router 5 + ESLint 10 flat config + Prettier, on Node 26). When in doubt, follow the official docs and the `create-vue` default project, then adjust only where our app needs it.
+1. **Modern, current, mainstream.** Use the latest stable tooling and best practices as defined by the Vue, Node, and TypeScript teams (Vue 3.5 + Vite 8 + Pinia 4 + vue-router 5 + ESLint 10 flat config + ESLint Stylistic, on Node 26). When in doubt, follow the official docs and the `create-vue` default project, then adjust only where our app needs it.
 
 2. **Minimal config and maintenance.** Prefer sensible defaults over options. The fewer files, flags, and settings a developer has to understand before they can run, compile, test, and deploy, the better. A clean checkout must install, type-check, test, and build with documented, obvious commands.
 
@@ -34,7 +34,7 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 
 10. **Pause for review before committing.** Never commit or push until the maintainer has reviewed and approved the current change-set. Present a short summary of the changes and wait for a go-ahead — even mid-iteration on a work branch.
 
-11. **Readable code grouping, with reasons, not magic numbers.** Separate blocks of code with blank lines so related statements are visibly grouped; the `@stylistic/padding-line-between-statements` rule enforces this (`npm run lint:fix` tidies it up). Whenever a value or formula is not self-evidently why (protocol byte layouts, reserved values, range ceilings), add a short comment explaining the reason and the source — and attach it directly to the thing it documents with no blank line between them, so IDE/JSDoc tooling binds it correctly. Core formatting rules are deprecated in ESLint; use the `@stylistic/...` versions, never the deprecated core names.
+11. **Readable code grouping, with reasons, not magic numbers.** Separate blocks of code with blank lines so related statements are visibly grouped; the `@stylistic/padding-line-between-statements` rule enforces this (`pnpm run lint:fix` tidies it up). Whenever a value or formula is not self-evidently why (protocol byte layouts, reserved values, range ceilings), add a short comment explaining the reason and the source — and attach it directly to the thing it documents with no blank line between them, so IDE/JSDoc tooling binds it correctly. Core formatting rules are deprecated in ESLint; use the `@stylistic/...` versions, never the deprecated core names.
 
 12. **No pixel-peeping in styles.** Size and space come from the shared tokens in `src/styles/tokens.css` (type, spacing and control scales) and from layout (flex, grid, content), never from one-off values tuned to match a screenshot: no hand-picked line heights, widths, heights, offsets or letter-spacing. Panels change size at run time and the layout will become user-arrangeable, so anything that only holds at one size is a bug.
 
@@ -50,11 +50,11 @@ EX-WebThrottle (shown in the app as **WebThrottle**) is the DCC-EX browser throt
 | State           | Pinia 4                                                                                                                                                                                                                                                                                                                           |
 | Routing         | vue-router 5, hash history (static hosting on GitHub Pages)                                                                                                                                                                                                                                                                       |
 | TypeScript      | pinned `^5.9.x` — **do NOT bump to `latest`**: TypeScript 7.x (native/Go) is not yet supported by vue-tsc/Volar and will crash the type-check. Revisit once Volar ships TS 7 support.                                                                                                                                             |
-| Lint/format     | ESLint 10 flat config + Prettier (`@vue/eslint-config-typescript` + `@vue/eslint-config-prettier`) + `@stylistic/eslint-plugin` (blank-line padding rule)                                                                                                                                                                         |
+| Lint/format     | ESLint 10 flat config (`@vue/eslint-config-typescript` + `eslint-plugin-vue`) + `@stylistic/eslint-plugin` for all formatting                                                                                                                                                                                                     |
 | Tests           | Vitest 5 + `@vue/test-utils` + jsdom (unit/component); Playwright for e2e, run against the host emulator                                                                                                                                                                                                                          |
 | Type-check      | `vue-tsc` inside the production build                                                                                                                                                                                                                                                                                             |
 
-**Removed and not to be re-added**: `@mdi/font` (a whole icon font for a handful of glyphs), `sass` (native CSS nesting covers what we used), `vuetify`, `vite-plugin-vuetify`, `three` / `@types/three`, `vue-round-slider`, `serialport`, `webfontloader`, `roboto-fontface`, `@iconify/vue`, `@cloudthrottle/dcc-ex--commands`, `@cloudthrottle/dcc-ex--serial-communicator`, `@babel/types`, `npm-run-all`, `eslint-config-google`, `playwright` (use `@playwright/test` only). We own the DCC-EX connection layer ourselves instead of the stale cloudthrottle packages.
+**Removed and not to be re-added**: `@mdi/font` (a whole icon font for a handful of glyphs), `sass` (native CSS nesting covers what we used), `vuetify`, `vite-plugin-vuetify`, `three` / `@types/three`, `vue-round-slider`, `serialport`, `webfontloader`, `roboto-fontface`, `@iconify/vue`, `@cloudthrottle/dcc-ex--commands`, `@cloudthrottle/dcc-ex--serial-communicator`, `@babel/types`, `npm-run-all`, `eslint-config-google`, `playwright` (use `@playwright/test` only), `prettier` and `@vue/eslint-config-prettier` (ESLint Stylistic does the formatting). We own the DCC-EX connection layer ourselves instead of the stale cloudthrottle packages.
 
 ## Architecture
 
@@ -101,7 +101,6 @@ pnpm run build          # type-check (vue-tsc) + production build
 pnpm run preview        # preview the production build
 pnpm run type-check     # vue-tsc only
 pnpm run lint           # ESLint (flat config, eslint.config.mjs); lint:fix to auto-fix
-pnpm run format:check   # Prettier check on every file it formats; format to write
 pnpm run test:unit      # Vitest unit/component tests with coverage (= pnpm test)
 pnpm run emulator       # build the host emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests

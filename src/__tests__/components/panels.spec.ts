@@ -55,6 +55,7 @@ describe('workspace panels', () => {
 
     await wrapper.get('[data-testid="lookup-search"]').setValue('forget every');
     const command = wrapper.get('[data-testid="lookup-command"] button');
+
     await command.trigger('click');
     expect(wrapper.get('[data-testid="lookup-send"]').text()).toContain(
       'Confirm',
@@ -98,6 +99,7 @@ describe('workspace panels', () => {
     await wrapper.get('[data-testid="traffic-send-form"]').trigger('submit');
     await flushPromises();
     const rows = wrapper.findAll('[data-testid="trace-row"]');
+
     await rows.at(-1)?.trigger('click');
     expect(wrapper.text()).toContain('does not know this');
     await wrapper.get('[data-testid="traffic-raw"]').trigger('click');
@@ -129,6 +131,7 @@ describe('workspace panels', () => {
 
     expect(wrapper.text()).toContain('Drive a loco');
     const locos = useLocosStore();
+
     locos.saveLoco(3, 'Switcher');
     locos.acquire(3);
     await flushPromises();
@@ -142,6 +145,7 @@ describe('function keys', () => {
     const wrapper = mount(FunctionKeys, {
       props: { functions, states: [], limit: 3 },
     });
+
     await wrapper.get('[data-function="0"]').trigger('click');
     await wrapper.get('[data-function="2"]').trigger('pointerdown');
     await wrapper.get('[data-function="2"]').trigger('pointerup');

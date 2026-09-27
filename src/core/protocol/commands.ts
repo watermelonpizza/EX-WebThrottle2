@@ -121,11 +121,11 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<= track AUTO>',
-        summary: "Add auto-reverse to a track output's current mode",
+        summary: 'Add auto-reverse to a track output\'s current mode',
       },
       {
         pattern: '<= track INV>',
-        summary: "Invert a track output's current polarity",
+        summary: 'Invert a track output\'s current polarity',
       },
       {
         pattern: '<= track DC loco>',
@@ -158,7 +158,7 @@ const GROUPS: CommandGroup[] = [
   {
     title: 'Locos',
     commands: [
-      { pattern: '<t loco>', summary: "Ask for a loco's speed and functions" },
+      { pattern: '<t loco>', summary: 'Ask for a loco\'s speed and functions' },
       {
         pattern: '<t loco speed direction>',
         summary: 'Set a loco speed and direction',
@@ -176,12 +176,12 @@ const GROUPS: CommandGroup[] = [
       { pattern: '<!Q>', summary: 'Report whether the layout is paused' },
       {
         pattern: '<m loco momentum>',
-        summary: "Set a loco's momentum for accelerating and braking",
+        summary: 'Set a loco\'s momentum for accelerating and braking',
         detail: 'loco 0 sets the default for every loco',
       },
       {
         pattern: '<m loco accelerating braking>',
-        summary: "Set a loco's accelerating and braking momentum separately",
+        summary: 'Set a loco\'s accelerating and braking momentum separately',
         detail: 'loco 0 sets the default for every loco',
       },
       {
@@ -259,7 +259,7 @@ const GROUPS: CommandGroup[] = [
       { pattern: '<JT>', summary: 'List turnout ids' },
       {
         pattern: '<JT id>',
-        summary: "Report a turnout's state and description",
+        summary: 'Report a turnout\'s state and description',
       },
       { pattern: '<T id T>', summary: 'Throw a turnout' },
       { pattern: '<T id C>', summary: 'Close a turnout' },
@@ -268,7 +268,7 @@ const GROUPS: CommandGroup[] = [
         summary: 'Throw or close a turnout',
         detail: 'state: 1 thrown, 0 closed',
       },
-      { pattern: '<T id X>', summary: "Show a turnout's definition" },
+      { pattern: '<T id X>', summary: 'Show a turnout\'s definition' },
       {
         pattern: '<T id DCC address subaddress>',
         summary: 'Create a DCC accessory turnout',
@@ -410,12 +410,12 @@ const GROUPS: CommandGroup[] = [
       { pattern: '<JO>', summary: 'List turntable ids' },
       {
         pattern: '<JO id>',
-        summary: "Report a turntable's state and description",
+        summary: 'Report a turntable\'s state and description',
       },
-      { pattern: '<JP id>', summary: "List a turntable's positions" },
+      { pattern: '<JP id>', summary: 'List a turntable\'s positions' },
       {
         pattern: '<I id>',
-        summary: "Report a turntable's type and position",
+        summary: 'Report a turntable\'s type and position',
       },
       { pattern: '<I id position>', summary: 'Turn a DCC turntable' },
       {
@@ -540,7 +540,7 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<JA id>',
-        summary: "Report a route's type and description",
+        summary: 'Report a route\'s type and description',
         needs: 'EX-RAIL',
       },
       {
@@ -550,7 +550,7 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<JR id>',
-        summary: "Report a roster loco's name and function names",
+        summary: 'Report a roster loco\'s name and function names',
         needs: 'EX-RAIL',
       },
       { pattern: '<JC>', summary: 'Report the fast clock time' },
@@ -737,7 +737,7 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<NF sensor>',
-        summary: "Show a sensor's pixel frames (hex)",
+        summary: 'Show a sensor\'s pixel frames (hex)',
       },
       {
         pattern: '<NG>',
@@ -749,7 +749,7 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<NI sensor>',
-        summary: "Show a sensor's state and configuration",
+        summary: 'Show a sensor\'s state and configuration',
       },
       {
         pattern: '<NI sensor twin>',
@@ -794,7 +794,7 @@ const GROUPS: CommandGroup[] = [
       },
       {
         pattern: '<NR sensor>',
-        summary: "Refresh a sensor's reference image",
+        summary: 'Refresh a sensor\'s reference image',
       },
       {
         pattern: '<NS sensor>',
@@ -1035,14 +1035,13 @@ function toCommand(group: CommandGroup, source: CommandSource): CommandDef {
     risky: source.risky ?? false,
     opcode: source.pattern.charAt(1),
     parts,
-    inputs: parts.filter((part) => part.kind === 'input'),
+    inputs: parts.filter(part => part.kind === 'input'),
     glued: rest !== '' && !rest.startsWith(' '),
   };
 }
 
-export const COMMANDS: CommandDef[] = GROUPS.flatMap((group) =>
-  group.commands.map((command) => toCommand(group, command)),
-);
+export const COMMANDS: CommandDef[] = GROUPS.flatMap(group =>
+  group.commands.map(command => toCommand(group, command)));
 
 export interface MatchedCommandParameter {
   input: CommandInput;
@@ -1152,7 +1151,7 @@ export function matchCommand(frame: string): CommandMatch | undefined {
           {
             command,
             parameters,
-            specificity: command.parts.filter((part) => part.kind === 'keyword')
+            specificity: command.parts.filter(part => part.kind === 'keyword')
               .length,
           },
         ]
@@ -1199,7 +1198,9 @@ export function buildCommand(
       continue;
     }
 
-    words.push(part.quoted ? `"${value.replace(/^"|"$/g, '')}"` : value);
+    words.push(part.quoted
+      ? `"${value.replace(/^"|"$/g, '')}"`
+      : value);
   }
 
   const gap = command.glued || words.length === 0 ? '' : ' ';
@@ -1248,8 +1249,8 @@ export function searchCommands(
       .toLowerCase();
 
     return (
-      words.every((word) => text.includes(word)) ||
-      sentPrefix(command).startsWith(typed)
+      words.every(word => text.includes(word))
+      || sentPrefix(command).startsWith(typed)
     );
   });
 }

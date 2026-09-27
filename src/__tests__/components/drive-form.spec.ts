@@ -22,7 +22,7 @@ describe('drive form', () => {
 
     await wrapper.get('[data-testid="drive-all-saved"]').trigger('click');
 
-    expect(locos.throttles.map((throttle) => throttle.address)).toEqual([3, 8]);
+    expect(locos.throttles.map(throttle => throttle.address)).toEqual([3, 8]);
     expect(station.sent).toContain('<t 8>');
   });
 
@@ -47,8 +47,9 @@ describe('drive form', () => {
 
     await wrapper.get('[data-testid="drive-all-moving"]').trigger('click');
 
-    expect(locos.throttles.map((throttle) => throttle.address)).toEqual([
-      12, 14,
+    expect(locos.throttles.map(throttle => throttle.address)).toEqual([
+      12,
+      14,
     ]);
     expect(wrapper.find('[data-testid="drive-all-moving"]').exists()).toBe(
       false,

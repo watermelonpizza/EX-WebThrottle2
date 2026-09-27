@@ -25,7 +25,7 @@ export class WebSocketTransport implements Transport {
 
   constructor(
     private readonly url: string,
-    private readonly createSocket: WebSocketFactory = (url) =>
+    private readonly createSocket: WebSocketFactory = url =>
       new WebSocket(url),
   ) {}
 
@@ -63,6 +63,7 @@ export class WebSocketTransport implements Transport {
         this.connected = true;
         resolve();
       };
+
       socket.onerror = () => {
         if (opened) {
           return;
@@ -71,6 +72,7 @@ export class WebSocketTransport implements Transport {
         this.socket = undefined;
         reject(new Error(`could not connect to ${this.url}`));
       };
+
       socket.onclose = () => {
         this.connected = false;
         this.socket = undefined;
@@ -83,9 +85,10 @@ export class WebSocketTransport implements Transport {
           reject(new Error(`connection closed before ${this.url}`));
         }
       };
+
       socket.onmessage = (event) => {
-        const text =
-          typeof event.data === 'string'
+        const text
+          = typeof event.data === 'string'
             ? event.data
             : this.decoder.decode(event.data);
 

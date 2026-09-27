@@ -20,7 +20,6 @@ jobs:
           cache: true
           require-lockfile: true
       - run: pnpm run lint
-      - run: pnpm run format:check
 
   type-check:
     name: Type check

@@ -54,10 +54,23 @@ function remove(map: LocoMap): void {
 </script>
 
 <template>
-  <section class="settings-section" aria-labelledby="maps-title">
+  <section
+    class="settings-section"
+    aria-labelledby="maps-title"
+  >
     <div class="settings-section__head">
-      <h2 id="maps-title" class="settings-section__title">Function maps</h2>
-      <button type="button" class="key" data-testid="new-map" @click="openNew">
+      <h2
+        id="maps-title"
+        class="settings-section__title"
+      >
+        Function maps
+      </h2>
+      <button
+        type="button"
+        class="key"
+        data-testid="new-map"
+        @click="openNew"
+      >
         New map
       </button>
     </div>
@@ -66,7 +79,10 @@ function remove(map: LocoMap): void {
       (like a horn), and hides the ones its decoder does not have.
     </p>
 
-    <ul v-if="maps.maps.length > 0" class="rows">
+    <ul
+      v-if="maps.maps.length > 0"
+      class="rows"
+    >
       <li
         v-for="map in maps.maps"
         :key="map.id"
@@ -95,7 +111,12 @@ function remove(map: LocoMap): void {
         </button>
       </li>
     </ul>
-    <p v-else class="settings-section__lead">No function maps yet.</p>
+    <p
+      v-else
+      class="settings-section__lead"
+    >
+      No function maps yet.
+    </p>
 
     <form
       v-if="open"
@@ -105,11 +126,18 @@ function remove(map: LocoMap): void {
     >
       <label class="map-editor__name">
         <span>Map name</span>
-        <input v-model="editing.name" class="field" data-testid="map-name" />
+        <input
+          v-model="editing.name"
+          class="field"
+          data-testid="map-name"
+        >
       </label>
 
       <div class="map-editor__rows">
-        <div class="map-editor__row map-editor__row--head" aria-hidden="true">
+        <div
+          class="map-editor__row map-editor__row--head"
+          aria-hidden="true"
+        >
           <span>Key</span><span>Name</span><span>Hold</span><span>Show</span>
         </div>
         <div
@@ -123,25 +151,31 @@ function remove(map: LocoMap): void {
             class="field"
             :aria-label="`F${def.fn} name`"
             data-testid="function-label"
-          />
+          >
           <input
             v-model="def.momentary"
             type="checkbox"
             :aria-label="`Hold F${def.fn} down to use it`"
             data-testid="function-momentary"
-          />
+          >
           <input
             :checked="!def.hidden"
             type="checkbox"
             :aria-label="`Show F${def.fn} on the throttle`"
             data-testid="function-visible"
             @change="def.hidden = !($event.target as HTMLInputElement).checked"
-          />
+          >
         </div>
       </div>
 
       <div class="map-editor__actions">
-        <button type="button" class="key" @click="open = false">Cancel</button>
+        <button
+          type="button"
+          class="key"
+          @click="open = false"
+        >
+          Cancel
+        </button>
         <button
           type="submit"
           class="key key--accent"

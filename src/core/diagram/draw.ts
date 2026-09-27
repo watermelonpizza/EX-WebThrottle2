@@ -126,15 +126,14 @@ export function legKey(id: number, leg: 'closed' | 'thrown'): string {
 
 export function diagramLines(diagram: LayoutDiagram): DiagramLine[] {
   return [
-    ...diagram.tracks.map((track) => ({ key: track.id, points: track.points })),
-    ...diagram.turnouts.flatMap((turnout) =>
-      (['closed', 'thrown'] as const).map((leg) => ({
+    ...diagram.tracks.map(track => ({ key: track.id, points: track.points })),
+    ...diagram.turnouts.flatMap(turnout =>
+      (['closed', 'thrown'] as const).map(leg => ({
         key: legKey(turnout.id, leg),
         points: turnout[leg],
         turnout,
         leg,
-      })),
-    ),
+      }))),
   ];
 }
 
@@ -148,13 +147,13 @@ export function sameLine(first: Point[], second: Point[]): boolean {
   const reversed = [...second].reverse();
 
   return (
-    first.every((point, index) => samePoint(point, second[index])) ||
-    first.every((point, index) => samePoint(point, reversed[index]))
+    first.every((point, index) => samePoint(point, second[index]))
+    || first.every((point, index) => samePoint(point, reversed[index]))
   );
 }
 
 function touches(first: Point[], second: Point[]): boolean {
-  return first.some((point) => second.some((other) => samePoint(point, other)));
+  return first.some(point => second.some(other => samePoint(point, other)));
 }
 
 function heading(from: Point, to: Point): number {
@@ -171,7 +170,7 @@ function directionsFrom(at: Point, line: Point[]): number[] {
 
     return [line[index - 1], line[index + 1]]
       .filter((next): next is Point => next !== undefined)
-      .map((next) => heading(at, next));
+      .map(next => heading(at, next));
   });
 }
 
@@ -182,7 +181,7 @@ function directionsFrom(at: Point, line: Point[]): number[] {
 export function labelToward(turnout: DiagramTurnout, lines: Point[][]): Point {
   const at = turnout.closed[0];
   const closed = heading(at, turnout.closed[1]);
-  const found = lines.flatMap((line) => directionsFrom(at, line));
+  const found = lines.flatMap(line => directionsFrom(at, line));
 
   // With nothing drawn into the switch point, take the toe to run straight on
   // from the closed leg.
@@ -191,7 +190,7 @@ export function labelToward(turnout: DiagramTurnout, lines: Point[][]): Point {
     heading(at, turnout.thrown[1]),
     ...(found.length > 0 ? found : [closed + Math.PI]),
   ]
-    .map((angle) => (angle + 2 * Math.PI) % (2 * Math.PI))
+    .map(angle => (angle + 2 * Math.PI) % (2 * Math.PI))
     .sort((first, second) => first - second);
 
   let widest = { size: -1, middle: 0 };
@@ -214,8 +213,8 @@ function buffer(
   end: 'start' | 'end',
   tone: LineTone,
 ): DrawnBuffer {
-  const [at, towards] =
-    end === 'start'
+  const [at, towards]
+    = end === 'start'
       ? [points[0], points[1]]
       : [points[points.length - 1], points[points.length - 2]];
 
@@ -239,13 +238,13 @@ function plainTones(
   const tones = new Map<string, LineTone>();
 
   for (const track of diagram.tracks) {
-    const joined = legs.filter((leg) => touches(track.points, leg.points));
+    const joined = legs.filter(leg => touches(track.points, leg.points));
 
     tones.set(
       track.id,
-      joined.some((leg) => leg.tone === 'set')
+      joined.some(leg => leg.tone === 'set')
         ? 'set'
-        : joined.length > 0 && joined.every((leg) => leg.tone === 'unset')
+        : joined.length > 0 && joined.every(leg => leg.tone === 'unset')
           ? 'unset'
           : 'idle',
     );
@@ -263,7 +262,7 @@ function plainTones(
       }
 
       const lit = diagram.tracks.some(
-        (other) =>
+        other =>
           tones.get(other.id) === 'set' && touches(track.points, other.points),
       );
 
@@ -296,8 +295,8 @@ export function drawDiagram(
       const points = turnout[leg];
       const key = legKey(turnout.id, leg);
       const isSet = thrown !== undefined && (leg === 'thrown') === thrown;
-      const tone: LineTone =
-        thrown === undefined ? 'idle' : isSet ? 'set' : 'unset';
+      const tone: LineTone
+        = thrown === undefined ? 'idle' : isSet ? 'set' : 'unset';
 
       legs.push({ key, points, tone, turnout: turnout.id });
 
@@ -332,27 +331,27 @@ export function drawDiagram(
 
   // Every other line in the drawing, for finding what meets each switch point.
   const others = (own: DiagramTurnout): Point[][] =>
-    lines.filter((line) => line.turnout !== own).map((line) => line.points);
+    lines.filter(line => line.turnout !== own).map(line => line.points);
 
   const drawn = [...plain, ...legs];
-  const byTone = (tone: LineTone) => drawn.filter((line) => line.tone === tone);
+  const byTone = (tone: LineTone) => drawn.filter(line => line.tone === tone);
 
   return {
     // Lit lines go last so a lit leg sharing track with an unset one shows.
     lines: [...byTone('idle'), ...byTone('unset'), ...byTone('set')],
     gaps,
     buffers,
-    sections: diagram.sections.map((section) => ({
+    sections: diagram.sections.map(section => ({
       ...section,
       occupied: sensorActive(section.sensor),
     })),
-    turnouts: diagram.turnouts.map((turnout) => ({
+    turnouts: diagram.turnouts.map(turnout => ({
       id: turnout.id,
       at: turnout.closed[0],
       toward: labelToward(turnout, others(turnout)),
     })),
     berths: diagram.berths.flatMap((berth) => {
-      const line = lines.find((candidate) => candidate.key === berth.on);
+      const line = lines.find(candidate => candidate.key === berth.on);
 
       // A berth names a line that exists; the diagram tests check that for
       // every authored diagram, so one that does not is left out.

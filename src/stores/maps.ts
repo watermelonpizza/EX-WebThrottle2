@@ -34,7 +34,7 @@ export const useMapsStore = defineStore('maps', () => {
   }
 
   function updateMap(id: string, name: string, functions: FunctionDef[]): void {
-    const map = maps.value.find((candidate) => candidate.id === id);
+    const map = maps.value.find(candidate => candidate.id === id);
 
     if (!map) {
       return;
@@ -46,12 +46,12 @@ export const useMapsStore = defineStore('maps', () => {
   }
 
   function deleteMap(id: string): void {
-    maps.value = maps.value.filter((map) => map.id !== id);
+    maps.value = maps.value.filter(map => map.id !== id);
     persist();
   }
 
   function findMap(id: string | undefined): LocoMap | undefined {
-    return maps.value.find((map) => map.id === id);
+    return maps.value.find(map => map.id === id);
   }
 
   function mapName(id: string): string {
@@ -66,7 +66,7 @@ export const useMapsStore = defineStore('maps', () => {
 
     return map
       ? map.functions
-          .filter((def) => !def.hidden)
+          .filter(def => !def.hidden)
           .sort((first, second) => first.fn - second.fn)
       : DEFAULT_FUNCTIONS;
   }
@@ -82,7 +82,7 @@ export const useMapsStore = defineStore('maps', () => {
         return { ...def, hidden: false };
       }
 
-      const own = map.functions.find((candidate) => candidate.fn === def.fn);
+      const own = map.functions.find(candidate => candidate.fn === def.fn);
 
       return own ? { ...own } : { ...def, hidden: true };
     });

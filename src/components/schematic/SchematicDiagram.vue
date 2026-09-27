@@ -55,7 +55,7 @@ onMounted(() => {
 onScopeDispose(() => resize?.disconnect());
 
 function turnoutEntry(id: number) {
-  return inventory.turnouts.find((turnout) => turnout.id === id);
+  return inventory.turnouts.find(turnout => turnout.id === id);
 }
 
 function turnoutThrown(id: number): boolean | undefined {
@@ -66,10 +66,9 @@ const drawing = computed(() =>
   drawDiagram(
     props.diagram,
     turnoutThrown,
-    (id) =>
-      inventory.sensors.find((sensor) => sensor.id === id)?.active ?? false,
-  ),
-);
+    id =>
+      inventory.sensors.find(sensor => sensor.id === id)?.active ?? false,
+  ));
 
 // Turnouts pressed here and not yet confirmed by the Command Station. The
 // drawing only ever shows what the station reports, so a press shows as
@@ -91,7 +90,7 @@ function settle(id: number): void {
 }
 
 watch(
-  () => inventory.turnouts.map((turnout) => `${turnout.id}:${turnout.thrown}`),
+  () => inventory.turnouts.map(turnout => `${turnout.id}:${turnout.thrown}`),
   (now, before) => {
     for (const entry of now) {
       if (!before?.includes(entry)) {
@@ -101,10 +100,10 @@ watch(
   },
 );
 
-onScopeDispose(() => timers.forEach((timer) => clearTimeout(timer)));
+onScopeDispose(() => timers.forEach(timer => clearTimeout(timer)));
 
 function points(line: Point[]): string {
-  return line.map((point) => `${point.x},${point.y}`).join(' ');
+  return line.map(point => `${point.x},${point.y}`).join(' ');
 }
 
 // A short stroke across the track at a point, for buffer stops and the ends
@@ -139,8 +138,7 @@ const turnouts = computed(() =>
         ? `Turnout ${turnout.id}, ${lie}. Press to ${lie === 'thrown' ? 'close' : 'throw'}.`
         : `Turnout ${turnout.id}, not reported by the Command Station.`,
     };
-  }),
-);
+  }));
 
 // When each line was last lit by points moving, so everything the new route
 // lights (the leg, and any plain track it leads onto) flashes into place
@@ -149,12 +147,12 @@ const turnouts = computed(() =>
 const litAt = new Map<string, number>();
 
 watch(drawing, (now, before) => {
-  if (!inventory.turnouts.some((turnout) => changingOver(turnout))) {
+  if (!inventory.turnouts.some(turnout => changingOver(turnout))) {
     return;
   }
 
   const wasLit = new Set(
-    before.lines.filter((line) => line.tone === 'set').map((line) => line.key),
+    before.lines.filter(line => line.tone === 'set').map(line => line.key),
   );
   const at = Date.now();
 
@@ -174,7 +172,7 @@ function changing(key: string): boolean {
 // A train description: the running number from the roster name (the part
 // before any " · "), squeezed to fit a berth, or the DCC address.
 function describe(address: number): string {
-  const name = locos.roster.find((loco) => loco.address === address)?.name;
+  const name = locos.roster.find(loco => loco.address === address)?.name;
   const number = name?.split(' · ')[0].replace(/\s+/g, '');
 
   return number && number.length <= 6 ? number : String(address);
@@ -187,8 +185,7 @@ const berths = computed(() =>
     return address === undefined
       ? []
       : [{ ...berth, address, text: describe(address) }];
-  }),
-);
+  }));
 
 function toggle(id: number, known: boolean): void {
   if (!known) {
@@ -227,7 +224,10 @@ function toggle(id: number, known: boolean): void {
       :data-testid="line.turnout ? `leg-${line.key}` : undefined"
     />
 
-    <template v-for="section in drawing.sections" :key="section.sensor">
+    <template
+      v-for="section in drawing.sections"
+      :key="section.sensor"
+    >
       <template v-if="section.occupied">
         <polyline
           class="line line--occupied"
@@ -292,7 +292,11 @@ function toggle(id: number, known: boolean): void {
       @keydown.enter.prevent="toggle(turnout.id, turnout.known)"
       @keydown.space.prevent="toggle(turnout.id, turnout.known)"
     >
-      <circle class="turnout__hit" :cx="turnout.at.x" :cy="turnout.at.y" />
+      <circle
+        class="turnout__hit"
+        :cx="turnout.at.x"
+        :cy="turnout.at.y"
+      />
       <!-- The number is set off from the switch point by a screen distance,
            in the direction the drawing chose, so it stays beside its points
            at any size. -->
@@ -303,8 +307,16 @@ function toggle(id: number, known: boolean): void {
           '--toward-y': turnout.toward.y,
         }"
       >
-        <circle class="turnout__ring" :cx="turnout.at.x" :cy="turnout.at.y" />
-        <text class="turnout__label" :x="turnout.at.x" :y="turnout.at.y">
+        <circle
+          class="turnout__ring"
+          :cx="turnout.at.x"
+          :cy="turnout.at.y"
+        />
+        <text
+          class="turnout__label"
+          :x="turnout.at.x"
+          :y="turnout.at.y"
+        >
           {{ turnout.id }}
         </text>
       </g>

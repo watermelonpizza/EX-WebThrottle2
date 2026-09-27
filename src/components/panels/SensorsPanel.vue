@@ -16,16 +16,25 @@ const diagrams = useDiagramStore();
       }}</span>
     </h2>
 
-    <p v-if="inventory.sensors.length === 0" class="list-panel__empty">
+    <p
+      v-if="inventory.sensors.length === 0"
+      class="list-panel__empty"
+    >
       No sensors reported by your Command Station.
     </p>
-    <ul v-else class="row-list list-panel__rows">
+    <ul
+      v-else
+      class="row-list list-panel__rows"
+    >
       <li
         v-for="sensor in inventory.sensors"
         :key="sensor.id"
         :data-testid="`sensor-${sensor.id}`"
       >
-        <SensorRow :sensor="sensor" :name="diagrams.sensorName(sensor.id)" />
+        <SensorRow
+          :sensor="sensor"
+          :name="diagrams.sensorName(sensor.id)"
+        />
       </li>
     </ul>
   </div>

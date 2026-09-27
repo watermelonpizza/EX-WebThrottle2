@@ -26,12 +26,12 @@ export function decodeSpeedByte(speedByte: number): DecodedSpeed {
 
   // Undo the packing above: subtract the reserved bytes that precede the run
   // of speed values in each direction range.
-  const raw =
-    forward && speedByte >= 130
+  const raw
+    = forward && speedByte >= 130
       ? speedByte - 129
       : !forward && speedByte >= 2
-        ? speedByte - 1
-        : 0;
+          ? speedByte - 1
+          : 0;
 
   return {
     direction: forward ? Direction.FORWARD : Direction.REVERSE,

@@ -49,8 +49,13 @@ function send(command: CommandDef): void {
 </script>
 
 <template>
-  <div class="commands" data-testid="commands-panel">
-    <h2 class="commands__title">Commands</h2>
+  <div
+    class="commands"
+    data-testid="commands-panel"
+  >
+    <h2 class="commands__title">
+      Commands
+    </h2>
     <input
       v-model="query"
       type="search"
@@ -58,15 +63,26 @@ function send(command: CommandDef): void {
       placeholder="Search, for example turnout, power main or <JT>"
       aria-label="Search commands"
       data-testid="lookup-search"
-    />
+    >
 
-    <div class="lookup-list" data-testid="lookup-list">
-      <p v-if="groups.size === 0" class="commands__muted">
+    <div
+      class="lookup-list"
+      data-testid="lookup-list"
+    >
+      <p
+        v-if="groups.size === 0"
+        class="commands__muted"
+      >
         No commands match that search.
       </p>
 
-      <section v-for="[group, commands] in groups" :key="group">
-        <h3 class="lookup-list__group">{{ group }}</h3>
+      <section
+        v-for="[group, commands] in groups"
+        :key="group"
+      >
+        <h3 class="lookup-list__group">
+          {{ group }}
+        </h3>
 
         <ul class="lookup-list__commands">
           <li
@@ -87,10 +103,16 @@ function send(command: CommandDef): void {
             >
               <code class="lookup__pattern">{{ command.pattern }}</code>
               <span class="lookup__summary">{{ command.summary }}</span>
-              <span v-if="command.needs" class="lookup__needs">
+              <span
+                v-if="command.needs"
+                class="lookup__needs"
+              >
                 Needs {{ command.needs }}
               </span>
-              <span v-if="command.risky" class="lookup__risky">Asks first</span>
+              <span
+                v-if="command.risky"
+                class="lookup__risky"
+              >Asks first</span>
             </button>
 
             <form
@@ -100,11 +122,17 @@ function send(command: CommandDef): void {
               @submit.prevent="send(command)"
               @keydown.esc="openPattern = ''"
             >
-              <p v-if="command.detail" class="lookup__detail">
+              <p
+                v-if="command.detail"
+                class="lookup__detail"
+              >
                 {{ command.detail }}
               </p>
 
-              <div v-if="command.inputs.length > 0" class="lookup__inputs">
+              <div
+                v-if="command.inputs.length > 0"
+                class="lookup__inputs"
+              >
                 <label
                   v-for="(input, index) in command.inputs"
                   :key="index"
@@ -118,16 +146,22 @@ function send(command: CommandDef): void {
                     class="field"
                     autocomplete="off"
                     :data-testid="`lookup-value-${index}`"
-                  />
+                  >
                 </label>
               </div>
 
-              <p v-if="command.risky" class="lookup__warning">
+              <p
+                v-if="command.risky"
+                class="lookup__warning"
+              >
                 This is hard to undo on a running layout. Check before sending.
               </p>
 
               <div class="lookup__send">
-                <code class="lookup__preview" data-testid="lookup-preview">
+                <code
+                  class="lookup__preview"
+                  data-testid="lookup-preview"
+                >
                   {{ diagnostics.preview(command, values) }}
                 </code>
                 <button

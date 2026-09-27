@@ -36,7 +36,7 @@ export const useDiagnosticsStore = defineStore('diagnostics', () => {
 
   // Matching commands, grouped as the catalog groups them.
   function search(query: string): Map<string, CommandDef[]> {
-    return Map.groupBy(searchCommands(query), (command) => command.group);
+    return Map.groupBy(searchCommands(query), command => command.group);
   }
 
   // A command sends on one click unless it needs values filled in, or is
@@ -88,7 +88,7 @@ export const useDiagnosticsStore = defineStore('diagnostics', () => {
         value,
         meaning: match.command.detail
           .split(' · ')
-          .find((note) => note.startsWith(`${input.name}:`))
+          .find(note => note.startsWith(`${input.name}:`))
           ?.slice(input.name.length + 1)
           .trim(),
       })),

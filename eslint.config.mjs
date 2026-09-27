@@ -1,13 +1,9 @@
 import { globalIgnores } from 'eslint/config';
-import {
-  defineConfigWithVueTs,
-  vueTsConfigs,
-} from '@vue/eslint-config-typescript';
+import { vueTsConfigs, withVueTs } from '@vue/eslint-config-typescript';
 import pluginVue from 'eslint-plugin-vue';
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 import stylistic from '@stylistic/eslint-plugin';
 
-export default defineConfigWithVueTs(
+const config = [
   globalIgnores([
     '**/dist/**',
     '**/coverage/**',
@@ -16,28 +12,39 @@ export default defineConfigWithVueTs(
     '**/node_modules/**',
     // Vendored agent skills (third-party code, not ours to lint)
     '.pi/**',
+    '.impeccable/**',
   ]),
-  {
-    name: 'app/files-to-lint',
-    files: ['**/*.{ts,mts,tsx,vue}'],
-  },
-  stylistic.configs.recommended,
+  pluginVue.configs['flat/recommended-error'],
+  vueTsConfigs.recommended,
+  stylistic.configs.customize({
+    semi: true,
+  }),
   {
     name: 'app/rules',
     plugins: {
       '@stylistic': stylistic,
     },
     rules: {
+      // Later entries win, so the 'any' lines let a run of imports or of
+      // declarations stay together.
       '@stylistic/padding-line-between-statements': [
         'error',
-        { blankLine: 'always', prev: '*', next: 'return' },
-        { blankLine: 'always', prev: '*', next: 'throw' },
+        { blankLine: 'always', prev: 'import', next: '*' },
+        { blankLine: 'any', prev: 'import', next: 'import' },
+        { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+        {
+          blankLine: 'any',
+          prev: ['const', 'let', 'var'],
+          next: ['const', 'let', 'var'],
+        },
+        { blankLine: 'always', prev: ['block-like', 'function'], next: '*' },
         {
           blankLine: 'always',
-          prev: ['const', 'let', 'var'],
-          next: ['block-like'],
+          prev: '*',
+          next: ['block-like', 'function', 'return', 'throw'],
         },
       ],
+      '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/curly-newline': [
         'error',
         {
@@ -48,25 +55,48 @@ export default defineConfigWithVueTs(
           TryStatementFinalizer: { multiline: true, minElements: 0 },
         },
       ],
+      '@stylistic/list-style': ['error', { empty: 'never' }],
     },
   },
-  ...pluginVue.configs['flat/essential'],
-  vueTsConfigs.recommended,
-  skipFormatting,
   {
-    name: 'app/braces',
+    name: 'app/consistency',
     rules: {
-      // Braces on every control statement, one-liners included. This sits
-      // after skipFormatting because eslint-config-prettier switches `curly`
-      // off wholesale; the "all" option never disagrees with Prettier, only
-      // the multi-line ones do. `curly` is a core suggestion rule, not one of
-      // the formatting rules @stylistic took over.
-      curly: ['error', 'all'],
+      // Braces on every control statement, one-liners included.
+      'curly': ['error', 'all'],
+      // One import per module; a separate `import type` line is fine. That
+      // types are imported with `import type` is checked by TypeScript
+      // itself (verbatimModuleSyntax in tsconfig.json).
+      'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
+      // Names inside { } in order; the order of import lines is left alone.
+      'sort-imports': ['error', { ignoreDeclarationSort: true }],
+      'no-else-return': 'error',
+      'prefer-template': 'error',
+      'logical-assignment-operators': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportSpecifier[importKind="type"]',
+          message: 'Import types on their own `import type { … }` line.',
+        },
+        {
+          selector: 'ForStatement[init=null][test=null][update=null]',
+          message: 'Write an endless loop as `while (true)`.',
+        },
+      ],
     },
   },
   {
-    // Components know stores, not the wire: protocol and transport details
-    // reach the screen only through store state and actions (AGENTS.md).
+    // The app logs through src/core/logging, which tags every event.
+    name: 'app/logging',
+    files: ['src/**'],
+    ignores: ['src/core/logging/**'],
+    rules: {
+      'no-console': 'error',
+    },
+  },
+  {
+    // Components should not access transport details directly;
+    // They should instead reach the screen only through store state and actions
     name: 'app/layers',
     files: ['src/components/**', 'src/views/**'],
     rules: {
@@ -89,4 +119,6 @@ export default defineConfigWithVueTs(
       ],
     },
   },
-);
+];
+
+export default withVueTs(config);

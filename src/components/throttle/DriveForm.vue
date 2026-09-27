@@ -30,7 +30,10 @@ function submit(): void {
 </script>
 
 <template>
-  <div class="drive-form" :class="{ 'drive-form--compact': compact }">
+  <div
+    class="drive-form"
+    :class="{ 'drive-form--compact': compact }"
+  >
     <form
       class="drive-form__row"
       data-testid="drive-form"
@@ -44,16 +47,19 @@ function submit(): void {
           inputmode="numeric"
           autocomplete="off"
           data-testid="drive-address"
-        />
+        >
       </label>
-      <label v-if="!compact" class="drive-form__field drive-form__field--wide">
+      <label
+        v-if="!compact"
+        class="drive-form__field drive-form__field--wide"
+      >
         <span class="drive-form__label">Name (optional, saves it)</span>
         <input
           v-model="name"
           class="field"
           autocomplete="off"
           data-testid="drive-name"
-        />
+        >
       </label>
       <button
         type="submit"
@@ -73,7 +79,10 @@ function submit(): void {
       aria-labelledby="drive-moving"
     >
       <div class="drive-form__group-head">
-        <h3 id="drive-moving" class="drive-form__label">
+        <h3
+          id="drive-moving"
+          class="drive-form__label"
+        >
           Moving on the layout
         </h3>
         <button
@@ -110,7 +119,12 @@ function submit(): void {
       aria-labelledby="drive-saved"
     >
       <div class="drive-form__group-head">
-        <h3 id="drive-saved" class="drive-form__label">Saved locos</h3>
+        <h3
+          id="drive-saved"
+          class="drive-form__label"
+        >
+          Saved locos
+        </h3>
         <button
           v-if="saved.length > 1"
           type="button"

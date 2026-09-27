@@ -76,7 +76,7 @@ export const useDiagramStore = defineStore('diagram', () => {
   // The berth a loco is described in, or '' when it is not on the diagram.
   function berthOf(address: number): string {
     return (
-      diagram.value?.berths.find((berth) => occupant(berth.id) === address)
+      diagram.value?.berths.find(berth => occupant(berth.id) === address)
         ?.id ?? ''
     );
   }
@@ -99,17 +99,17 @@ export const useDiagramStore = defineStore('diagram', () => {
   // The station's own description wins; the diagram's name fills the gap.
   function turnoutName(id: number, stationLabel = ''): string {
     return (
-      stationLabel ||
-      diagram.value?.turnouts.find((turnout) => turnout.id === id)?.name ||
-      ''
+      stationLabel
+      || diagram.value?.turnouts.find(turnout => turnout.id === id)?.name
+      || ''
     );
   }
 
   // What a sensor watches, by the diagram's name for that stretch of track.
   function sensorName(id: number): string {
     return (
-      diagram.value?.sections.find((section) => section.sensor === id)?.label ??
-      `Sensor ${id}`
+      diagram.value?.sections.find(section => section.sensor === id)?.label
+      ?? `Sensor ${id}`
     );
   }
 

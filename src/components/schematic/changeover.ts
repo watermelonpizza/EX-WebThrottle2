@@ -9,8 +9,8 @@ export const CHANGEOVER_FLASHES = 3;
 
 export function changingOver(turnout: TurnoutEntry | undefined): boolean {
   return (
-    turnout?.movedAt !== undefined &&
-    Date.now() - turnout.movedAt < CHANGEOVER_MS
+    turnout?.movedAt !== undefined
+    && Date.now() - turnout.movedAt < CHANGEOVER_MS
   );
 }
 

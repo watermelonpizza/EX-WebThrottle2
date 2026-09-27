@@ -33,7 +33,13 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
       aria-hidden="true"
       :style="CHANGEOVER_STYLE"
     >
-      <line class="route route--set" x1="6" y1="48" x2="42" y2="48" />
+      <line
+        class="route route--set"
+        x1="6"
+        y1="48"
+        x2="42"
+        y2="48"
+      />
       <line
         class="route"
         :class="
@@ -55,12 +61,35 @@ const lie = computed(() => (thrown.value ? 'Thrown' : 'Closed'));
         "
         points="42,48 72,18 114,18"
       />
-      <line v-if="thrown" class="route__gap" x1="52" y1="48" x2="62" y2="48" />
-      <line v-else class="route__gap" x1="49" y1="41" x2="56" y2="34" />
-      <line class="route__stop" x1="6" y1="41" x2="6" y2="55" />
+      <line
+        v-if="thrown"
+        class="route__gap"
+        x1="52"
+        y1="48"
+        x2="62"
+        y2="48"
+      />
+      <line
+        v-else
+        class="route__gap"
+        x1="49"
+        y1="41"
+        x2="56"
+        y2="34"
+      />
+      <line
+        class="route__stop"
+        x1="6"
+        y1="41"
+        x2="6"
+        y2="55"
+      />
     </svg>
     <span class="turnout-row__number numeric">{{ turnout.id }}</span>
-    <span class="turnout-row__name" :title="name">{{ name }}</span>
+    <span
+      class="turnout-row__name"
+      :title="name"
+    >{{ name }}</span>
     <span
       class="turnout-row__state"
       :data-testid="`turnout-state-${turnout.id}`"

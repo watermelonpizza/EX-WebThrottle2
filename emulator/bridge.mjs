@@ -46,7 +46,7 @@ emulator.stdout.on('data', (data) => {
   }
 });
 
-emulator.stderr.on('data', (data) => process.stderr.write(data));
+emulator.stderr.on('data', data => process.stderr.write(data));
 
 emulator.on('exit', (code) => {
   console.log(`emulator exited (${code}); closing bridge`);

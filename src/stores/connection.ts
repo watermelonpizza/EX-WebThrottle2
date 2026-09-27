@@ -8,10 +8,10 @@ import {
   requestTrackState,
 } from '@/core/protocol';
 import type { Transport } from '@/core/transport';
-import { extractFrames } from '@/core/transport';
 import {
   WebSerialTransport,
   WebSocketTransport,
+  extractFrames,
   isWebSerialSupported,
   webSocketUrlError,
 } from '@/core/transport';
@@ -31,6 +31,7 @@ export interface TraceEntry {
 const MAX_TRACE = 500;
 
 const serialAvailable = isWebSerialSupported();
+
 export const EMULATOR_URL = 'ws://127.0.0.1:4444';
 
 // Owns the whole connection: how far the browser got in the connect lifecycle,
@@ -139,8 +140,8 @@ export const useConnectionStore = defineStore('connection', () => {
         clearConnectionState();
         // The link dropped on its own (cable out, emulator stopped). Say so:
         // locos keep running on the Command Station until something stops them.
-        connectionError.value =
-          'The connection to the Command Station was lost. Trains may still be moving: reconnect to stop them.';
+        connectionError.value
+          = 'The connection to the Command Station was lost. Trains may still be moving: reconnect to stop them.';
       }
     });
     status.value = 'connecting';

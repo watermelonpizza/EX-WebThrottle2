@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/stores/settings';
 
 function pinia() {
   const value = createPinia();
+
   setActivePinia(value);
   localStorage.clear();
 
@@ -36,6 +37,7 @@ describe('settings components', () => {
   it('saves, edits, and deletes a loco', async () => {
     const value = pinia();
     const mapId = useMapsStore().createMap('Switcher map', []);
+
     useLocosStore().saveLoco(99, 'Existing', mapId);
     const wrapper = mount(SavedLocos, { global: { plugins: [value] } });
 

@@ -11,7 +11,10 @@ const connected = computed(() => connection.status === 'connected');
 </script>
 
 <template>
-  <div class="app" :class="{ 'app--connected': connected }">
+  <div
+    class="app"
+    :class="{ 'app--connected': connected }"
+  >
     <TopBar v-if="connected" />
     <main class="app__main">
       <router-view />

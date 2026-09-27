@@ -11,6 +11,7 @@ import {
   setOutput,
   setTurnout,
 } from '@/core/protocol';
+
 import { useConnectionStore } from '@/stores/connection';
 
 export interface TurnoutEntry {
@@ -41,7 +42,7 @@ function upsert<T extends { id: number }>(
   id: number,
   create: () => T,
 ): T {
-  const existing = list.value.find((entry) => entry.id === id);
+  const existing = list.value.find(entry => entry.id === id);
 
   if (existing) {
     return existing;
@@ -103,9 +104,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     if (message.kind === 'turnout-list') {
       // The list is the station's whole visible set, so anything missing from it
       // is gone. Each listed turnout is then asked for its description.
-      turnouts.value = turnouts.value.filter((entry) =>
-        message.ids.includes(entry.id),
-      );
+      turnouts.value = turnouts.value.filter(entry =>
+        message.ids.includes(entry.id));
 
       for (const id of message.ids) {
         turnout(id);
@@ -171,7 +171,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   // Both switches only send: the station answers with <H …> / <Y …>, and that
   // answer is what updates the state shown here.
   function toggleTurnout(id: number): void {
-    const entry = turnouts.value.find((candidate) => candidate.id === id);
+    const entry = turnouts.value.find(candidate => candidate.id === id);
 
     if (!entry) {
       return;
@@ -183,7 +183,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   function toggleOutput(id: number): void {
-    const entry = outputs.value.find((candidate) => candidate.id === id);
+    const entry = outputs.value.find(candidate => candidate.id === id);
 
     if (!entry) {
       return;

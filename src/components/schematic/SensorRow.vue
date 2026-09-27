@@ -5,13 +5,38 @@ defineProps<{ sensor: SensorEntry; name: string }>();
 </script>
 
 <template>
-  <div class="sensor" :class="{ 'sensor--occupied': sensor.active }">
-    <svg class="sensor__track" viewBox="0 0 64 16" aria-hidden="true">
-      <line x1="2" y1="8" x2="62" y2="8" />
-      <line x1="2" y1="2" x2="2" y2="14" />
-      <line x1="62" y1="2" x2="62" y2="14" />
+  <div
+    class="sensor"
+    :class="{ 'sensor--occupied': sensor.active }"
+  >
+    <svg
+      class="sensor__track"
+      viewBox="0 0 64 16"
+      aria-hidden="true"
+    >
+      <line
+        x1="2"
+        y1="8"
+        x2="62"
+        y2="8"
+      />
+      <line
+        x1="2"
+        y1="2"
+        x2="2"
+        y2="14"
+      />
+      <line
+        x1="62"
+        y1="2"
+        x2="62"
+        y2="14"
+      />
     </svg>
-    <span class="sensor__name" :title="name">{{ name }}</span>
+    <span
+      class="sensor__name"
+      :title="name"
+    >{{ name }}</span>
     <span class="sensor__state">{{
       sensor.active ? 'Occupied' : 'Clear'
     }}</span>

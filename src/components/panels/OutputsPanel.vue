@@ -13,11 +13,20 @@ const inventory = useInventoryStore();
       }}</span>
     </h2>
 
-    <p v-if="inventory.outputs.length === 0" class="list-panel__empty">
+    <p
+      v-if="inventory.outputs.length === 0"
+      class="list-panel__empty"
+    >
       No outputs reported by your Command Station.
     </p>
-    <ul v-else class="row-list list-panel__rows">
-      <li v-for="output in inventory.outputs" :key="output.id">
+    <ul
+      v-else
+      class="row-list list-panel__rows"
+    >
+      <li
+        v-for="output in inventory.outputs"
+        :key="output.id"
+      >
         <!-- A switch: the Command Station's answer, not the press, sets it. -->
         <button
           type="button"
@@ -28,7 +37,10 @@ const inventory = useInventoryStore();
           :data-testid="`output-${output.id}`"
           @click="inventory.toggleOutput(output.id)"
         >
-          <span class="output__lamp" aria-hidden="true" />
+          <span
+            class="output__lamp"
+            aria-hidden="true"
+          />
           <span class="output__name">Output {{ output.id }}</span>
           <span class="output__state">{{ output.active ? 'ON' : 'OFF' }}</span>
         </button>

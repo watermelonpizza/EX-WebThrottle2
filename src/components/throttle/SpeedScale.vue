@@ -18,7 +18,10 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
 </script>
 
 <template>
-  <div class="scale" :style="{ '--fill': fill }">
+  <div
+    class="scale"
+    :style="{ '--fill': fill }"
+  >
     <input
       class="scale__input"
       type="range"
@@ -32,8 +35,11 @@ const fill = computed(() => `${(props.speed / MAX_SPEED) * 100}%`);
       @input="
         $emit('change', Number(($event.target as HTMLInputElement).value))
       "
-    />
-    <div class="scale__ticks" aria-hidden="true">
+    >
+    <div
+      class="scale__ticks"
+      aria-hidden="true"
+    >
       <span
         v-for="tick in TICKS"
         :key="tick"

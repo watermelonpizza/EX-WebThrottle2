@@ -11,7 +11,8 @@ import type {
   ChildProcessWithoutNullStreams,
 } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { createServer, type AddressInfo } from 'node:net';
+import type { AddressInfo } from 'node:net';
+import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { WebSocket } from 'ws';
@@ -171,7 +172,7 @@ describe('WebSocket bridge', () => {
     });
 
     // Give the bridge's emulator a beat to finish booting, then ask.
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 500));
     socket.send('<s>\n');
 
     await expect(reply).resolves.toMatch(banner);
@@ -201,7 +202,7 @@ async function connectSocket(port: number): Promise<WebSocket> {
       return await opened;
     } catch {
       // Bridge still starting up; retry until its port accepts.
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 200));
     }
   }
 }

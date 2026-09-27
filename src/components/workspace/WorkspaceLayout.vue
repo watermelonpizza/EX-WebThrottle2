@@ -21,7 +21,10 @@ defineProps<{ node: LayoutNode }>();
     </div>
   </div>
 
-  <PanelFrame v-else :panel="node" />
+  <PanelFrame
+    v-else
+    :panel="node"
+  />
 </template>
 
 <style scoped>

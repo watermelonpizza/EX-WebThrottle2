@@ -39,7 +39,7 @@ export const usePowerStore = defineStore('power', () => {
   const tracks = ref<TrackPower[]>([]);
 
   function track(letter: string): TrackPower {
-    const existing = tracks.value.find((entry) => entry.letter === letter);
+    const existing = tracks.value.find(entry => entry.letter === letter);
 
     if (existing) {
       return existing;
@@ -101,7 +101,7 @@ export const usePowerStore = defineStore('power', () => {
       return master.value === PowerState.ON ? 'on' : 'off';
     }
 
-    const on = tracks.value.filter((entry) => entry.on).length;
+    const on = tracks.value.filter(entry => entry.on).length;
 
     if (on === 0) {
       return 'off';
@@ -126,7 +126,7 @@ export const usePowerStore = defineStore('power', () => {
 
   // Only sends: the station's <p…> broadcast is what changes the switch.
   function toggleTrack(letter: string): void {
-    const entry = tracks.value.find((candidate) => candidate.letter === letter);
+    const entry = tracks.value.find(candidate => candidate.letter === letter);
 
     setTrack(letter, entry?.on ? PowerState.OFF : PowerState.ON);
   }

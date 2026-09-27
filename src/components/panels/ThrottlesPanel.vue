@@ -15,8 +15,13 @@ const locos = useLocosStore();
       :can-add="index === 0"
     />
 
-    <div v-if="locos.throttles.length === 0" class="throttles__empty">
-      <h2 class="throttles__title">Drive a loco</h2>
+    <div
+      v-if="locos.throttles.length === 0"
+      class="throttles__empty"
+    >
+      <h2 class="throttles__title">
+        Drive a loco
+      </h2>
       <p class="throttles__lead">
         Type the loco's DCC address and press Drive. Turn track power on in the
         strip at the bottom if the loco does not move.

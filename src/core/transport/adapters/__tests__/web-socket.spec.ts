@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  WebSocketTransport,
-  type WebSocketFactory,
-  type WebSocketLike,
-} from '../web-socket';
+import type { WebSocketFactory, WebSocketLike } from '../web-socket';
+import { WebSocketTransport } from '../web-socket';
 
 class FakeWebSocket implements WebSocketLike {
   readyState = 0;
@@ -12,8 +9,8 @@ class FakeWebSocket implements WebSocketLike {
   onopen: ((event: Event) => void) | null = null;
   onerror: ((event: Event) => void) | null = null;
   onclose: ((event: CloseEvent) => void) | null = null;
-  onmessage: ((event: MessageEvent<string | ArrayBuffer>) => void) | null =
-    null;
+  onmessage: ((event: MessageEvent<string | ArrayBuffer>) => void) | null
+    = null;
 
   readonly sent: string[] = [];
   closed = false;
@@ -77,7 +74,7 @@ describe('WebSocketTransport', () => {
     );
     const received: string[] = [];
 
-    transport.onData((text) => received.push(text));
+    transport.onData(text => received.push(text));
 
     const connected = transport.connect();
 
@@ -144,7 +141,7 @@ describe('WebSocketTransport', () => {
     );
     const data: string[] = [];
     let disconnected = false;
-    const removeData = transport.onData((text) => data.push(text));
+    const removeData = transport.onData(text => data.push(text));
     const removeDisconnect = transport.onDisconnect(() => {
       disconnected = true;
     });

@@ -43,6 +43,7 @@ describe('connection and shell components', () => {
   it('shows connection details and safely disconnects a moving loco', async () => {
     const app = await connectedApp();
     const locos = useLocosStore();
+
     locos.saveLoco(3, 'Switcher');
     locos.saveLoco(8, 'Shunter');
     locos.acquire(3);

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { decodeSpeedByte } from '../index';
-import { Direction } from '../index';
+import { Direction, decodeSpeedByte } from '../index';
 
 describe('speed byte decoding', () => {
   it('decodes a stop in either direction', () => {

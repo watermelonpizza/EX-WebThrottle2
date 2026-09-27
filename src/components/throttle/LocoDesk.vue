@@ -78,9 +78,9 @@ function measure(): void {
   const fit = fitKeys(
     {
       available:
-        area.getBoundingClientRect().bottom -
-        parseFloat(getComputedStyle(area).paddingBottom) -
-        grid.getBoundingClientRect().top,
+        area.getBoundingClientRect().bottom
+        - parseFloat(getComputedStyle(area).paddingBottom)
+        - grid.getBoundingClientRect().top,
       rowGap: parseFloat(styles.rowGap) || 0,
       columns: styles.gridTemplateColumns.split(' ').filter(Boolean).length,
       roomy: keyRow(grid, '--control'),
@@ -143,7 +143,10 @@ function release(): void {
         >
           <span class="desk__name">{{ throttle.name }}</span>
           <span class="desk__address numeric">
-            <span class="desk__sep" aria-hidden="true">·</span>Address
+            <span
+              class="desk__sep"
+              aria-hidden="true"
+            >·</span>Address
             {{ throttle.address }}
           </span>
         </button>
@@ -158,7 +161,11 @@ function release(): void {
           title="Add loco"
           data-testid="desk-add"
         >
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
           </svg>
         </button>
@@ -171,7 +178,9 @@ function release(): void {
           :style="{ positionAnchor: `--${addId}` }"
           aria-label="Drive another loco"
         >
-          <h3 class="desk-menu__title">Drive another loco</h3>
+          <h3 class="desk-menu__title">
+            Drive another loco
+          </h3>
           <DriveForm compact />
         </div>
 
@@ -197,13 +206,20 @@ function release(): void {
               "
             >
               <option value="default">Default (F0–F31)</option>
-              <option v-for="map in maps.maps" :key="map.id" :value="map.id">
+              <option
+                v-for="map in maps.maps"
+                :key="map.id"
+                :value="map.id"
+              >
                 {{ map.name }}
               </option>
             </select>
           </label>
 
-          <label v-if="berths.length > 0" class="desk-menu__row">
+          <label
+            v-if="berths.length > 0"
+            class="desk-menu__row"
+          >
             <span>On the diagram</span>
             <select
               class="field"
@@ -239,7 +255,10 @@ function release(): void {
       </header>
 
       <section class="desk__drive">
-        <output class="desk__speed numeric" data-testid="speed-readout">
+        <output
+          class="desk__speed numeric"
+          data-testid="speed-readout"
+        >
           {{ throttle.speed }}
         </output>
 
@@ -265,7 +284,10 @@ function release(): void {
             >
               REV
             </button>
-            <span class="direction__rule" aria-hidden="true" />
+            <span
+              class="direction__rule"
+              aria-hidden="true"
+            />
             <button
               type="button"
               class="direction__side"
@@ -303,7 +325,10 @@ function release(): void {
         :aria-label="`Functions for ${throttle.name}`"
       >
         <div class="desk__functions-head">
-          <h3 class="desk__functions-title" data-testid="functions-title">
+          <h3
+            class="desk__functions-title"
+            data-testid="functions-title"
+          >
             Functions · {{ functions.length }}
           </h3>
           <button

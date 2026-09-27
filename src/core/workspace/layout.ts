@@ -41,7 +41,7 @@ export function panelsIn(node: LayoutNode): PanelNode[] {
     return [node];
   }
 
-  return node.children.flatMap((child) => panelsIn(child.node));
+  return node.children.flatMap(child => panelsIn(child.node));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -57,8 +57,8 @@ export function isLayoutNode(value: unknown): value is LayoutNode {
 
   if (value.type === 'panel') {
     return (
-      typeof value.id === 'string' &&
-      PANEL_KINDS.includes(value.kind as PanelKind)
+      typeof value.id === 'string'
+      && PANEL_KINDS.includes(value.kind as PanelKind)
     );
   }
 
@@ -67,15 +67,15 @@ export function isLayoutNode(value: unknown): value is LayoutNode {
   }
 
   return (
-    (value.direction === 'row' || value.direction === 'column') &&
-    Array.isArray(value.children) &&
-    value.children.length > 0 &&
-    value.children.every(
-      (child) =>
-        isRecord(child) &&
-        typeof child.weight === 'number' &&
-        child.weight > 0 &&
-        isLayoutNode(child.node),
+    (value.direction === 'row' || value.direction === 'column')
+    && Array.isArray(value.children)
+    && value.children.length > 0
+    && value.children.every(
+      child =>
+        isRecord(child)
+        && typeof child.weight === 'number'
+        && child.weight > 0
+        && isLayoutNode(child.node),
     )
   );
 }

@@ -51,19 +51,30 @@ function waiting(at: number): boolean {
     :aria-labelledby="titleId"
     data-testid="events-panel"
   >
-    <h2 :id="titleId" class="events-panel__title">
+    <h2
+      :id="titleId"
+      class="events-panel__title"
+    >
       Events
       <span class="events-panel__count numeric">{{
         events.events.length
       }}</span>
     </h2>
 
-    <p v-if="events.events.length === 0" class="events-panel__empty">
+    <p
+      v-if="events.events.length === 0"
+      class="events-panel__empty"
+    >
       Nothing has changed on the layout yet. Turnouts/points, outputs, sensors,
       track power and locos driven from other Throttles show up here as they
       change.
     </p>
-    <TransitionGroup v-else tag="ol" name="event" class="events-panel__list">
+    <TransitionGroup
+      v-else
+      tag="ol"
+      name="event"
+      class="events-panel__list"
+    >
       <li
         v-for="event in events.events"
         :key="event.id"

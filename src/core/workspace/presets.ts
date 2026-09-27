@@ -43,7 +43,7 @@ export const DEFAULT_PRESET = 'control';
 
 export function findPreset(id: string): Preset {
   return (
-    PRESETS.find((preset) => preset.id === id) ??
-    (PRESETS.find((preset) => preset.id === DEFAULT_PRESET) as Preset)
+    PRESETS.find(preset => preset.id === id)
+    ?? (PRESETS.find(preset => preset.id === DEFAULT_PRESET) as Preset)
   );
 }

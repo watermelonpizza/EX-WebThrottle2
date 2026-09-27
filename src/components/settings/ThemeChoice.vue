@@ -16,10 +16,22 @@ const OPTIONS: { value: ThemeName; label: string; hint: string }[] = [
 </script>
 
 <template>
-  <section class="settings-section" aria-labelledby="theme-title">
-    <h2 id="theme-title" class="settings-section__title">Appearance</h2>
+  <section
+    class="settings-section"
+    aria-labelledby="theme-title"
+  >
+    <h2
+      id="theme-title"
+      class="settings-section__title"
+    >
+      Appearance
+    </h2>
 
-    <div class="themes" role="radiogroup" aria-labelledby="theme-title">
+    <div
+      class="themes"
+      role="radiogroup"
+      aria-labelledby="theme-title"
+    >
       <label
         v-for="option in OPTIONS"
         :key="option.value"
@@ -35,11 +47,24 @@ const OPTIONS: { value: ThemeName; label: string; hint: string }[] = [
           :value="option.value"
           :checked="settings.theme === option.value"
           @change="settings.setTheme(option.value)"
-        />
+        >
         <!-- A few strokes of schematic in the theme's own colours. -->
-        <svg class="theme__sample" viewBox="0 0 120 40" aria-hidden="true">
-          <line x1="4" y1="28" x2="116" y2="28" class="theme__idle" />
-          <polyline points="30,28 50,10 116,10" class="theme__set" />
+        <svg
+          class="theme__sample"
+          viewBox="0 0 120 40"
+          aria-hidden="true"
+        >
+          <line
+            x1="4"
+            y1="28"
+            x2="116"
+            y2="28"
+            class="theme__idle"
+          />
+          <polyline
+            points="30,28 50,10 116,10"
+            class="theme__set"
+          />
           <rect
             x="66"
             y="20"
@@ -51,7 +76,10 @@ const OPTIONS: { value: ThemeName; label: string; hint: string }[] = [
         </svg>
         <span class="theme__label">
           {{ option.label }}
-          <span v-if="settings.theme === option.value" class="theme__chosen">
+          <span
+            v-if="settings.theme === option.value"
+            class="theme__chosen"
+          >
             · In use
           </span>
         </span>

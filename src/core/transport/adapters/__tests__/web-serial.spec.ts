@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isWebSerialSupported, WebSerialTransport } from '../..';
+import { WebSerialTransport, isWebSerialSupported } from '../..';
 
 // What the fake port delivers, in order: bytes, a recoverable read error
 // ('glitch'), or the device going away ('unplug').
@@ -113,11 +113,11 @@ describe('WebSerialTransport', () => {
     const transport = new WebSerialTransport(fakeSerial(port));
     const received: string[] = [];
 
-    transport.onData((text) => received.push(text));
+    transport.onData(text => received.push(text));
 
     await transport.connect();
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(received.join('')).toBe('<p1><p0>');
   });
@@ -131,10 +131,10 @@ describe('WebSerialTransport', () => {
     transport.send('<1>');
     transport.send('<s>');
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(
-      port.written.map((bytes) => new TextDecoder().decode(bytes)),
+      port.written.map(bytes => new TextDecoder().decode(bytes)),
     ).toEqual(['<1>', '<s>']);
   });
 
@@ -148,9 +148,9 @@ describe('WebSerialTransport', () => {
     const transport = new WebSerialTransport(fakeSerial(port));
     const received: string[] = [];
 
-    transport.onData((text) => received.push(text));
+    transport.onData(text => received.push(text));
     await transport.connect();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(received.join('')).toBe('<p1><p0>');
     expect(transport.connected).toBe(true);
@@ -165,7 +165,7 @@ describe('WebSerialTransport', () => {
     transport.onDisconnect(() => drops++);
     transport.onDisconnect(() => removedDrops++)();
     await transport.connect();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(drops).toBe(1);
     expect(removedDrops).toBe(0);
@@ -184,7 +184,7 @@ describe('WebSerialTransport', () => {
     transport.onDisconnect(() => drops++);
     await transport.connect();
     await transport.disconnect();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(drops).toBe(0);
     expect(port.closed).toBe(true);

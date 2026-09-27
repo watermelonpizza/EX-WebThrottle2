@@ -18,7 +18,7 @@ describe('workspace layout', () => {
       [column([panel('points'), 1], [panel('sensors'), 1]), 1],
     );
 
-    expect(panelsIn(layout).map((node) => node.kind)).toEqual([
+    expect(panelsIn(layout).map(node => node.kind)).toEqual([
       'schematic',
       'points',
       'sensors',
@@ -55,7 +55,7 @@ describe('workspace layout', () => {
     for (const preset of PRESETS) {
       expect(isLayoutNode(preset.layout)).toBe(true);
 
-      const ids = panelsIn(preset.layout).map((node) => node.id);
+      const ids = panelsIn(preset.layout).map(node => node.id);
 
       expect(new Set(ids).size).toBe(ids.length);
     }

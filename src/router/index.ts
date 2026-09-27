@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router';
 
 import { PRESETS } from '@/core/workspace';
 
-const ROLES = PRESETS.map((preset) => preset.id).join('|');
+const ROLES = PRESETS.map(preset => preset.id).join('|');
 
 export const routes: RouteRecordRaw[] = [
   {

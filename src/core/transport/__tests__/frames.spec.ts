@@ -20,7 +20,7 @@ describe('extractFrames', () => {
   it('continues a partial frame from the previous chunk', () => {
     const first = extractFrames('<iDCCEX V-4.2.2');
 
-    expect(extractFrames(first.rest + '0 / MEGA / Pololu / 5><p1>')).toEqual({
+    expect(extractFrames(`${first.rest}0 / MEGA / Pololu / 5><p1>`)).toEqual({
       frames: ['<iDCCEX V-4.2.20 / MEGA / Pololu / 5>', '<p1>'],
       rest: '',
     });

@@ -62,7 +62,6 @@ pnpm run build          # type-check (vue-tsc) + production build
 pnpm run preview        # preview the production build
 pnpm run type-check     # type-check only
 pnpm run lint           # ESLint; lint:fix to fix what it can
-pnpm run format:check   # Prettier check on every file it formats; format to rewrite
 pnpm run test:unit      # Vitest unit and component tests; fails below 90% coverage
 pnpm run emulator       # build the emulator and serve it on ws://127.0.0.1:4444
 pnpm run test:emulator  # emulator bridge tests
@@ -73,7 +72,7 @@ Before your first `test:e2e` run, run `pnpm exec playwright install` to download
 
 ### How it is built
 
-Vue 3.5, Vite 8, Pinia 4, vue-router 5 (hash history), and TypeScript 5.9. The interface is our own small component layer over plain HTML and CSS, with no UI framework. ESLint 10 (flat config) and Prettier handle linting and formatting. Tests use Vitest 5 with @vue/test-utils, and Playwright.
+Vue 3.5, Vite 8, Pinia 4, vue-router 5 (hash history), and TypeScript 5.9. The interface is our own small component layer over plain HTML and CSS, with no UI framework. ESLint 10 (flat config) with ESLint Stylistic handles both linting and formatting. Tests use Vitest 5 with @vue/test-utils, and Playwright.
 
 Code flows one way:
 

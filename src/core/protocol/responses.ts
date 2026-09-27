@@ -29,8 +29,8 @@ const CATALOG: ResponseDefinition[] = [
     summary: 'Command-station identification',
     detail: 'The station sends this identification frame in response to <s>.',
     match(frame) {
-      const match =
-        /^<iDCC-?EX\s+V-?([^/\s]+)\s*\/\s*([^/]+?)\s*\/\s*([^/]+?)(?:\s*\/\s*([^>]+))?>$/i.exec(
+      const match
+        = /^<iDCC-?EX\s+V-?([^/\s]+)\s*\/\s*([^/]+?)\s*\/\s*([^/]+?)(?:\s*\/\s*([^>]+))?>$/i.exec(
           frame,
         );
 
@@ -430,14 +430,14 @@ const CATALOG: ResponseDefinition[] = [
     summary: 'Operation completed',
     detail:
       'The station acknowledged a command that does not return other data.',
-    match: (frame) => (frame === '<O>' ? [] : undefined),
+    match: frame => (frame === '<O>' ? [] : undefined),
   },
   {
     pattern: '<X>',
     summary: 'Command rejected',
     detail:
       'The station did not understand the command or could not apply it. The frame contains no further reason.',
-    match: (frame) => (frame === '<X>' ? [] : undefined),
+    match: frame => (frame === '<X>' ? [] : undefined),
   },
 ];
 

@@ -89,6 +89,7 @@ describe('loco desk', () => {
     const mapId = maps.createMap('Switcher', [
       { fn: 0, label: 'Lights', momentary: false },
     ]);
+
     await flushPromises();
 
     await app.wrapper.get('[data-testid="function-map"]').setValue(mapId);
@@ -140,7 +141,7 @@ describe('loco desk', () => {
     expect(
       wrapper
         .findAll('[data-testid="desk-keys"] [data-testid="fun"]')
-        .map((key) => key.text()),
+        .map(key => key.text()),
     ).toEqual(['Lights', 'Sound']);
   });
 });

@@ -20,7 +20,7 @@ async function connect() {
 }
 
 function texts(events: ReturnType<typeof useEventsStore>): string[] {
-  return events.events.map((event) => event.text);
+  return events.events.map(event => event.text);
 }
 
 describe('events store', () => {

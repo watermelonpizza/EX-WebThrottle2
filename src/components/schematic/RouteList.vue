@@ -9,9 +9,14 @@ const diagrams = useDiagramStore();
 </script>
 
 <template>
-  <div class="route-list" data-testid="route-tiles">
+  <div
+    class="route-list"
+    data-testid="route-tiles"
+  >
     <header class="route-list__head">
-      <h2 class="route-list__title">Points and sensors</h2>
+      <h2 class="route-list__title">
+        Points and sensors
+      </h2>
       <p class="route-list__lead">
         From your Command Station · {{ inventory.turnouts.length }}
         {{ inventory.turnouts.length === 1 ? 'turnout' : 'turnouts' }},
@@ -20,13 +25,22 @@ const diagrams = useDiagramStore();
       </p>
     </header>
 
-    <p v-if="inventory.turnouts.length === 0" class="route-list__muted">
+    <p
+      v-if="inventory.turnouts.length === 0"
+      class="route-list__muted"
+    >
       Your Command Station has not reported any turnouts/points. Once they are
       set up on it, they appear here.
     </p>
 
-    <ul v-else class="row-list route-list__rows">
-      <li v-for="turnout in inventory.turnouts" :key="turnout.id">
+    <ul
+      v-else
+      class="row-list route-list__rows"
+    >
+      <li
+        v-for="turnout in inventory.turnouts"
+        :key="turnout.id"
+      >
         <TurnoutRow
           :turnout="turnout"
           :name="diagrams.turnoutName(turnout.id, turnout.label)"
@@ -35,13 +49,19 @@ const diagrams = useDiagramStore();
       </li>
     </ul>
 
-    <ul v-if="inventory.sensors.length > 0" class="row-list route-list__rows">
+    <ul
+      v-if="inventory.sensors.length > 0"
+      class="row-list route-list__rows"
+    >
       <li
         v-for="sensor in inventory.sensors"
         :key="sensor.id"
         :data-testid="`sensor-tile-${sensor.id}`"
       >
-        <SensorRow :sensor="sensor" :name="diagrams.sensorName(sensor.id)" />
+        <SensorRow
+          :sensor="sensor"
+          :name="diagrams.sensorName(sensor.id)"
+        />
       </li>
     </ul>
 

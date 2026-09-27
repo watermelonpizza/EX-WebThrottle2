@@ -10,14 +10,23 @@ const connection = useConnectionStore();
 <template>
   <div class="settings">
     <header class="settings__head">
-      <router-link class="settings__back" to="/" data-testid="settings-back">
+      <router-link
+        class="settings__back"
+        to="/"
+        data-testid="settings-back"
+      >
         {{
           connection.status === 'connected'
             ? 'Back to the console'
             : 'Back to connect'
         }}
       </router-link>
-      <h1 class="settings__title" data-testid="page-title">Settings</h1>
+      <h1
+        class="settings__title"
+        data-testid="page-title"
+      >
+        Settings
+      </h1>
     </header>
 
     <ThemeChoice />

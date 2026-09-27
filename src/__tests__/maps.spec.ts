@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { FunctionDef } from '@/core/loco/functions';
-import { useMapsStore, MAPS_KEY } from '@/stores/maps';
+import { MAPS_KEY, useMapsStore } from '@/stores/maps';
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -41,7 +41,7 @@ describe('maps store', () => {
       { fn: 1, label: 'Sound', momentary: false, hidden: true },
     ]);
 
-    expect(maps.visibleFunctions(id).map((def) => def.label)).toEqual([
+    expect(maps.visibleFunctions(id).map(def => def.label)).toEqual([
       'Lights',
       'Horn',
     ]);
@@ -60,9 +60,9 @@ describe('maps store', () => {
     const edited = maps.editableFunctions(id);
 
     expect(fresh).toHaveLength(32);
-    expect(fresh.every((def) => !def.hidden)).toBe(true);
+    expect(fresh.every(def => !def.hidden)).toBe(true);
     expect(edited[0]).toEqual({ fn: 0, label: 'Lights', momentary: false });
-    expect(edited.slice(1).every((def) => def.hidden)).toBe(true);
+    expect(edited.slice(1).every(def => def.hidden)).toBe(true);
   });
 
   it('persists maps to localStorage', () => {

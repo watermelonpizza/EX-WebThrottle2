@@ -9,7 +9,7 @@ import {
 } from '../commands';
 
 function command(pattern: string) {
-  const found = COMMANDS.find((entry) => entry.pattern === pattern);
+  const found = COMMANDS.find(entry => entry.pattern === pattern);
 
   if (!found) {
     throw new Error(`no command ${pattern}`);
@@ -19,15 +19,15 @@ function command(pattern: string) {
 }
 
 function patterns(query: string): string[] {
-  return searchCommands(query).map((entry) => entry.pattern);
+  return searchCommands(query).map(entry => entry.pattern);
 }
 
 describe('command list', () => {
   it('gives every command a unique, framed pattern', () => {
-    const all = COMMANDS.map((entry) => entry.pattern);
+    const all = COMMANDS.map(entry => entry.pattern);
 
     expect(new Set(all).size).toBe(all.length);
-    expect(all.every((pattern) => /^<.+>$/.test(pattern))).toBe(true);
+    expect(all.every(pattern => /^<.+>$/.test(pattern))).toBe(true);
   });
 
   it('splits a pattern into keywords and inputs by case', () => {
@@ -40,7 +40,7 @@ describe('command list', () => {
       { kind: 'input', name: 'address', quoted: false, optional: false },
       { kind: 'input', name: 'subaddress', quoted: false, optional: false },
     ]);
-    expect(create.inputs.map((input) => input.name)).toEqual([
+    expect(create.inputs.map(input => input.name)).toEqual([
       'id',
       'address',
       'subaddress',
@@ -76,7 +76,7 @@ describe('command list', () => {
 
   it('asks for a confirm only on the commands that are hard to undo', () => {
     expect(
-      COMMANDS.filter((entry) => entry.risky).map((entry) => entry.pattern),
+      COMMANDS.filter(entry => entry.risky).map(entry => entry.pattern),
     ).toEqual(['<->', '<e>', '<C RESET>', '<D RESET>', '<+>', '<D HAL RESET>']);
   });
 });

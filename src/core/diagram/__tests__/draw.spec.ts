@@ -73,12 +73,12 @@ describe('diagram drawing', () => {
     );
 
     const tones = Object.fromEntries(
-      drawing.lines.map((line) => [line.key, line.tone]),
+      drawing.lines.map(line => [line.key, line.tone]),
     );
 
     // Plain track leading to lit points is lit too: a train can run on it.
     expect(tones).toEqual({
-      approach: 'set',
+      'approach': 'set',
       'turnout-7-closed': 'unset',
       'turnout-7-thrown': 'set',
     });
@@ -98,7 +98,7 @@ describe('diagram drawing', () => {
       () => false,
     );
 
-    expect(drawing.lines.every((line) => line.tone === 'idle')).toBe(true);
+    expect(drawing.lines.every(line => line.tone === 'idle')).toBe(true);
     expect(drawing.gaps).toHaveLength(0);
   });
 
@@ -124,7 +124,7 @@ describe('diagram drawing', () => {
         withSiding,
         () => thrown,
         () => false,
-      ).lines.find((line) => line.key === 'siding')?.tone;
+      ).lines.find(line => line.key === 'siding')?.tone;
 
     expect(tone(true)).toBe('set');
     expect(tone(false)).toBe('unset');
@@ -136,7 +136,7 @@ describe('diagram drawing', () => {
       () => false,
     );
 
-    expect(closed.buffers.find((stop) => stop.key === 'siding-end')?.tone).toBe(
+    expect(closed.buffers.find(stop => stop.key === 'siding-end')?.tone).toBe(
       'unset',
     );
   });
@@ -164,7 +164,7 @@ describe('diagram drawing', () => {
       drawDiagram(
         diagram,
         () => undefined,
-        (id) => id === 3,
+        id => id === 3,
       ).sections[0]?.occupied,
     ).toBe(true);
     expect(
@@ -203,10 +203,10 @@ describe('diagram drawing', () => {
 
   it('draws the emulator sample from the ids the emulator layout script defines', () => {
     const turnouts = EMULATOR_DEMO_DIAGRAM.turnouts.map(
-      (turnout) => turnout.id,
+      turnout => turnout.id,
     );
     const sensors = EMULATOR_DEMO_DIAGRAM.sections.map(
-      (section) => section.sensor,
+      section => section.sensor,
     );
 
     // emulator/layout.txt: turnouts 1-5, sensors 20-22.
@@ -220,13 +220,13 @@ describe('diagram drawing', () => {
 
     // No berth names a line that is not drawn.
     for (const berth of berths) {
-      expect(lines.map((line) => line.key)).toContain(berth.on);
+      expect(lines.map(line => line.key)).toContain(berth.on);
     }
 
     // Every drawn line has a berth, on it or on the same track drawn again.
     for (const line of lines) {
       const covered = berths.some((berth) => {
-        const on = lines.find((candidate) => candidate.key === berth.on);
+        const on = lines.find(candidate => candidate.key === berth.on);
 
         return on !== undefined && sameLine(on.points, line.points);
       });
@@ -234,6 +234,6 @@ describe('diagram drawing', () => {
       expect(covered, `${line.key} has no berth`).toBe(true);
     }
 
-    expect(new Set(berths.map((berth) => berth.id)).size).toBe(berths.length);
+    expect(new Set(berths.map(berth => berth.id)).size).toBe(berths.length);
   });
 });

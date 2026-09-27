@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { decodeFrame } from '../index';
-import { PowerState, TurnoutState } from '../index';
+import { PowerState, TurnoutState, decodeFrame } from '../index';
 import { extractFrames } from '../../transport';
 
 describe('decodeFrame', () => {
@@ -11,6 +10,7 @@ describe('decodeFrame', () => {
 
   it('parses system info', () => {
     const message = decodeFrame('<iDCCEX V-4.2.20 / MEGA / Pololu / 5>');
+
     expect(message).toMatchObject({
       kind: 'system-info',
       info: {
@@ -67,9 +67,9 @@ describe('decodeFrame', () => {
   });
 
   it('reads the addresses from the loco table <D CABS> answers with', () => {
-    const table =
-      '<* LocoSlots 2/120 size=56b\n Loco=14    s=23  f=0 t=23  mA=255 mD=255\n' +
-      ' Loco=12    s=169 f=0 t=169 mA=255 mD=255\n*>';
+    const table
+      = '<* LocoSlots 2/120 size=56b\n Loco=14    s=23  f=0 t=23  mA=255 mD=255\n'
+        + ' Loco=12    s=169 f=0 t=169 mA=255 mD=255\n*>';
 
     expect(decodeFrame(table)).toEqual({
       kind: 'cab-list',
@@ -235,7 +235,7 @@ describe('decodeMessage', () => {
       '<iDCCEX V-4.2.20 / MEGA / Pololu / 5><H 1 1><p1>',
     ).frames;
 
-    expect(frames.map(decodeFrame).map((message) => message.kind)).toEqual([
+    expect(frames.map(decodeFrame).map(message => message.kind)).toEqual([
       'system-info',
       'turnout',
       'power',

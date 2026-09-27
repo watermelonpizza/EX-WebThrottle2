@@ -52,7 +52,11 @@ function keyUp(def: FunctionDef, event: KeyboardEvent): void {
 </script>
 
 <template>
-  <div class="fn-keys" role="group" aria-label="Functions">
+  <div
+    class="fn-keys"
+    role="group"
+    aria-label="Functions"
+  >
     <button
       v-for="def in limit === undefined ? functions : functions.slice(0, limit)"
       :key="def.fn"

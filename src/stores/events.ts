@@ -38,7 +38,7 @@ export const useEventsStore = defineStore('events', () => {
   const readAt = ref(0);
 
   const unread = computed(
-    () => events.value.filter((event) => event.at > readAt.value).length,
+    () => events.value.filter(event => event.at > readAt.value).length,
   );
 
   function markRead(): void {
