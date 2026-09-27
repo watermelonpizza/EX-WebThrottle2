@@ -2,16 +2,42 @@ import { describe, expect, it } from 'vitest';
 
 import { isWebSerialSupported, WebSerialTransport } from '../..';
 
+// What the fake port delivers, in order: bytes, a recoverable read error
+// ('glitch'), or the device going away ('unplug').
+type FakeChunk = Uint8Array | 'glitch' | 'unplug';
+
 class FakeReader {
-  constructor(private readonly chunks: Uint8Array[]) {}
+  private cancelled?: (result: ReadableStreamReadResult<Uint8Array>) => void;
+
+  constructor(private readonly port: FakePort) {}
 
   async read(): Promise<ReadableStreamReadResult<Uint8Array>> {
-    const value = this.chunks.shift();
+    const next = this.port.chunks.shift();
 
-    return value ? { value, done: false } : { value: undefined, done: true };
+    if (next === 'glitch') {
+      throw new Error('FramingError');
+    }
+
+    if (next === 'unplug') {
+      this.port.lost = true;
+
+      throw new Error('NetworkError');
+    }
+
+    if (next) {
+      return { value: next, done: false };
+    }
+
+    // Like a real port, wait for more bytes until the read is cancelled.
+    return new Promise((resolve) => {
+      this.cancelled = resolve;
+    });
   }
 
-  async cancel(): Promise<void> {}
+  async cancel(): Promise<void> {
+    this.cancelled?.({ value: undefined, done: true });
+  }
+
   releaseLock(): void {}
 }
 
@@ -30,12 +56,13 @@ class FakePort {
   openOptions?: SerialOptions;
   closed = false;
   openResolved = false;
+  lost = false;
 
-  constructor(readonly chunks: Uint8Array[] = []) {}
+  constructor(readonly chunks: FakeChunk[] = []) {}
 
-  readonly readable = {
-    getReader: () => new FakeReader(this.chunks),
-  };
+  get readable() {
+    return this.lost ? null : { getReader: () => new FakeReader(this) };
+  }
 
   readonly writable = {
     getWriter: () => new FakeWriter(this.written),
@@ -63,18 +90,6 @@ describe('WebSerialTransport', () => {
     expect(() => transport.send('<s>')).toThrow('not connected');
     await transport.connect();
     await expect(transport.connect()).rejects.toThrow('already connected');
-  });
-
-  it('connects even when a serial port has no readable side', async () => {
-    const port = {
-      open: async () => {},
-      close: async () => {},
-      readable: undefined,
-    } as unknown as FakePort;
-    const transport = new WebSerialTransport(fakeSerial(port));
-
-    await transport.connect();
-    expect(transport.connected).toBe(true);
   });
 
   it('requests a port and opens it at the command station baud rate', async () => {
@@ -121,6 +136,58 @@ describe('WebSerialTransport', () => {
     expect(
       port.written.map((bytes) => new TextDecoder().decode(bytes)),
     ).toEqual(['<1>', '<s>']);
+  });
+
+  it('keeps reading after a recoverable serial error', async () => {
+    const encoder = new TextEncoder();
+    const port = new FakePort([
+      encoder.encode('<p1>'),
+      'glitch',
+      encoder.encode('<p0>'),
+    ]);
+    const transport = new WebSerialTransport(fakeSerial(port));
+    const received: string[] = [];
+
+    transport.onData((text) => received.push(text));
+    await transport.connect();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(received.join('')).toBe('<p1><p0>');
+    expect(transport.connected).toBe(true);
+  });
+
+  it('reports a pulled cable as a lost connection and closes the port', async () => {
+    const port = new FakePort(['unplug']);
+    const transport = new WebSerialTransport(fakeSerial(port));
+    let drops = 0;
+    let removedDrops = 0;
+
+    transport.onDisconnect(() => drops++);
+    transport.onDisconnect(() => removedDrops++)();
+    await transport.connect();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(drops).toBe(1);
+    expect(removedDrops).toBe(0);
+    expect(transport.connected).toBe(false);
+    expect(port.closed).toBe(true);
+    // Plugged back in, the port is free again and the transport reconnects.
+    port.lost = false;
+    await expect(transport.connect()).resolves.toBeUndefined();
+  });
+
+  it('does not report a drop when the user disconnects', async () => {
+    const port = new FakePort();
+    const transport = new WebSerialTransport(fakeSerial(port));
+    let drops = 0;
+
+    transport.onDisconnect(() => drops++);
+    await transport.connect();
+    await transport.disconnect();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(drops).toBe(0);
+    expect(port.closed).toBe(true);
   });
 
   it('can disconnect before a port is opened', async () => {

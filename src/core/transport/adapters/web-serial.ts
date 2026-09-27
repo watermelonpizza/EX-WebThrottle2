@@ -1,4 +1,4 @@
-import type { DataListener, Transport } from '../types';
+import type { DataListener, DisconnectListener, Transport } from '../types';
 import { log } from '../../logging';
 
 // The USB rate used by EX-CommandStation (SerialManager.cpp).
@@ -14,8 +14,10 @@ export class WebSerialTransport implements Transport {
   private readonly encoder = new TextEncoder();
   private readonly decoder = new TextDecoder();
   private readonly dataCallbacks = new Set<DataListener>();
+  private readonly disconnectCallbacks = new Set<DisconnectListener>();
   private port?: SerialPort;
   private reader?: ReadableStreamDefaultReader<Uint8Array>;
+  private reading?: Promise<void>;
   private writeQueue: Promise<void> = Promise.resolve();
 
   constructor(private readonly serial: Serial) {}
@@ -25,6 +27,14 @@ export class WebSerialTransport implements Transport {
 
     return () => {
       this.dataCallbacks.delete(callback);
+    };
+  }
+
+  onDisconnect(callback: DisconnectListener): () => void {
+    this.disconnectCallbacks.add(callback);
+
+    return () => {
+      this.disconnectCallbacks.delete(callback);
     };
   }
 
@@ -41,45 +51,60 @@ export class WebSerialTransport implements Transport {
 
     this.port = port;
     this.connected = true;
-    void this.readLoop();
+    this.reading = this.readLoop(port);
   }
 
-  private async readLoop(): Promise<void> {
-    const port = this.port;
+  private async readLoop(port: SerialPort): Promise<void> {
+    let open = true;
 
-    if (!port?.readable) {
-      return;
+    // After a recoverable error (a framing or parity glitch) the port hands
+    // over a fresh readable; once the device is lost (cable pulled) it has
+    // none, which ends the loop. See the Web Serial spec's read example.
+    while (open && this.connected && port.readable) {
+      const reader = port.readable.getReader();
+
+      this.reader = reader;
+
+      try {
+        // Chunk sizes are arbitrary, so { stream: true } keeps a multi-byte
+        // character that is split across two chunks intact.
+        while (true) {
+          const { value, done } = await reader.read();
+
+          if (done) {
+            open = false;
+            break;
+          }
+
+          if (!value || value.length === 0) {
+            continue;
+          }
+
+          const text = this.decoder.decode(value, { stream: true });
+
+          for (const callback of this.dataCallbacks) {
+            callback(text);
+          }
+        }
+      } catch (error) {
+        log.warn('transport.web-serial.read_failed', { error: String(error) });
+      } finally {
+        reader.releaseLock();
+        this.reader = undefined;
+      }
     }
 
-    const reader = port.readable.getReader();
+    // Still connected means disconnect() was never called: the cable came
+    // out or the port went away. Close it so a reconnect can open it again,
+    // then report the drop.
+    if (this.connected) {
+      this.connected = false;
+      this.port = undefined;
+      await this.closePort(port);
 
-    this.reader = reader;
-
-    try {
-      // Chunk sizes are arbitrary, so { stream: true } keeps a multi-byte
-      // character that is split across two chunks intact.
-      while (this.connected) {
-        const { value, done } = await reader.read();
-
-        if (done) {
-          break;
-        }
-
-        if (!value || value.length === 0) {
-          continue;
-        }
-
-        const text = this.decoder.decode(value, { stream: true });
-
-        for (const callback of this.dataCallbacks) {
-          callback(text);
-        }
+      for (const callback of this.disconnectCallbacks) {
+        callback();
       }
-    } catch (error) {
-      log.warn('transport.web-serial.read_failed', { error: String(error) });
-    } finally {
-      reader.releaseLock();
-      this.reader = undefined;
     }
   }
 
@@ -116,14 +141,18 @@ export class WebSerialTransport implements Transport {
     this.connected = false;
     this.port = undefined;
 
-    if (this.reader) {
-      await this.reader.cancel();
-      this.reader = undefined;
-    }
+    await this.reader?.cancel();
+    await this.reading;
 
-    if (!port) {
-      return;
+    if (port) {
+      await this.closePort(port);
     }
+  }
+
+  // A port refuses to close while a stream is locked, so this waits for any
+  // queued write; callers have already let the read loop finish.
+  private async closePort(port: SerialPort): Promise<void> {
+    await this.writeQueue;
 
     try {
       await port.close();
