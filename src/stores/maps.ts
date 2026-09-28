@@ -1,19 +1,18 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+import type { SavedMap } from '@/core/loco/backup';
 import type { FunctionDef } from '@/core/loco/functions';
 import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import { loadSaved } from '@/stores/saved';
 
 export const MAPS_KEY = 'exwt-maps';
 
-export interface LocoMap {
-  id: string;
-  name: string;
-  // The functions this loco has. One the map does not list is one the loco
-  // lacks, so the desk leaves it out.
-  functions: FunctionDef[];
-}
+// The function names the Command Station's own roster gives a loco, rather
+// than a map saved here; the locos store looks them up.
+export const STATION_MAP = 'station';
+
+export type LocoMap = SavedMap;
 
 export const useMapsStore = defineStore('maps', () => {
   const maps = ref<LocoMap[]>(
@@ -25,7 +24,7 @@ export const useMapsStore = defineStore('maps', () => {
   }
 
   function createMap(name: string, functions: FunctionDef[]): string {
-    const id = `map-${Date.now()}`;
+    const id = `map-${Date.now()}-${maps.value.length}`;
 
     maps.value.push({ id, name, functions });
     persist();
@@ -55,7 +54,38 @@ export const useMapsStore = defineStore('maps', () => {
   }
 
   function mapName(id: string): string {
+    if (id === STATION_MAP) {
+      return 'Command Station roster';
+    }
+
     return findMap(id)?.name ?? 'Default';
+  }
+
+  // Maps from a backup file join the ones here; one with the same name as a
+  // map already here replaces its functions. Gives each backup map's id the
+  // id it has here, for the locos that use it.
+  function importMaps(imported: SavedMap[]): Map<string, string> {
+    const ids = new Map<string, string>();
+
+    for (const map of imported) {
+      const same = maps.value.find(candidate => candidate.name === map.name);
+
+      if (same) {
+        same.functions = map.functions;
+        ids.set(map.id, same.id);
+      } else {
+        ids.set(map.id, createMap(map.name, map.functions));
+      }
+    }
+
+    persist();
+
+    return ids;
+  }
+
+  function clearAll(): void {
+    maps.value = [];
+    localStorage.removeItem(MAPS_KEY);
   }
 
   // The keys a desk shows, in function order. A custom map lists the functions
@@ -94,6 +124,8 @@ export const useMapsStore = defineStore('maps', () => {
     updateMap,
     deleteMap,
     mapName,
+    importMaps,
+    clearAll,
     visibleFunctions,
     editableFunctions,
   };

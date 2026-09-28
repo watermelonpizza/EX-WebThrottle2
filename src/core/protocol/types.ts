@@ -70,6 +70,8 @@ export type ProtocolMessage =
   | { kind: 'route-detail'; id: number; type: RouteType; label: string }
   | { kind: 'route-state'; id: number; state: RouteState }
   | { kind: 'route-caption'; id: number; caption: string }
+  | { kind: 'roster-list'; addresses: number[] }
+  | { kind: 'roster-loco'; address: number; name: string; functions: string }
   | { kind: 'output'; id: number; active: boolean }
   | { kind: 'sensor'; id: number; active: boolean }
   | { kind: 'ignored' };

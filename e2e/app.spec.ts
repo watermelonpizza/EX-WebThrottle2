@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
@@ -378,4 +380,49 @@ test('opens with no internet once it has been loaded', async ({
   await expect(
     page.getByRole('heading', { name: 'Connect to your Command Station' }),
   ).toBeVisible();
+});
+
+test('drives a loco from the Command Station\'s roster, with its function names', async ({
+  page,
+}) => {
+  await connect(page, '/drive');
+
+  // emulator/myAutomation.h: ROSTER(10, "Pannier", "Lights/Bell/*Whistle//Coal shovel")
+  await page.getByTestId('drive-station-10').click();
+
+  const desk = page.getByTestId('throttle-panel');
+
+  await expect(desk.getByTestId('desk-title')).toContainText('Pannier');
+  await expect(desk.getByTestId('fun')).toHaveText(['Lights', 'Bell', 'Whistle', 'Coal shovel']);
+  await expect(desk.locator('[data-function="2"]')).toHaveAttribute('aria-label', 'F2 Whistle, hold to use');
+});
+
+test('brings locos over from WebThrottle-EX, and exports them again', async ({
+  page,
+}) => {
+  await page.goto('/#/settings');
+
+  // What WebThrottle-EX's Export App data button saves.
+  const appData = [
+    { maps: [{ mname: 'Class 08', fnData: { f0: [0, 0, 'Lights', 1], f1: [0, 1, 'Horn', 1] } }] },
+    { locos: [{ name: 'Shunter', cv: '8', type: 'Diesel', brand: 'Bachmann', decoder: '', map: 'Class 08' }] },
+    { preferences: {} },
+  ];
+
+  await page.getByTestId('import-file').setInputFiles({
+    name: 'AppData.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(appData)),
+  });
+  await expect(page.getByTestId('backup-message')).toHaveText('Brought in 1 loco and 1 function map.');
+  await expect(page.getByTestId('roster-8')).toContainText('Class 08');
+  await expect(page.getByTestId('roster-details-8')).toHaveText('Diesel · Bachmann');
+
+  const download = page.waitForEvent('download');
+
+  await page.getByTestId('export-data').click();
+
+  const file = await (await download).path();
+
+  expect(readFileSync(file, 'utf8')).toContain('"name": "Shunter"');
 });

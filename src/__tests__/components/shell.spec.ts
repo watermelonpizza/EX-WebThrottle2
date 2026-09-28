@@ -149,4 +149,8 @@ describe('settings view', () => {
 
     expect(wrapper.get('[data-testid="settings-back"]').text()).toContain('Back to connect');
   });
+
+  it('says which version of EX-WebThrottle this is', () => {
+    expect(wrapper.get('[data-testid="app-version"]').text()).toMatch(/^EX-WebThrottle \d+\.\d+\.\d+$/);
+  });
 });

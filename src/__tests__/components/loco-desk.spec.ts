@@ -173,7 +173,7 @@ describe('loco desk with a function map that hides a key', () => {
     ]);
 
     locos.saveLoco(8, '08 648', mapId);
-    locos.acquire(8, mapId);
+    locos.acquire(8);
     await flushPromises();
     wrapper = mount(LocoDesk, {
       props: { throttle: locos.throttles[0] },
@@ -190,5 +190,63 @@ describe('loco desk with a function map that hides a key', () => {
 
   it('counts them in the heading', () => {
     expect(wrapper.get('[data-testid="functions-title"]').text()).toBe('Functions · 2');
+  });
+});
+
+describe('loco desk for a loco on the Command Station\'s roster', () => {
+  let wrapper: VueWrapper;
+
+  beforeEach(async () => {
+    localStorage.clear();
+
+    const app = await connectedApp();
+    const locos = useLocosStore();
+
+    app.station.receives('<jR 10><jR 10 "Pannier" "Lights/*Whistle">');
+    await flushPromises();
+    locos.acquire(10);
+    wrapper = mount(LocoDesk, {
+      props: { throttle: locos.throttles[0] },
+      global: { plugins: [app.pinia, app.router] },
+    });
+  });
+
+  it('shows the roster\'s function names', () => {
+    expect(wrapper.findAll('[data-testid="desk-keys"] [data-testid="fun"]').map(key => key.text())).toEqual([
+      'Lights',
+      'Whistle',
+    ]);
+  });
+
+  it('offers them as a function map', () => {
+    expect(wrapper.get('[data-testid="function-map"]').element).toHaveProperty('value', 'station');
+  });
+});
+
+// Saved on the roster's names while on another Command Station, whose roster
+// had it; this one does not.
+describe('loco desk on the roster\'s names, for a loco this roster lacks', () => {
+  let wrapper: VueWrapper;
+
+  beforeEach(async () => {
+    localStorage.clear();
+
+    const app = await connectedApp();
+    const locos = useLocosStore();
+
+    locos.saveLoco(3, 'Tank', 'station');
+    locos.acquire(3);
+    wrapper = mount(LocoDesk, {
+      props: { throttle: locos.throttles[0] },
+      global: { plugins: [app.pinia, app.router] },
+    });
+  });
+
+  it('shows every key', () => {
+    expect(wrapper.findAll('[data-testid="desk-keys"] [data-testid="fun"]')).toHaveLength(32);
+  });
+
+  it('still shows which map it is on', () => {
+    expect(wrapper.get('[data-testid="function-map"]').element).toHaveProperty('value', 'station');
   });
 });

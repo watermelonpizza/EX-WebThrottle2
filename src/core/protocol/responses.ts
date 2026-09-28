@@ -359,6 +359,45 @@ const CATALOG: ResponseDefinition[] = [
     },
   },
   {
+    pattern: '<jR cab ...>',
+    summary: 'Roster',
+    detail:
+      'Lists the locos in the Command Station\'s own roster, usually in response to <JR>. Empty unless its EXRAIL script has ROSTER lines.',
+    match(frame) {
+      const match = /^<jR(?:\s+([\d\s]+))?>$/.exec(frame);
+
+      return match
+        ? [
+            parameter(
+              'Loco addresses',
+              match[1]?.trim() || '(none)',
+              'The DCC address of each loco in the roster.',
+            ),
+          ]
+        : undefined;
+    },
+  },
+  {
+    pattern: '<jR cab "name" "functions">',
+    summary: 'Roster loco',
+    detail: 'Names one loco in the roster and its functions, usually in response to <JR cab>.',
+    match(frame) {
+      const match = /^<jR\s+(\d+)\s+"(.*)"\s+"(.*)">$/.exec(frame);
+
+      return match
+        ? [
+            parameter('Address', match[1], 'The loco\'s DCC address.'),
+            parameter('Name', match[2], 'The name the roster gives it.'),
+            parameter(
+              'Functions',
+              match[3] || '(none)',
+              'Function names from F0 up, split by /. A * in front marks one you hold down, like a horn.',
+            ),
+          ]
+        : undefined;
+    },
+  },
+  {
     pattern: '<jB route-id state>',
     summary: 'Route state',
     detail:

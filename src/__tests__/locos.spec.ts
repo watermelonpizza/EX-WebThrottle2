@@ -3,9 +3,11 @@ import { createPinia, setActivePinia } from 'pinia';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { DEFAULT_FUNCTIONS } from '@/core/loco/functions';
 import { MockTransport } from '@/core/transport';
 import { useConnectionStore } from '@/stores/connection';
 import { useLocosStore } from '@/stores/locos';
+import { STATION_MAP } from '@/stores/maps';
 
 type LocosStore = ReturnType<typeof useLocosStore>;
 
@@ -215,6 +217,192 @@ describe('locos store', () => {
       locos.removeLoco(42);
 
       expect(locos.roster).toEqual([]);
+    });
+  });
+
+  describe('saving a loco with its details', () => {
+    beforeEach(() => {
+      locos.saveLoco(5, 'Tank', 'default', { type: 'Steam', brand: 'Hornby' });
+    });
+
+    it('keeps them with it', () => {
+      expect(locos.roster[0]).toEqual({ address: 5, name: 'Tank', mapId: 'default', type: 'Steam', brand: 'Hornby' });
+    });
+
+    it('drops a detail cleared when it is saved again', () => {
+      locos.saveLoco(5, 'Tank', 'default', { type: 'Steam', brand: undefined });
+
+      expect(locos.roster[0]?.brand).toBeUndefined();
+    });
+  });
+
+  describe('importing locos, with loco 42 saved', () => {
+    beforeEach(() => {
+      locos.saveLoco(42, 'Old name');
+      locos.importLocos([
+        { address: 42, name: 'New name', mapId: 'default' },
+        { address: 5, name: 'Tank', mapId: 'default', decoder: 'Zimo' },
+      ]);
+    });
+
+    it('replaces the one saved under the same address', () => {
+      expect(locos.roster[0]?.name).toBe('New name');
+    });
+
+    it('adds the others', () => {
+      expect(locos.roster[1]).toEqual({ address: 5, name: 'Tank', mapId: 'default', decoder: 'Zimo' });
+    });
+
+    it('keeps them for next time', () => {
+      expect(JSON.parse(localStorage.getItem('exwt-roster') ?? '[]')).toHaveLength(2);
+    });
+
+    it('deletes them all when the saved locos are cleared', () => {
+      locos.clearSaved();
+
+      expect([locos.roster, localStorage.getItem('exwt-roster')]).toEqual([[], null]);
+    });
+  });
+
+  it('asks for the Command Station\'s roster on connecting', () => {
+    expect(station.sent).toContain('<JR>');
+  });
+
+  it('ignores a roster loco it was not told about', async () => {
+    await broadcast('<jR 12 "" "">');
+
+    expect(locos.stationRoster).toEqual([]);
+  });
+
+  it('gives a loco on the roster\'s map the default keys when the roster has none', () => {
+    expect(locos.functionsFor(99, STATION_MAP)).toEqual(DEFAULT_FUNCTIONS);
+  });
+
+  // Loco 3 is saved to use the roster's function names, but this Command
+  // Station's roster only has loco 6 (it was saved on another, say).
+  describe('with loco 3 saved on the roster\'s names, and a roster of just loco 6', () => {
+    beforeEach(async () => {
+      locos.saveLoco(3, 'Tank', STATION_MAP);
+      await broadcast('<jR 6><jR 6 "Pannier" "Lights/*Whistle">');
+      locos.acquire(3);
+    });
+
+    it('gives its desk every key', () => {
+      expect(locos.functionsFor(3, STATION_MAP)).toEqual(DEFAULT_FUNCTIONS);
+    });
+
+    it('keeps it on the roster\'s names, for a Command Station that has them', () => {
+      expect(locos.throttles[0]?.mapId).toBe(STATION_MAP);
+    });
+  });
+
+  describe('when the roster also lists a 0, its default function names', () => {
+    beforeEach(async () => {
+      locos.acquire(3);
+      await broadcast('<jR 0 6>');
+    });
+
+    it('does not take the 0 for a loco', () => {
+      expect(locos.stationRoster.map(loco => loco.address)).toEqual([6]);
+    });
+
+    it('asks for the default function names', () => {
+      expect(station.sent).toContain('<JR 0>');
+    });
+
+    describe('once it gives them', () => {
+      beforeEach(async () => {
+        await broadcast('<jR 0 "" "Lights/*Horn">');
+      });
+
+      it('gives them to a loco that is neither saved nor on the roster', () => {
+        expect(locos.functionsFor(3, locos.throttles[0]?.mapId ?? '').map(def => def.label)).toEqual(['Lights', 'Horn']);
+      });
+
+      it('moves a desk already open onto them', () => {
+        expect(locos.throttles[0]?.mapId).toBe(STATION_MAP);
+      });
+
+      it('forgets them when a later roster has no 0', async () => {
+        await broadcast('<jR 6>');
+
+        expect(locos.hasStationFunctions(3)).toBe(false);
+      });
+    });
+  });
+
+  describe('when the Command Station lists locos 10 and 11 on its roster, 11 saved here', () => {
+    beforeEach(async () => {
+      locos.saveLoco(11, 'My 66');
+      await broadcast('<jR 10 11>');
+    });
+
+    it('asks it about each one', () => {
+      expect(station.sent).toEqual(expect.arrayContaining(['<JR 10>', '<JR 11>']));
+    });
+
+    it('does not offer them to drive until they are named', () => {
+      expect(locos.stationNotDriven).toEqual([]);
+    });
+
+    describe('and names them', () => {
+      beforeEach(async () => {
+        await broadcast('<jR 10 "Pannier" "Lights/*Whistle">');
+        await broadcast('<jR 11 "Class 66" "Headlights">');
+      });
+
+      it('offers the one not saved here to drive', () => {
+        expect(locos.stationNotDriven.map(loco => loco.name)).toEqual(['Pannier']);
+      });
+
+      it('names its desk after the roster', () => {
+        locos.acquire(10);
+
+        expect(locos.throttles[0]?.name).toBe('Pannier');
+      });
+
+      it('gives its desk the roster\'s function keys', () => {
+        locos.acquire(10);
+
+        expect(locos.functionsFor(10, locos.throttles[0]?.mapId ?? '').map(def => def.label)).toEqual(['Lights', 'Whistle']);
+      });
+
+      it('says it has the roster\'s function names', () => {
+        expect(locos.hasStationFunctions(10)).toBe(true);
+      });
+
+      it('keeps the name a loco is saved under here', () => {
+        locos.acquire(11);
+
+        expect(locos.throttles[0]?.name).toBe('My 66');
+      });
+
+      it('drops a loco the roster no longer lists', async () => {
+        await broadcast('<jR 11>');
+
+        expect(locos.stationRoster.map(loco => loco.address)).toEqual([11]);
+      });
+
+      it('forgets the roster on disconnect', async () => {
+        await connection.disconnect();
+
+        expect(locos.stationRoster).toEqual([]);
+      });
+    });
+
+    describe('with loco 10 driven before the roster names it', () => {
+      beforeEach(async () => {
+        locos.acquire(10);
+        await broadcast('<jR 10 "Pannier" "Lights/*Whistle">');
+      });
+
+      it('renames its desk', () => {
+        expect(locos.throttles[0]?.name).toBe('Pannier');
+      });
+
+      it('switches its desk to the roster\'s keys', () => {
+        expect(locos.throttles[0]?.mapId).toBe(STATION_MAP);
+      });
     });
   });
 

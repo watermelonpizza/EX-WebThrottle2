@@ -40,6 +40,10 @@ export const INFO_TURNOUTS = 'T';
 export const INFO_ROUTES = 'A';
 export const INFO_ROUTE_STATE = 'B';
 
+// The Command Station's own loco list, from ROSTER lines in its EXRAIL script:
+// <JR> lists the addresses, <JR cab> gives a loco's name and function names.
+export const INFO_ROSTER = 'R';
+
 // EXRAIL commands start with a slash: </ START id> sets a route going, and
 // </ START loco id> sends a loco off on an automation. </ PAUSE> freezes every
 // task and stops every loco; </ RESUME> sets them going again.

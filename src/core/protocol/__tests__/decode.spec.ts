@@ -64,6 +64,13 @@ describe('decodeFrame', () => {
     { frame: '<jB 201 1>', what: 'a route shown as active', message: { kind: 'route-state', id: 201, state: RouteState.ACTIVE } },
     { frame: '<jB 201 4>', what: 'a route shown as disabled', message: { kind: 'route-state', id: 201, state: RouteState.DISABLED } },
     { frame: '<jB 201 "Running">', what: 'a new caption for a route', message: { kind: 'route-caption', id: 201, caption: 'Running' } },
+    { frame: '<jR 3 7>', what: 'the Command Station\'s roster', message: { kind: 'roster-list', addresses: [3, 7] } },
+    { frame: '<jR>', what: 'an empty roster, as without ROSTER lines', message: { kind: 'roster-list', addresses: [] } },
+    {
+      frame: '<jR 3 "Shunter" "Lights/Bell/*Horn">',
+      what: 'a roster loco with its function names',
+      message: { kind: 'roster-loco', address: 3, name: 'Shunter', functions: 'Lights/Bell/*Horn' },
+    },
     { frame: '<Q 20>', what: 'an active sensor, from the capital letter', message: { kind: 'sensor', id: 20, active: true } },
     { frame: '<q 20>', what: 'a clear sensor, from the small letter', message: { kind: 'sensor', id: 20, active: false } },
   ])('decodes $frame as $what', ({ frame, message }) => {
@@ -77,6 +84,7 @@ describe('decodeFrame', () => {
     { frame: '<jA 999 X "">', why: 'it is EXRAIL saying it has no such route' },
     { frame: '<jB 201 3>', why: 'it is a route state the app does not know' },
     { frame: '<jB x>', why: 'it is neither a route state nor a caption' },
+    { frame: '<jR x>', why: 'it is neither a roster nor a roster loco' },
     { frame: '<H 1 DCC 10 0>', why: 'it is a turnout definition rather than a state' },
     { frame: '<Q 20 200 1>', why: 'it is a sensor definition, which the app does not model' },
     { frame: '<X>', why: 'the app does not act on it' },

@@ -1,9 +1,10 @@
 import type { VueWrapper } from '@vue/test-utils';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import type { Pinia } from 'pinia';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import BackupData from '@/components/settings/BackupData.vue';
 import FunctionMaps from '@/components/settings/FunctionMaps.vue';
 import SavedLocos from '@/components/settings/SavedLocos.vue';
 import ThemeChoice from '@/components/settings/ThemeChoice.vue';
@@ -66,6 +67,16 @@ describe('saved locos', () => {
     expect(wrapper.get('[data-testid="roster-99"]').text()).toContain('Switcher map');
   });
 
+  it('saves a loco\'s type, brand and decoder with it', async () => {
+    await fillIn('12', 'Shunter');
+    await wrapper.get('[data-testid="new-loco-type"]').setValue('Diesel');
+    await wrapper.get('[data-testid="new-loco-brand"]').setValue(' Bachmann ');
+    await wrapper.get('[data-testid="new-loco-decoder"]').setValue('');
+    await wrapper.get('[data-testid="saved-loco-form"]').trigger('submit');
+
+    expect(wrapper.get('[data-testid="roster-details-12"]').text()).toBe('Diesel · Bachmann');
+  });
+
   it('lists a newly saved loco by name', async () => {
     await fillIn('12', 'Shunter');
     await wrapper.get('[data-testid="saved-loco-form"]').trigger('submit');
@@ -98,6 +109,76 @@ describe('saved locos', () => {
     await deleteLoco(true);
 
     expect(wrapper.find('[data-testid="roster-99"]').exists()).toBe(false);
+  });
+});
+
+describe('backup', () => {
+  let wrapper: VueWrapper;
+
+  function message(): string {
+    return wrapper.get('[data-testid="backup-message"]').text();
+  }
+
+  async function chooseFile(text: string): Promise<void> {
+    const input = wrapper.get('[data-testid="import-file"]');
+
+    Object.defineProperty(input.element, 'files', {
+      value: [new File([text], 'AppData.json')],
+      configurable: true,
+    });
+    await input.trigger('change');
+    await flushPromises();
+  }
+
+  beforeEach(() => {
+    const value = pinia();
+
+    useLocosStore().saveLoco(99, 'Existing');
+    wrapper = mount(BackupData, { global: { plugins: [value] } });
+  });
+
+  it('opens the file picker to import', async () => {
+    const click = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+
+    await wrapper.get('[data-testid="import-data"]').trigger('click');
+
+    expect(click).toHaveBeenCalled();
+  });
+
+  it('downloads the saved locos as a file', async () => {
+    const created = vi.fn<(blob: Blob) => string>(() => 'blob:backup');
+
+    Object.assign(URL, { createObjectURL: created, revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    await wrapper.get('[data-testid="export-data"]').trigger('click');
+
+    expect(await created.mock.calls[0]?.[0].text()).toContain('"name": "Existing"');
+  });
+
+  it('says what it brought in from a file', async () => {
+    await chooseFile(JSON.stringify([{ locos: [{ name: 'Shunter', cv: '3', map: 'Default' }] }, { maps: [] }]));
+
+    expect(message()).toBe('Brought in 1 loco and 0 function maps.');
+  });
+
+  it('says when a file is not a backup', async () => {
+    await chooseFile('hello');
+
+    expect(message()).toContain('AppData.json is not a WebThrottle backup');
+  });
+
+  it('keeps the saved locos when deleting is cancelled', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await wrapper.get('[data-testid="clear-data"]').trigger('click');
+
+    expect(useLocosStore().roster).toHaveLength(1);
+  });
+
+  it('deletes the saved locos once deleting is confirmed', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await wrapper.get('[data-testid="clear-data"]').trigger('click');
+
+    expect(useLocosStore().roster).toEqual([]);
   });
 });
 

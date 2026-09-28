@@ -14,6 +14,7 @@ const name = ref('');
 const parsed = computed(() => parseAddress(address.value));
 
 const saved = computed(() => locos.savedNotDriven);
+const station = computed(() => locos.stationNotDriven);
 const moving = computed(() => locos.moving);
 
 function drive(target: number): void {
@@ -109,6 +110,44 @@ function submit(): void {
             {{ loco.speed }}
             {{ loco.forward ? 'FWD' : 'REV' }}
           </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- The Command Station's own roster, shared by every Throttle on it. -->
+    <section
+      v-if="station.length > 0"
+      class="drive-form__group"
+      aria-labelledby="drive-station"
+    >
+      <div class="drive-form__group-head">
+        <h3
+          id="drive-station"
+          class="drive-form__label"
+        >
+          Command Station roster
+        </h3>
+        <button
+          v-if="station.length > 1"
+          type="button"
+          class="drive-form__all"
+          data-testid="drive-all-station"
+          @click="locos.acquireAll(station.map((loco) => loco.address))"
+        >
+          Drive all {{ station.length }}
+        </button>
+      </div>
+      <div class="drive-form__chips">
+        <button
+          v-for="loco in station"
+          :key="loco.address"
+          type="button"
+          class="key drive-form__chip"
+          :data-testid="`drive-station-${loco.address}`"
+          @click="drive(loco.address)"
+        >
+          {{ loco.name }}
+          <span class="drive-form__address numeric">{{ loco.address }}</span>
         </button>
       </div>
     </section>

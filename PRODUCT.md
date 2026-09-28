@@ -51,6 +51,9 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - Track power: one switch for every track at once, plus one for each track output the Command Station reports
 - Saved locos, stored per browser: acquire and release, speed, direction, stop, emergency stop, and functions F0–F31
 - Function maps: labels, latching or momentary, visibility
+- The Command Station's own roster (EXRAIL ROSTER lines): its locos to drive, with their names and function names, and its default function names (`ROSTER(0, …)`) for any other loco. A loco saved in this browser keeps the name and map you gave it
+- Saved locos can note their type, brand and decoder, for your own reference
+- Backup: export saved locos and function maps to a file, import them again (merging with what is here), import the AppData.json from WebThrottle-EX, and delete everything saved in this browser
 - Turnouts/points: throw and close
 - Outputs: switch on and off
 - Sensors: live state, read-only

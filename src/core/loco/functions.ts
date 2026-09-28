@@ -32,3 +32,19 @@ export function decodeFunctionMap(functionMap: number): boolean[] {
 
   return states;
 }
+
+// The function names a Command Station's roster gives a loco, as EXRAIL's
+// ROSTER line writes them: F0 first, split by "/", a "*" in front of one you
+// hold down (a horn), and nothing between two slashes for a function the loco
+// does not have. Only F0–F31 fit the broadcast, so later ones are left off.
+export function parseRosterFunctions(text: string): FunctionDef[] {
+  return text
+    .split('/')
+    .slice(0, 32)
+    .map((name, fn) => ({
+      fn,
+      label: name.replace(/^\*/, '').trim(),
+      momentary: name.startsWith('*'),
+    }))
+    .filter(def => def.label !== '');
+}

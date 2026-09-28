@@ -12,6 +12,9 @@ import {
   requestCabList,
   requestLocoUpdate,
   requestOutputList,
+  requestRosterDefaults,
+  requestRosterList,
+  requestRosterLoco,
   requestRoute,
   requestRouteList,
   requestSensorStates,
@@ -59,6 +62,9 @@ describe('encode', () => {
     { command: 'start an automation with a loco', encode: () => startAutomation(201, 3), expected: '</ START 3 201>' },
     { command: 'pause every EXRAIL task', encode: () => pauseTasks(), expected: '</ PAUSE>' },
     { command: 'resume every EXRAIL task', encode: () => resumeTasks(), expected: '</ RESUME>' },
+    { command: 'request the roster', encode: () => requestRosterList(), expected: '<JR>' },
+    { command: 'request one roster loco', encode: () => requestRosterLoco(3), expected: '<JR 3>' },
+    { command: 'request the roster\'s default functions', encode: () => requestRosterDefaults(), expected: '<JR 0>' },
   ])('encodes $command as $expected', ({ encode, expected }) => {
     expect(encode()).toBe(expected);
   });
@@ -78,6 +84,7 @@ describe('encode', () => {
     { input: 'route id -1', encode: () => startRoute(-1) },
     { input: 'loco address 0 for an automation', encode: () => startAutomation(201, 0) },
     { input: 'output id 1.5', encode: () => setOutput(1.5, true) },
+    { input: 'roster address 0', encode: () => requestRosterLoco(0) },
   ])('rejects $input', ({ encode }) => {
     expect(encode).toThrow();
   });

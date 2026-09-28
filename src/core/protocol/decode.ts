@@ -2,6 +2,7 @@ import type { ProtocolMessage, SystemInfo, TrackState } from './types';
 import { PowerState, RouteState, RouteType, TurnoutState } from './types';
 import {
   CAB_LIST_TITLE,
+  INFO_ROSTER,
   INFO_ROUTES,
   INFO_ROUTE_STATE,
   INFO_TURNOUTS,
@@ -103,6 +104,31 @@ function decodeRouteInfo(params: string): ProtocolMessage {
   return { kind: 'ignored' };
 }
 
+function decodeRosterInfo(params: string): ProtocolMessage {
+  // <jR cab "name" "functions"> describes one loco. The function names are
+  // left as EXRAIL wrote them ("Lights/Bell/*Horn"); core/loco reads them.
+  const detail = /^(\d+) "(.*)" "(.*)"$/.exec(params.trim());
+
+  if (detail) {
+    return {
+      kind: 'roster-loco',
+      address: Number(detail[1]),
+      name: detail[2],
+      functions: detail[3],
+    };
+  }
+
+  // <jR cab cab cab> lists them, and a bare <jR> means there are none, which
+  // is what a Command Station without ROSTER lines always says.
+  const addresses = params.trim().split(/\s+/).filter(Boolean).map(Number);
+
+  if (addresses.every(address => Number.isInteger(address))) {
+    return { kind: 'roster-list', addresses };
+  }
+
+  return { kind: 'ignored' };
+}
+
 const ROUTE_STATES = new Set<number>([
   RouteState.INACTIVE,
   RouteState.ACTIVE,
@@ -165,6 +191,10 @@ export function decodeFrame(frame: string): ProtocolMessage {
 
   if (opcode === OPCODE_INFO && body[1] === INFO_ROUTE_STATE) {
     return decodeRouteState(body.slice(2));
+  }
+
+  if (opcode === OPCODE_INFO && body[1] === INFO_ROSTER) {
+    return decodeRosterInfo(body.slice(2));
   }
 
   // <* LocoSlots n/max …\n Loco=3 s=… \n*>: the answer to <D CABS>. It is a

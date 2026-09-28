@@ -96,6 +96,11 @@ export const useDiagramStore = defineStore('diagram', () => {
     }
   }
 
+  function clearPlacements(): void {
+    placements.value = {};
+    localStorage.removeItem(BERTHS_KEY);
+  }
+
   // The station's own description wins; the diagram's name fills the gap.
   function turnoutName(id: number, stationLabel = ''): string {
     return (
@@ -119,6 +124,7 @@ export const useDiagramStore = defineStore('diagram', () => {
     place,
     berthOf,
     setBerth,
+    clearPlacements,
     sensorName,
     turnoutName,
   };

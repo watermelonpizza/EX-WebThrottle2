@@ -38,6 +38,26 @@ describe('drive form', () => {
     });
   });
 
+  describe('with locos 10 and 11 on the Command Station\'s roster', () => {
+    let wrapper: VueWrapper;
+
+    beforeEach(async () => {
+      wrapper = mountForm();
+      app.station.receives('<jR 10 11><jR 10 "Pannier" "Lights"><jR 11 "Class 66" "">');
+      await flushPromises();
+    });
+
+    it('offers each one by the roster\'s name', () => {
+      expect(wrapper.get('[data-testid="drive-station-10"]').text()).toContain('Pannier');
+    });
+
+    it('puts them all on desks at once', async () => {
+      await wrapper.get('[data-testid="drive-all-station"]').trigger('click');
+
+      expect(locos.throttles.map(throttle => throttle.name)).toEqual(['Pannier', 'Class 66']);
+    });
+  });
+
   describe('with locos 12 and 14 moving on another Throttle', () => {
     let wrapper: VueWrapper;
 

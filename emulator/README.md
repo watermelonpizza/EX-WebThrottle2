@@ -22,7 +22,7 @@ emulator/main.cpp           setup/loop mirror of CommandStation-EX.ino
 emulator/bridge.mjs         Node WebSocket bridge (pnpm run emulator)
 emulator/Makefile           cross-platform host build
 emulator/mySetup.h          startup commands: turnouts, outputs, sensors
-emulator/myAutomation.h     EXRAIL script: routes and an automation
+emulator/myAutomation.h     EXRAIL script: a roster, routes and an automation
 emulator/CommandStation-EX/ git submodule: the real firmware (do not edit)
 ```
 
@@ -48,13 +48,15 @@ serial terminal.
 - EXRAIL, from `myAutomation.h`: `<JA>` lists five routes and one
   automation, `</ START 101>` runs a route (it sets the points), and
   `</ START 3 201>` sends loco 3 off until sensor 20 fires, showing the
-  automation as active (`<jB 201 1>`) while it runs
+  automation as active (`<jB 201 1>`) while it runs. `<JR>` lists a
+  two-loco roster (`<jR 10 11>`), and `<JR 10>` names loco 10 and its
+  functions
 
 Deliberately not implemented yet:
 
 - EXRAIL text commands (`PRINT`, `BROADCAST`, `LCD`, …): they crash the
-  emulator, see `myAutomation.h`. Signals, block events and a Command Station
-  roster are left out of the script until the throttle needs them
+  emulator, see `myAutomation.h`. Signals and block events are left out of
+  the script until the throttle needs them
 
 ## Build
 
@@ -95,6 +97,7 @@ Then type DCC-EX commands, e.g.:
 <z -22>             pull pin 22 low: sensor 20 reports <Q 20> (occupied)
 <z 22>              release pin 22: sensor 20 reports <q 20> (clear)
 <JA>                list EXRAIL routes and automations (<jA 101 102 ...>)
+<JR 10>             roster loco 10: <jR 10 "Pannier" "Lights/Bell/*Whistle//Coal shovel">
 </ START 102>       run route 102, Passing loop: throws turnouts 1 and 2
 <0>                 track power OFF
 ```

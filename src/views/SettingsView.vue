@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { version } from '../../package.json';
+
+import BackupData from '@/components/settings/BackupData.vue';
 import FunctionMaps from '@/components/settings/FunctionMaps.vue';
 import SavedLocos from '@/components/settings/SavedLocos.vue';
 import ThemeChoice from '@/components/settings/ThemeChoice.vue';
@@ -32,6 +35,14 @@ const connection = useConnectionStore();
     <ThemeChoice />
     <SavedLocos />
     <FunctionMaps />
+    <BackupData />
+
+    <p
+      class="settings__version"
+      data-testid="app-version"
+    >
+      EX-WebThrottle {{ version }}
+    </p>
   </div>
 </template>
 
@@ -50,6 +61,13 @@ const connection = useConnectionStore();
 }
 
 .settings__back {
+  font-size: var(--text-xs);
+}
+
+.settings__version {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-muted);
   font-size: var(--text-xs);
 }
 

@@ -14,6 +14,8 @@ It is the next generation of the original [WebThrottle-EX](https://dcc-ex.com/We
 - Drive your locos: speed, direction, stop, emergency stop, and functions F0–F31
 - Stop every loco at once with **STOP ALL**, which is on every screen. It pauses your Command Station's EXRAIL automations too, until you resume them
 - Save your locos, name their functions, and set each one as latching or momentary
+- Drive the locos in your Command Station's own roster (ROSTER lines in its EXRAIL script), with the function names it gives them
+- Export your saved locos and function maps to a file and import them again, here or on another computer. Import also reads the AppData.json that the original WebThrottle-EX exports, so your locos come over with you
 - Throw and close turnouts/points
 - Switch outputs on and off
 - Watch sensors change live

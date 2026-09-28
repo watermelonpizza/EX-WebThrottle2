@@ -67,14 +67,15 @@ src/core/protocol     pure: DCC-EX Native Protocol encode/decode, speed bytes, o
                       never through index.ts, so only Diagnostics downloads them
 src/core/transport    Transport interface + frame extractor; adapters/ = Web Serial,
                       WebSocket (emulator bridge), MockTransport (offline test double)
-src/core/loco         pure loco helpers (function-state reconciliation)
+src/core/loco         pure loco helpers (function-state reconciliation, roster function
+                      names, reading and writing backup files including WebThrottle-EX's)
 src/core/diagram      pure layout-diagram types and drawing, plus the emulator's sample
 src/core/workspace    pure panel layout tree and the role presets
 src/core/logging      console warn/error, tagged with dotted event identifiers
 src/stores            Pinia stores, the only view-facing state: connection (lifecycle,
                       decode routing, raw traffic log), power, locos, maps, inventory,
-                      routes, events, diagram, workspace, settings; saved.ts reads
-                      localStorage
+                      routes, events, diagram, workspace, settings, backup; saved.ts
+                      reads localStorage
 src/composables       small Vue helpers (the clock, roving focus for long runs of keys)
 src/components        shell/ (top bar, safety strip, connect screen), workspace/ (panel
                       layout), panels/, schematic/, throttle/, settings/

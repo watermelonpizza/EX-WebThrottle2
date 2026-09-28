@@ -2,8 +2,9 @@
 import { computed, ref } from 'vue';
 
 import { parseAddress } from '@/core/loco/address';
-import { useLocosStore } from '@/stores/locos';
-import { useMapsStore } from '@/stores/maps';
+import type { RosterLoco } from '@/stores/locos';
+import { LOCO_TYPES, useLocosStore } from '@/stores/locos';
+import { STATION_MAP, useMapsStore } from '@/stores/maps';
 
 const locos = useLocosStore();
 const maps = useMapsStore();
@@ -11,6 +12,9 @@ const maps = useMapsStore();
 const address = ref('');
 const name = ref('');
 const mapId = ref('default');
+const type = ref('');
+const brand = ref('');
+const decoder = ref('');
 
 const parsed = computed(() => parseAddress(address.value));
 const valid = computed(
@@ -22,16 +26,27 @@ function save(): void {
     return;
   }
 
-  locos.saveLoco(parsed.value, name.value.trim(), mapId.value);
-  address.value = '';
-  name.value = '';
-  mapId.value = 'default';
+  locos.saveLoco(parsed.value, name.value.trim(), mapId.value, {
+    type: type.value || undefined,
+    brand: brand.value.trim() || undefined,
+    decoder: decoder.value.trim() || undefined,
+  });
+  fill();
 }
 
-function edit(loco: { address: number; name: string; mapId: string }): void {
-  address.value = String(loco.address);
-  name.value = loco.name;
-  mapId.value = loco.mapId;
+// Puts a saved loco in the form to change it, or empties the form.
+function fill(loco?: RosterLoco): void {
+  address.value = loco ? String(loco.address) : '';
+  name.value = loco?.name ?? '';
+  mapId.value = loco?.mapId ?? 'default';
+  type.value = loco?.type ?? '';
+  brand.value = loco?.brand ?? '';
+  decoder.value = loco?.decoder ?? '';
+}
+
+// The details a row shows after the name, when there are any.
+function details(loco: RosterLoco): string {
+  return [loco.type, loco.brand, loco.decoder].filter(Boolean).join(' · ');
 }
 
 function remove(loco: { address: number; name: string }): void {
@@ -55,6 +70,7 @@ function remove(loco: { address: number; name: string }): void {
     <p class="settings-section__lead">
       Saved locos are kept in this browser. Give each one a name like "37 025 ·
       Class 37": the part before the dot is what shows on the layout diagram.
+      Type, brand and decoder are there for your own reference.
     </p>
 
     <ul
@@ -70,16 +86,23 @@ function remove(loco: { address: number; name: string }): void {
         <span class="row__name">{{ loco.name }}</span>
         <span class="row__meta numeric">Address {{ loco.address }}</span>
         <span class="row__meta">{{ maps.mapName(loco.mapId) }}</span>
+        <span
+          v-if="details(loco)"
+          class="row__meta"
+          :data-testid="`roster-details-${loco.address}`"
+        >{{ details(loco) }}</span>
         <button
           type="button"
           class="key"
-          @click="edit(loco)"
+          :aria-label="`Edit ${loco.name}`"
+          @click="fill(loco)"
         >
           Edit
         </button>
         <button
           type="button"
           class="key"
+          :aria-label="`Delete ${loco.name}`"
           data-testid="delete-loco"
           @click="remove(loco)"
         >
@@ -118,6 +141,9 @@ function remove(loco: { address: number; name: string }): void {
           data-testid="new-loco-map"
         >
           <option value="default">Default</option>
+          <option :value="STATION_MAP">
+            From the Command Station roster
+          </option>
           <option
             v-for="map in maps.maps"
             :key="map.id"
@@ -126,6 +152,39 @@ function remove(loco: { address: number; name: string }): void {
             {{ map.name }}
           </option>
         </select>
+      </label>
+      <label class="loco-form__field">
+        <span>Type (optional)</span>
+        <select
+          v-model="type"
+          class="field"
+          data-testid="new-loco-type"
+        >
+          <option value="">Not set</option>
+          <option
+            v-for="kind in LOCO_TYPES"
+            :key="kind"
+            :value="kind"
+          >
+            {{ kind }}
+          </option>
+        </select>
+      </label>
+      <label class="loco-form__field">
+        <span>Brand (optional)</span>
+        <input
+          v-model="brand"
+          class="field"
+          data-testid="new-loco-brand"
+        >
+      </label>
+      <label class="loco-form__field">
+        <span>Decoder (optional)</span>
+        <input
+          v-model="decoder"
+          class="field"
+          data-testid="new-loco-decoder"
+        >
       </label>
       <button
         type="submit"

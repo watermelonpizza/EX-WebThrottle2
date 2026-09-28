@@ -4,6 +4,7 @@ import {
   EXRAIL_PAUSE,
   EXRAIL_RESUME,
   EXRAIL_START,
+  INFO_ROSTER,
   INFO_ROUTES,
   INFO_TURNOUTS,
   OPCODE_DIAGNOSTIC,
@@ -156,6 +157,22 @@ export function requestRoute(id: number): string {
   assertObjectId(id);
 
   return `<${OPCODE_INFO_REQUEST}${INFO_ROUTES} ${id}>`;
+}
+
+export function requestRosterList(): string {
+  return `<${OPCODE_INFO_REQUEST}${INFO_ROSTER}>`;
+}
+
+export function requestRosterLoco(cab: number): string {
+  assertCab(cab);
+
+  return `<${OPCODE_INFO_REQUEST}${INFO_ROSTER} ${cab}>`;
+}
+
+// ROSTER(0, …) is not a loco: its function names are the default for every
+// loco without names of its own. <jR> lists its 0 along with the addresses.
+export function requestRosterDefaults(): string {
+  return `<${OPCODE_INFO_REQUEST}${INFO_ROSTER} 0>`;
 }
 
 export function startRoute(id: number): string {

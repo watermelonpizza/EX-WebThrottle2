@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { FunctionDef } from '@/core/loco/functions';
-import { MAPS_KEY, useMapsStore } from '@/stores/maps';
+import { MAPS_KEY, STATION_MAP, useMapsStore } from '@/stores/maps';
 
 describe('maps store', () => {
   let maps: ReturnType<typeof useMapsStore>;
@@ -15,6 +15,42 @@ describe('maps store', () => {
 
   it('starts empty', () => {
     expect(maps.maps).toEqual([]);
+  });
+
+  it('names the Command Station\'s own function names', () => {
+    expect(maps.mapName(STATION_MAP)).toBe('Command Station roster');
+  });
+
+  describe('importing maps, with one called Class 08 here', () => {
+    const lights: FunctionDef[] = [{ fn: 0, label: 'Lights', momentary: false }];
+    let here: string;
+    let ids: Map<string, string>;
+
+    beforeEach(() => {
+      here = maps.createMap('Class 08', []);
+      ids = maps.importMaps([
+        { id: 'a', name: 'Class 08', functions: lights },
+        { id: 'b', name: 'Class 37', functions: lights },
+      ]);
+    });
+
+    it('replaces the functions of the one with the same name', () => {
+      expect(maps.maps[0]?.functions).toEqual(lights);
+    });
+
+    it('adds the others', () => {
+      expect(maps.maps.map(map => map.name)).toEqual(['Class 08', 'Class 37']);
+    });
+
+    it('gives each imported map the id it has here', () => {
+      expect([ids.get('a'), ids.get('b')]).toEqual([here, maps.maps[1]?.id]);
+    });
+
+    it('deletes them all when the maps are cleared', () => {
+      maps.clearAll();
+
+      expect([maps.maps, localStorage.getItem(MAPS_KEY)]).toEqual([[], null]);
+    });
   });
 
   it('tolerates a corrupted blob', () => {

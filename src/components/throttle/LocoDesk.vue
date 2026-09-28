@@ -16,7 +16,7 @@ import SpeedScale from '@/components/throttle/SpeedScale.vue';
 import { useDiagramStore } from '@/stores/diagram';
 import type { Throttle } from '@/stores/locos';
 import { useLocosStore } from '@/stores/locos';
-import { useMapsStore } from '@/stores/maps';
+import { STATION_MAP, useMapsStore } from '@/stores/maps';
 
 const props = withDefaults(
   defineProps<{ throttle: Throttle; canAdd?: boolean }>(),
@@ -37,7 +37,8 @@ const functionsId = computed(() => `desk-functions-${address.value}`);
 
 const forward = computed(() => props.throttle.forward);
 
-const functions = computed(() => maps.visibleFunctions(props.throttle.mapId));
+const functions = computed(() =>
+  locos.functionsFor(address.value, props.throttle.mapId));
 
 // How many keys the desk shows (undefined: all of them), and whether they are
 // a touch target high instead of a control high; see fitKeys.
@@ -210,6 +211,12 @@ function release(): void {
               "
             >
               <option value="default">Default (F0–F31)</option>
+              <option
+                v-if="locos.hasStationFunctions(address) || throttle.mapId === STATION_MAP"
+                :value="STATION_MAP"
+              >
+                From the Command Station roster
+              </option>
               <option
                 v-for="map in maps.maps"
                 :key="map.id"

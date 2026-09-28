@@ -17,6 +17,12 @@
 // Keep this small: the emulator is here to give the throttle real replies
 // (<jA>, <jB>, route runs), not to run a layout.
 
+// The Command Station's own loco list (<JR>): a name and function names for
+// each address, F0 first, with * for one you hold down. Addresses 10 and 11
+// are not driven by any other test, so their names never clash.
+ROSTER(10, "Pannier", "Lights/Bell/*Whistle//Coal shovel")
+ROSTER(11, "Class 66", "Headlights/*Horn")
+
 // Routes only set points, so a driver can then run over them.
 ROUTE(101, "Main line")
   CLOSE(1) CLOSE(3) CLOSE(2)
