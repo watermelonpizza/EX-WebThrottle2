@@ -23,8 +23,10 @@ It is the next generation of the original [WebThrottle-EX](https://dcc-ex.com/We
 - Pick the console for your job: Drive, Points, Control or Diagnostics. Each one has its own link, so you can hand an operator the page they need
 - Choose a dark, light or high-contrast theme
 - Watch the commands going to and from your Command Station, with a plain explanation of each, look up any DCC-EX command, and send your own
+- Use it from the keyboard: Tab moves between controls, and the arrow keys move within the function keys and the long lists in Diagnostics
+- Install it as an app from Chrome or Edge. Once it has been opened, it opens again without the internet
 
-Coming later: a diagram of your own layout (only the emulator has a sample diagram today), arranging the panels yourself, a network connection so you can drive from a Smart Phone, and installing EX-WebThrottle as an app.
+Coming later: a diagram of your own layout (only the emulator has a sample diagram today), arranging the panels yourself, and a network connection so you can drive from a Smart Phone.
 
 ## What you need
 
@@ -86,6 +88,7 @@ src/core/protocol → src/core/transport → src/stores → src/components, src/
 - `src/core/loco`, `src/core/diagram` and `src/core/workspace` are small plain helpers: function states, the layout diagram, and how panels are laid out.
 - `src/stores` holds the connection and all the state the screens show.
 - `src/components` and `src/views` are the console you see.
+- `src/service-worker.js` keeps a copy of the built app so it opens offline. The build writes its file list in.
 
 The Command Station is always the source of truth. EX-WebThrottle asks it what it has every time it connects, then listens for its broadcasts.
 

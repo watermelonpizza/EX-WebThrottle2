@@ -312,6 +312,14 @@ test('warns before disconnecting while a loco is moving', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Connect to your Command Station' }),
   ).toBeVisible();
+
+  // That paused EXRAIL as STOP ALL does. This Throttle no longer offers
+  // Resume once disconnected, so set the emulator's tasks going again by
+  // hand for the tests that follow.
+  await connect(page, '/diagnostics');
+  await page.getByTestId('command-input').fill('</ RESUME>');
+  await page.getByTestId('send-command').click();
+  await expect(page.getByTestId('trace-list')).toContainText('</ RESUME>');
 });
 
 test('remembers a theme choice', async ({ page }) => {
@@ -322,4 +330,52 @@ test('remembers a theme choice', async ({ page }) => {
 
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'contrast');
+});
+
+test('drives from the keyboard, and Tabs past the function keys to STOP ALL', async ({
+  page,
+  browserName,
+}) => {
+  // Safari's Tab only visits form fields until you ask for everything, which
+  // Option-Tab does.
+  const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
+
+  await connect(page, '/drive');
+
+  // Connecting starts you at the heading naming your role.
+  await expect(page.getByTestId('role-title')).toBeFocused();
+
+  await page.getByTestId('drive-address').fill('4');
+  await page.keyboard.press('Enter');
+
+  // The form you typed into has gone; the focus moves on to the new desk.
+  await expect(page.getByTestId('desk-title')).toBeFocused();
+
+  const keys = page.getByTestId('fun');
+
+  await keys.first().focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(keys.nth(1)).toBeFocused();
+
+  await page.keyboard.press(tab);
+  await expect(page.getByTestId('stop-all')).toBeFocused();
+});
+
+test('opens with no internet once it has been loaded', async ({
+  page,
+  context,
+  browserName,
+}) => {
+  // Only a build has a service worker, and CI tests a build.
+  test.skip(!process.env.CI, 'The dev server has no service worker');
+  test.skip(browserName !== 'chromium', 'Offline service workers are tested in Chromium');
+
+  await page.goto('/#/');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Connect to your Command Station' }),
+  ).toBeVisible();
 });

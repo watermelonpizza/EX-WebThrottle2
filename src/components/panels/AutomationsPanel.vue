@@ -38,6 +38,7 @@ const loco = computed({
         <button
           type="button"
           class="key"
+          aria-label="Resume automations"
           data-testid="resume-automations"
           @click="routes.resumeAll()"
         >

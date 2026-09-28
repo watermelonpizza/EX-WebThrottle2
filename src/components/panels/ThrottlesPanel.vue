@@ -1,13 +1,36 @@
 <script setup lang="ts">
+import { nextTick, useTemplateRef, watch } from 'vue';
+
 import DriveForm from '@/components/throttle/DriveForm.vue';
 import LocoDesk from '@/components/throttle/LocoDesk.vue';
 import { useLocosStore } from '@/stores/locos';
 
 const locos = useLocosStore();
+
+const root = useTemplateRef<HTMLElement>('root');
+
+// Driving the first loco replaces the form you typed it into with its desk,
+// and releasing a loco takes its desk away; either way the focus goes with
+// them. Hand it to the first desk, or back to the form once none are left.
+watch(
+  () => locos.throttles.length,
+  async () => {
+    await nextTick();
+
+    if (document.activeElement === document.body) {
+      root.value
+        ?.querySelector<HTMLElement>('[data-testid="desk-title"], [data-testid="drive-address"]')
+        ?.focus();
+    }
+  },
+);
 </script>
 
 <template>
-  <div class="throttles">
+  <div
+    ref="root"
+    class="throttles"
+  >
     <LocoDesk
       v-for="(throttle, index) in locos.throttles"
       :key="throttle.address"

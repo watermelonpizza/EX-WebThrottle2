@@ -75,11 +75,12 @@ src/stores            Pinia stores, the only view-facing state: connection (life
                       decode routing, raw traffic log), power, locos, maps, inventory,
                       routes, events, diagram, workspace, settings; saved.ts reads
                       localStorage
-src/composables       small Vue helpers (the clock)
+src/composables       small Vue helpers (the clock, roving focus for long runs of keys)
 src/components        shell/ (top bar, safety strip, connect screen), workspace/ (panel
                       layout), panels/, schematic/, throttle/, settings/
 src/views             ConsoleView (connect page, then the panel workspace), SettingsView
 src/router · src/styles (design tokens as CSS custom properties; themes via [data-theme])
+src/service-worker.js the offline copy of the built app; vite.config.ts writes its file list
 emulator/             real CommandStation-EX built for the host + WebSocket bridge
 e2e/                  Playwright tests
 ```

@@ -3,21 +3,12 @@ import { computed, ref } from 'vue';
 
 import EventsPanel from '@/components/panels/EventsPanel.vue';
 import { useEventsStore } from '@/stores/events';
-import { useLocosStore } from '@/stores/locos';
 import { usePowerStore } from '@/stores/power';
 import { useRoutesStore } from '@/stores/routes';
 
 const events = useEventsStore();
-const locos = useLocosStore();
 const power = usePowerStore();
 const routes = useRoutesStore();
-
-// EXRAIL is paused first, so no automation sets a train going again and
-// EXRAIL notes the speeds to resume with; then every loco stops.
-function stopAll(): void {
-  routes.pauseAll();
-  locos.stopAll();
-}
 
 const newest = computed(() => events.events[0]?.text ?? '');
 
@@ -53,7 +44,7 @@ function onLogToggle(event: Event): void {
       type="button"
       class="safety__stop-all"
       data-testid="stop-all"
-      @click="stopAll()"
+      @click="routes.stopAll()"
     >
       STOP ALL
     </button>
@@ -289,11 +280,11 @@ function onLogToggle(event: Event): void {
   }
 }
 
-/* On a phone Stop all takes the room the event label gives up, on the same
-   single row as the power switches. */
+/* On a phone Stop all takes the room the event label gives up. The power
+   switches and the event log share its row while they fit, and otherwise
+   move to a row below it, so every track's switch is always on screen. */
 @media (max-width: 40rem) {
   .safety {
-    flex-wrap: nowrap;
     gap: var(--control-gap);
     padding-inline: var(--space-2);
   }
@@ -304,11 +295,12 @@ function onLogToggle(event: Event): void {
   }
 
   .safety__power {
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex: 1 1 auto;
   }
 
   .power {
+    flex: 1 0 auto;
+    justify-content: center;
     padding: 0 var(--space-2);
     font-size: var(--text-xs);
   }

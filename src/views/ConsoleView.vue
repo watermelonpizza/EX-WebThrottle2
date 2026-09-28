@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import ConnectScreen from '@/components/shell/ConnectScreen.vue';
@@ -23,6 +23,14 @@ watch(
   },
   { immediate: true },
 );
+
+// Connecting swaps the connect page for the workspace, and losing the
+// connection swaps it back, taking the focus with the page it was on. Start
+// again at the new page's heading, so a screen reader says where you are.
+watch(connected, async () => {
+  await nextTick();
+  document.querySelector<HTMLElement>('h1')?.focus();
+});
 </script>
 
 <template>
@@ -31,6 +39,13 @@ watch(
     class="console"
     :data-preset="workspace.presetId"
   >
+    <h1
+      class="visually-hidden"
+      tabindex="-1"
+      data-testid="role-title"
+    >
+      {{ workspace.preset.label }}
+    </h1>
     <WorkspaceLayout :node="workspace.preset.layout" />
   </div>
   <ConnectScreen v-else />

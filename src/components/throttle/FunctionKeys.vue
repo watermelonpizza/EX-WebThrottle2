@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
+import { useRovingFocus } from '@/composables/useRovingFocus';
 import type { FunctionDef } from '@/core/loco/functions';
 
 const props = defineProps<{
@@ -9,6 +12,23 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ set: [fn: number, on: boolean] }>();
+
+const shown = computed(() =>
+  props.limit === undefined ? props.functions : props.functions.slice(0, props.limit));
+
+// 32 keys are one Tab stop; the arrow keys move along and between rows.
+const roving = useRovingFocus({
+  count: () => shown.value.length,
+  columns: grid =>
+    getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length || 1,
+});
+
+// A key without a name of its own is just its number.
+function keyName(def: FunctionDef): string {
+  const name = def.label === `F${def.fn}` ? def.label : `F${def.fn} ${def.label}`;
+
+  return def.momentary ? `${name}, hold to use` : name;
+}
 
 // Momentary functions (horn, whistle) sound only while held, by pointer or by
 // Space/Enter; latching ones toggle on each press.
@@ -54,17 +74,21 @@ function keyUp(def: FunctionDef, event: KeyboardEvent): void {
 <template>
   <div
     class="fn-keys"
-    role="group"
+    role="toolbar"
     aria-label="Functions"
+    @keydown="roving.onKeydown"
+    @focusin="roving.onFocusin"
   >
     <button
-      v-for="def in limit === undefined ? functions : functions.slice(0, limit)"
+      v-for="(def, index) in shown"
       :key="def.fn"
       type="button"
       class="fn-key"
       :class="{ 'fn-key--on': states[def.fn] }"
+      :tabindex="roving.tabindex(index)"
+      data-roving
       :aria-pressed="def.momentary ? undefined : Boolean(states[def.fn])"
-      :aria-label="`F${def.fn} ${def.label}${def.momentary ? ', hold to use' : ''}`"
+      :aria-label="keyName(def)"
       :title="`F${def.fn}`"
       data-testid="fun"
       :data-function="def.fn"

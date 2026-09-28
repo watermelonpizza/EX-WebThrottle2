@@ -175,6 +175,13 @@ export const useRoutesStore = defineStore('routes', () => {
     paused.value = true;
   }
 
+  // STOP ALL: EXRAIL is paused first, so no automation sets a train going
+  // again and EXRAIL notes the speeds to resume with; then every loco stops.
+  function stopAll(): void {
+    pauseAll();
+    locos.stopAll();
+  }
+
   // EXRAIL puts each task's loco back to the speed it had when paused, so
   // trains that were running under an automation set off again.
   function resumeAll(): void {
@@ -191,6 +198,7 @@ export const useRoutesStore = defineStore('routes', () => {
     setRoute,
     startWithLoco,
     pauseAll,
+    stopAll,
     resumeAll,
   };
 });

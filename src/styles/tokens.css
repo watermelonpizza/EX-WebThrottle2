@@ -15,6 +15,9 @@
   --raised-hover: #263038;
   --rule: #2b343b;
   --edge: #3a444b;
+  /* A field's outline is how you find it, so it needs 3:1 on every surface
+     (WCAG 2.2 non-text contrast); a key has its label instead. */
+  --field-edge: #65717a;
 
   /* Text. Muted is still AA on every surface above. */
   --ink: #eef2f4;
@@ -53,6 +56,7 @@
   --raised-hover: #f1f5f7;
   --rule: #d6dce0;
   --edge: #b9c2c8;
+  --field-edge: #78838b;
 
   --ink: #111820;
   --ink-muted: #4b5660;
@@ -65,14 +69,16 @@
   --describer: #f0a52e;
   --describer-ink: #1a1405;
 
-  --accent: #00788a;
+  /* Accent and attention are dark enough to read as text at 4.5:1 on every
+     surface here, the chrome of the top bar and safety strip included. */
+  --accent: #006f80;
   --stop: #b3261e;
   --stop-hover: #c52f26;
   --stop-ink: #ffffff;
-  --attention: #a86a00;
+  --attention: #9a6100;
 
-  --focus: #00788a;
-  --selection: rgb(0 120 138 / 0.22);
+  --focus: #006f80;
+  --selection: rgb(0 111 128 / 0.22);
 }
 
 /* Strongest separation and larger type for low vision: black and white, one
@@ -87,6 +93,7 @@
   --raised-hover: #1a1a1a;
   --rule: #ffffff;
   --edge: #ffffff;
+  --field-edge: #ffffff;
 
   --ink: #ffffff;
   --ink-muted: #ffffff;

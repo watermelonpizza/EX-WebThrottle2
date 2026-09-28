@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { logTime } from '@/composables/useClock';
+import { useRovingFocus } from '@/composables/useRovingFocus';
 import type { TraceEntry } from '@/stores/connection';
 import { useConnectionStore } from '@/stores/connection';
 import { useDiagnosticsStore } from '@/stores/diagnostics';
@@ -12,6 +13,13 @@ const command = ref('');
 const raw = ref(false);
 const expandedEntry = ref<TraceEntry | null>(null);
 const traceList = useTemplateRef<HTMLElement>('trace-list');
+
+// The log is one Tab stop, starting at the latest line; the arrow keys read
+// back through it.
+const roving = useRovingFocus({
+  count: () => store.trace.length,
+  startAtEnd: true,
+});
 
 const rawTrace = computed(() =>
   store.trace
@@ -123,6 +131,8 @@ function sendCommand(): void {
       ref="trace-list"
       class="trace"
       data-testid="trace-list"
+      @keydown="roving.onKeydown"
+      @focusin="roving.onFocusin"
     >
       <p
         v-if="store.trace.length === 0"
@@ -141,6 +151,8 @@ function sendCommand(): void {
           class="trace__line"
           :class="entry.direction"
           :aria-expanded="expandedEntry === entry"
+          :tabindex="roving.tabindex(index)"
+          data-roving
           data-testid="trace-row"
           @click="toggleEntry(entry)"
         >
@@ -255,6 +267,7 @@ function sendCommand(): void {
   &[aria-pressed='true'] {
     color: var(--accent);
     font-weight: 600;
+    box-shadow: inset 0 calc(-1 * var(--line)) 0 var(--accent);
   }
 }
 

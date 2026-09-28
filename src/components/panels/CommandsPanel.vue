@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
+import { useRovingFocus } from '@/composables/useRovingFocus';
 import type { CommandDef } from '@/stores/diagnostics';
 import { useDiagnosticsStore } from '@/stores/diagnostics';
 
@@ -13,6 +14,13 @@ const values = ref<string[]>([]);
 const forms = useTemplateRef<HTMLFormElement[]>('lookup-forms');
 
 const groups = computed(() => diagnostics.search(query.value));
+
+// Every command in the order listed, so the list can be one Tab stop that
+// the arrow keys move through.
+const order = computed(() =>
+  new Map([...groups.value.values()].flat().map((command, index) => [command, index])));
+
+const roving = useRovingFocus({ count: () => order.value.size });
 
 async function choose(command: CommandDef): Promise<void> {
   if (!diagnostics.needsForm(command)) {
@@ -68,6 +76,8 @@ function send(command: CommandDef): void {
     <div
       class="lookup-list"
       data-testid="lookup-list"
+      @keydown="roving.onKeydown"
+      @focusin="roving.onFocusin"
     >
       <p
         v-if="groups.size === 0"
@@ -94,6 +104,8 @@ function send(command: CommandDef): void {
             <button
               type="button"
               class="lookup__head"
+              :tabindex="roving.tabindex(order.get(command) ?? -1)"
+              data-roving
               :aria-expanded="
                 diagnostics.needsForm(command)
                   ? openPattern === command.pattern

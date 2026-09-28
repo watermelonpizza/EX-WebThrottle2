@@ -92,6 +92,11 @@ button:disabled {
   outline-offset: 2px;
 }
 
+/* A heading is only focused to say where you are, not to be pressed. */
+h1[tabindex='-1']:focus {
+  outline: none;
+}
+
 * {
   scrollbar-color: var(--edge) transparent;
   scrollbar-width: thin;
@@ -275,7 +280,7 @@ a {
 
   color: var(--ink);
   background: var(--ground);
-  border: 1px solid var(--edge);
+  border: 1px solid var(--field-edge);
   border-radius: var(--radius);
 
   &::placeholder {
@@ -306,5 +311,7 @@ a {
   *::after {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
+    /* A looping animation at 1ms would flicker; it holds still instead. */
+    animation-iteration-count: 1 !important;
   }
 }

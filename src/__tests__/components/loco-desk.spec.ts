@@ -34,6 +34,19 @@ describe('loco desk', () => {
     expect(wrapper.get('[data-testid="desk-title"]').text()).toContain(text);
   });
 
+  it('says the title opens the loco\'s settings', () => {
+    expect(wrapper.get('[data-testid="desk-title"]').text()).toContain(', settings');
+  });
+
+  it('names the stop key after the loco', () => {
+    expect(wrapper.get('[data-testid="estop"]').attributes('aria-label')).toBe('Stop, 37 025 · Class 37');
+  });
+
+  // The slider already tells assistive tech the speed.
+  it('keeps the speed readout from being announced as well', () => {
+    expect(wrapper.get('[data-testid="speed-readout"]').attributes('aria-hidden')).toBe('true');
+  });
+
   it('names the speed control after the loco', () => {
     expect(wrapper.get('[data-testid="speed-slider"]').attributes('aria-label')).toBe('Speed, 37 025 · Class 37');
   });
@@ -66,6 +79,10 @@ describe('loco desk', () => {
 
     it('says the loco is stopped', () => {
       expect(wrapper.get('[data-testid="estop"]').text()).toBe('Stopped');
+    });
+
+    it('says so to a screen reader too', () => {
+      expect(wrapper.get('[data-testid="estop"]').attributes('aria-label')).toBe('Stopped, 37 025 · Class 37');
     });
   });
 

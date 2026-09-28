@@ -37,6 +37,7 @@ function connectUrl(): void {
       <h1
         id="connect-title"
         class="connect__title"
+        tabindex="-1"
         data-testid="page-title"
       >
         Connect to your Command Station
@@ -64,6 +65,15 @@ function connectUrl(): void {
       >
         {{ connecting ? 'Connecting…' : 'Connect by USB' }}
       </button>
+
+      <!-- The button goes quiet while connecting; this says why. -->
+      <p
+        class="visually-hidden"
+        role="status"
+        data-testid="connect-status"
+      >
+        {{ connecting ? 'Connecting to your Command Station…' : '' }}
+      </p>
 
       <p
         v-if="!connection.serialAvailable"

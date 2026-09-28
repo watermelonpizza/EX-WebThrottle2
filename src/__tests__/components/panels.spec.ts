@@ -1,7 +1,7 @@
 import type { VueWrapper } from '@vue/test-utils';
 import { flushPromises, mount } from '@vue/test-utils';
 import type { Component } from 'vue';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import AutomationsPanel from '@/components/panels/AutomationsPanel.vue';
 import CommandsPanel from '@/components/panels/CommandsPanel.vue';
@@ -251,6 +251,11 @@ describe('workspace panels', () => {
       wrapper = mountPanel(CommandsPanel);
     });
 
+    // Tab goes past the whole catalogue; the arrow keys move within it.
+    it('is one Tab stop', () => {
+      expect(wrapper.findAll('[data-roving][tabindex="0"]')).toHaveLength(1);
+    });
+
     it('lists the commands that match a search', async () => {
       await search('power');
 
@@ -316,6 +321,13 @@ describe('workspace panels', () => {
 
     it('lists the traffic so far', () => {
       expect(wrapper.find('[data-testid="trace-entry"]').exists()).toBe(true);
+    });
+
+    it('is one Tab stop, at the latest line', () => {
+      const rows = wrapper.findAll('[data-testid="trace-row"]');
+
+      expect(rows.filter(row => row.attributes('tabindex') === '0').map(row => row.element))
+        .toEqual([rows.at(-1)?.element]);
     });
 
     it('sends a typed command without the spaces around it', async () => {
@@ -398,6 +410,53 @@ describe('workspace panels', () => {
         expect(useLocosStore().roster[0]?.name).toBe('Yard loco');
       });
     });
+
+    // The form you typed into, or the desk you released, leaves the page and
+    // would take the keyboard focus with it.
+    describe('with the panel on the page', () => {
+      let wrapper: VueWrapper;
+
+      beforeEach(() => {
+        wrapper = mount(ThrottlesPanel, {
+          global: { plugins: [app.pinia] },
+          attachTo: document.body,
+        });
+      });
+
+      afterEach(() => {
+        wrapper.unmount();
+      });
+
+      describe('when the first loco is driven from the form', () => {
+        beforeEach(async () => {
+          const address = wrapper.get('[data-testid="drive-address"]');
+
+          (address.element as HTMLInputElement).focus();
+          await address.setValue('8');
+          await wrapper.get('[data-testid="drive-form"]').trigger('submit');
+          await flushPromises();
+        });
+
+        it('moves the focus to its desk', () => {
+          expect((document.activeElement as HTMLElement).dataset.testid).toBe('desk-title');
+        });
+      });
+
+      describe('when the only loco is released', () => {
+        beforeEach(async () => {
+          const locos = useLocosStore();
+
+          locos.acquire(8);
+          await flushPromises();
+          locos.release(8);
+          await flushPromises();
+        });
+
+        it('moves the focus back to the form', () => {
+          expect((document.activeElement as HTMLElement).dataset.testid).toBe('drive-address');
+        });
+      });
+    });
   });
 });
 
@@ -467,5 +526,58 @@ describe('function keys', () => {
     await key(2).trigger('keydown', { key: ' ', repeat: true });
 
     expect(wrapper.emitted('set')).toBeUndefined();
+  });
+
+  it('names a momentary key and says to hold it', () => {
+    expect(key(2).attributes('aria-label')).toBe('F2 Horn, hold to use');
+  });
+
+  it('is one Tab stop, the first key', () => {
+    expect(wrapper.findAll('[tabindex="0"]').map(found => found.element)).toEqual([key(0).element]);
+  });
+
+  describe('with the first key focused', () => {
+    beforeEach(() => {
+      wrapper = mount(FunctionKeys, {
+        props: { functions, states: [] },
+        attachTo: document.body,
+      });
+      (key(0).element as HTMLElement).focus();
+    });
+
+    afterEach(() => {
+      wrapper.unmount();
+    });
+
+    it('moves to the next key on ArrowRight', async () => {
+      await key(0).trigger('keydown', { key: 'ArrowRight' });
+
+      expect(document.activeElement).toBe(key(1).element);
+    });
+
+    it('makes the key it moved to the Tab stop', async () => {
+      await key(0).trigger('keydown', { key: 'ArrowRight' });
+
+      expect(key(1).attributes('tabindex')).toBe('0');
+    });
+
+    it('makes a clicked key the Tab stop', async () => {
+      (key(2).element as HTMLElement).focus();
+      await flushPromises();
+
+      expect(key(2).attributes('tabindex')).toBe('0');
+    });
+
+    it('leaves other keys to the key itself', async () => {
+      await key(0).trigger('keydown', { key: 'a' });
+
+      expect(document.activeElement).toBe(key(0).element);
+    });
+  });
+
+  it('names a key without a name of its own by its number', () => {
+    wrapper = mount(FunctionKeys, { props: { functions: DEFAULT_FUNCTIONS.slice(3, 4), states: [] } });
+
+    expect(key(3).attributes('aria-label')).toBe('F3');
   });
 });

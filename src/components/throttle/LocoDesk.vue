@@ -133,23 +133,27 @@ function release(): void {
       <header class="desk__head">
         <!-- The separator belongs to the address, so it sits between the two
            on one line, and is clipped off the start of the line when the
-           address wraps onto a line of its own. -->
-        <button
-          type="button"
-          class="desk__title"
-          :popovertarget="menuId"
-          :style="{ anchorName: `--${menuId}` }"
-          data-testid="desk-title"
-        >
-          <span class="desk__name">{{ throttle.name }}</span>
-          <span class="desk__address numeric">
-            <span
-              class="desk__sep"
-              aria-hidden="true"
-            >·</span>Address
-            {{ throttle.address }}
-          </span>
-        </button>
+           address wraps onto a line of its own. The heading lets a screen
+           reader jump from desk to desk. -->
+        <h2 class="desk__heading">
+          <button
+            type="button"
+            class="desk__title"
+            :popovertarget="menuId"
+            :style="{ anchorName: `--${menuId}` }"
+            data-testid="desk-title"
+          >
+            <span class="desk__name">{{ throttle.name }}</span>
+            <span class="desk__address numeric">
+              <span
+                class="desk__sep"
+                aria-hidden="true"
+              >·</span>Address
+              {{ throttle.address }}
+            </span>
+            <span class="visually-hidden">, settings</span>
+          </button>
+        </h2>
 
         <button
           v-if="canAdd"
@@ -255,8 +259,11 @@ function release(): void {
       </header>
 
       <section class="desk__drive">
+        <!-- The slider says the same to assistive tech, so the readout is not
+             announced as well each time the speed changes. -->
         <output
           class="desk__speed numeric"
+          aria-hidden="true"
           data-testid="speed-readout"
         >
           {{ throttle.speed }}
@@ -301,7 +308,7 @@ function release(): void {
           <button
             type="button"
             class="desk__stop"
-            :aria-label="`Stop ${throttle.name} now`"
+            :aria-label="`${throttle.estop ? 'Stopped' : 'Stop'}, ${throttle.name}`"
             data-testid="estop"
             @click="locos.emergencyStop(address)"
           >
@@ -409,6 +416,11 @@ function release(): void {
   border-bottom: 1px solid var(--rule);
 }
 
+.desk__heading {
+  min-width: 0;
+  font: inherit;
+}
+
 .desk__title {
   /* Room for the separator and the space either side of it. */
   --sep: 1.2em;
@@ -511,8 +523,11 @@ function release(): void {
   font-size: inherit;
   font-weight: 600;
 
+  /* The chosen side is underlined like the chosen role tab, so it never
+     rests on colour alone. */
   &[aria-pressed='true'] {
     color: var(--accent);
+    box-shadow: inset 0 calc(-1 * var(--line)) 0 var(--accent);
   }
 
   &:hover {

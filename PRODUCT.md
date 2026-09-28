@@ -60,11 +60,11 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - Diagnostics: sent/received traffic with a plain explanation of each line, a searchable list of every native command, and a command box
 - Panel workspace with role presets (Drive, Points, Control, Diagnostics), each with its own link; Points and Control show the routes and automations under the diagram
 - Dark, light and high-contrast themes, and a Settings page
+- Keyboard and screen-reader access, aiming at WCAG 2.2 AA in every theme
+- Installs as an app (PWA) from Chrome or Edge, and opens without the internet once it has been loaded
 
 **Planned:**
 
-- Keyboard and screen-reader parity
-- Installable web app (PWA)
 - Hub network connection
 - Multiple operators
 - A track-layout diagram for your own layout
@@ -87,7 +87,6 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - How multiple operators work: roles, loco and area assignment, and what each person sees
 - Where the track-layout overview's data comes from and how people draw it (planning points to the Hub owning the visual layout)
 - Whether phones are a supported target before the Hub exists
-- A formal accessibility conformance level
 
 ## Brand Commitments
 
@@ -104,7 +103,7 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - **Personality:** a model-railway hobby project. It should not look or read like a generic scaffolded web app or stock Material.
 - **Assets:**
   - The in-app wordmark is set in text ("WebThrottle" with a "DCC-EX" tag), not an image; it is also the home button
-  - `public/favicon.ico`: the favicon
+  - `public/favicon.ico`, `icon.svg` and the app icons: the DCC-EX diamond as dcc-ex.com's own favicon draws it (teal outline). `favicon.ico` is that favicon; the rest are drawn from the official logo SVG in the DCC-EX website repository (`image-artefacts/logos/DCC-EX_logo.svg`). The DCC-EX logo licence asks for the logo's own forms and colours, so do not restyle it
   - `src/assets/WebThrottle.png` (a 778×200 wordmark image), `cover.jpg` and `full-logo.png` are not used by the app and are not binding
 
 ## Evidence on Hand
@@ -128,5 +127,5 @@ It is not meant to replace other throttles. It runs alongside hardware throttles
 - Theming is built on design tokens, so a new theme never needs component changes.
 - Controls need touch targets large enough for a Smart Phone used while walking the layout.
 - State such as power, connection, and turnout position must never rely on colour alone.
-- Keyboard and screen-reader parity is planned.
-- No formal conformance level (for example WCAG 2.2 AA) has been set yet; this is an open decision.
+- Everything you can do with a pointer, you can do from the keyboard, and every control has a name and state a screen reader can say.
+- The target is **WCAG 2.2 AA**, in every theme. The high-contrast theme is AA too; it only adds contrast and size on top.

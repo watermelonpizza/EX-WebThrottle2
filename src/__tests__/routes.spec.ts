@@ -149,6 +149,20 @@ describe('routes store', () => {
     });
   });
 
+  describe('stopping everything', () => {
+    beforeEach(() => {
+      routes.stopAll();
+    });
+
+    it('pauses every task, then stops every loco', () => {
+      expect(station.sent.slice(-2)).toEqual(['</ PAUSE>', '<!>']);
+    });
+
+    it('remembers that this Throttle paused them', () => {
+      expect(routes.paused).toBe(true);
+    });
+  });
+
   describe('starting an automation', () => {
     it('does nothing without a loco on a desk', async () => {
       routes.startWithLoco(201);

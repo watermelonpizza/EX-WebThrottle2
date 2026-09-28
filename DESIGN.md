@@ -9,6 +9,7 @@ colors:
   raised-hover: '#263038'
   rule: '#2b343b'
   edge: '#3a444b'
+  field-edge: '#65717a'
   ink: '#eef2f4'
   ink-muted: '#9ba4ab'
   ink-on-accent: '#04181b'
@@ -154,7 +155,7 @@ These are not decoration; each is a fixed signal with one job.
 The workstation is built almost entirely from these.
 
 - **Surfaces, room to control:** **Ground** (`#151a1f`, the field behind the work), **Chrome** (`#0e1418`, the recessed bezel of the top bar and safety strip), **Panel** (`#192025`), **Raised** (`#1f272d`, controls) rising to **Raised-hover** (`#263038`).
-- **Separators:** **Rule** (`#2b343b`, the hairline between sections) and **Edge** (`#3a444b`, control borders and tick marks).
+- **Separators:** **Rule** (`#2b343b`, the hairline between sections) and **Edge** (`#3a444b`, control borders and tick marks). **Field-edge** (`#65717a`) outlines text fields and selects: an outline is how you find a field, so it holds 3:1 on every surface (WCAG 2.2 non-text contrast), where a key is found by its label.
 - **Text:** **Ink** (`#eef2f4`) for content, **Ink-muted** (`#9ba4ab`) for secondary text and idle labels (still AA on every surface above), and **Ink-on-accent** (`#04181b`) for text sitting on teal.
 - **Track linework:** **Track-idle** (`#5f6b73`) for plain track, **Track-set** (`#eef2f4`) for a route that is set/lit, **Track-unset** (`#4a545b`) for the leg a turnout is not set to.
 
@@ -235,7 +236,7 @@ The base control is `.key`: a flat, thin-edged key with one height.
 
 ### Inputs / Fields
 
-- **Style (`.field`):** Ground background (recessed below its surface), 1px `--edge` border, `4px` radius, `--target` min-height; muted placeholder. URL and command inputs switch to the code font.
+- **Style (`.field`):** Ground background (recessed below its surface), 1px `--field-edge` border, `4px` radius, `--target` min-height; muted placeholder. URL and command inputs switch to the code font.
 - **Focus:** the global `:focus-visible` ring — `var(--line)` solid `--focus` with `2px` offset.
 - **Error:** paired with a message and `aria-invalid`; the message turns Occupied Red.
 
@@ -257,7 +258,7 @@ One compact grammar shared across the list panels: a small self-drawing SVG stat
 
 ### Loco desk — signature
 
-The throttle, built as an operating-desk panel that reshapes to the room it has (see Layout). A tappable title (name + muted address), a large teal speed readout, the speed scale, a `REV | FWD` segmented direction control (active side teal, split by a thin rule), a Stop key, and the function grid. It never uses a rotary knob.
+The throttle, built as an operating-desk panel that reshapes to the room it has (see Layout). A tappable title (name + muted address), a large teal speed readout, the speed scale, a `REV | FWD` segmented direction control (active side teal and underlined like the active role tab, so it never rests on colour alone; split by a thin rule), a Stop key, and the function grid. It never uses a rotary knob.
 
 ### Speed scale — signature
 
@@ -274,7 +275,8 @@ The operating-centre display. Thin orthogonal track scaled in diagram units; set
 - **Do** read every colour, size, and space from tokens (`var(--…)` in `src/styles/tokens.css`); a new theme is one block there and never a component edit.
 - **Do** pair every state with a word or shape (`ON`/`OFF`, `Thrown`/`Closed`, `Occupied`), so colour only confirms it — never carries it alone.
 - **Do** let each panel choose its variant from its own size with container queries, not from window width.
-- **Do** keep Stop all, track power, and connection state reachable at every size and in every preset.
+- **Do** keep Stop all, track power, and connection state reachable at every size and in every preset. On a phone the power switches move to a row under STOP ALL rather than scroll out of sight.
+- **Do** make a long run of keys or rows one Tab stop, with the arrow keys moving within it (function keys, the traffic log, the command catalogue), so Tab reaches STOP ALL quickly.
 - **Do** give changing values the `.numeric` class (`tabular-nums`) so digits hold their width.
 - **Do** separate sections with a 1px `--rule` hairline and tonal steps, not gaps or card edges.
 - **Do** size type and controls in `rem` scaled by `--text-scale`, and give touch (`pointer: coarse`) larger targets.

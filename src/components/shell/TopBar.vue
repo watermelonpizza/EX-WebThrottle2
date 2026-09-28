@@ -4,10 +4,12 @@ import { computed, useTemplateRef } from 'vue';
 import { useClock } from '@/composables/useClock';
 import { useConnectionStore } from '@/stores/connection';
 import { useLocosStore } from '@/stores/locos';
+import { useRoutesStore } from '@/stores/routes';
 import { useWorkspaceStore } from '@/stores/workspace';
 
 const connection = useConnectionStore();
 const locos = useLocosStore();
+const routes = useRoutesStore();
 const workspace = useWorkspaceStore();
 const clock = useClock();
 
@@ -22,8 +24,9 @@ function closeMenu(): void {
 }
 
 async function disconnect(stopFirst: boolean): Promise<void> {
+  // The same as STOP ALL, so no automation sets a train going once we are gone.
   if (stopFirst) {
-    locos.stopAll();
+    routes.stopAll();
   }
 
   linkPopover.value?.hidePopover?.();

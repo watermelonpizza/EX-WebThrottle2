@@ -59,6 +59,13 @@ describe('connect screen', () => {
 
     expect(connect).toHaveBeenCalledWith('ws://localhost:4444');
   });
+
+  it('says it is connecting while the button is out of action', async () => {
+    useConnectionStore().status = 'connecting';
+    await flushPromises();
+
+    expect(wrapper.get('[data-testid="connect-status"]').text()).toBe('Connecting to your Command Station…');
+  });
 });
 
 describe('top bar', () => {
@@ -98,6 +105,13 @@ describe('top bar', () => {
       await flushPromises();
 
       expect(app.station.sent).toContain('<!>');
+    });
+
+    it('pauses every EXRAIL task before stopping, as STOP ALL does', async () => {
+      await wrapper.get('[data-testid="stop-and-disconnect"]').trigger('click');
+      await flushPromises();
+
+      expect(app.station.sent.slice(-2)).toEqual(['</ PAUSE>', '<!>']);
     });
   });
 
